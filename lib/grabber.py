@@ -1,0 +1,70 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Jul 09 00:07:34 2012
+
+Handles grabbing successive frames from capture object and returns current
+frames of requested type.
+
+Capture object must be closed with Grabber.close() or main loop will not listen
+to termination!
+
+@author: Ronny
+"""
+
+import cv, cv2, time
+from collections import deque
+
+class Grabber:
+    config = None
+    capture = None
+    fourcc = None
+    fps = None
+    framecount = 0
+    ts_last_frame = None
+    ts_first = None
+    framebuffer = deque(maxlen=256)
+    
+    def __init__(self, args):
+           
+        self.config = args
+        
+        if self.config.infile and self.config.infile.length > 0:
+            print 'Trying to open file' + self.config.infile
+            self.capture = cv2.VideoCapture(self.config.infile)
+            print 'File returned ' + str(self.capture)
+            
+        elif self.config.camera >= 0:
+            print 'Trying to open device ' + str(self.config.camera)
+            self.capture = cv2.VideoCapture(self.config.camera)
+            self.capture.set(cv.CV_CAP_PROP_FPS, 30.0)
+            self.capture.set(cv.CV_CAP_PROP_FRAME_WIDTH, self.config.width[0])
+            self.capture.set(cv.CV_CAP_PROP_FRAME_HEIGHT, self.config.height[0])
+            print 'Camera returned ' + str(self.capture)
+            
+
+    def grab_first( self ):
+        rv = False
+        while not rv:        
+            rv, img = self.capture.read()
+            if rv:
+                # get FOURCC code as Integer
+                self.width = int(self.capture.get(3))
+                self.height = int(self.capture.get(4))
+                self.fps = int(self.capture.get(cv.CV_CAP_PROP_FPS))
+                self.fourcc = self.capture.get(6)
+        self.ts_first = time.clock()
+    
+    def grab_next( self ):
+        rv, img = self.capture.read()
+        if rv:
+            self.framecount += 1
+            self.ts_last_frame = time.clock()
+            
+        self.framebuffer.appendleft(img)
+        return rv
+        
+    def close( self ):
+        self.capture.release()
+            
+            
+            
