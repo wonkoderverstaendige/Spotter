@@ -28,6 +28,10 @@ for (key, value) in vars(ARGUMENTS).items():
     
 class Main(object):
     paused = False
+    windowName = 'main'
+    viewMode = 0
+    current_frame = None
+    show_frame = None
 
     def __init__( self, args ):
         
@@ -38,7 +42,36 @@ class Main(object):
         
         self.writer = writer.Writer(args)
         
-        cv2.namedWindow('preview', 1)
+        if args.display:
+            cv2.namedWindow(self.windowName, 1)
+            cv2.setMouseCallback(self.windowName, self.onMouse)
+
+
+    def onMouse( self, event, mouseX, mouseY, flags, param ):
+        """ 
+        Mouse interactions with Main window:
+            - Left mouse button gives pixel data under cursor
+            - Right mouse button switches view mode
+        """
+        if event == cv.CV_EVENT_LBUTTONDOWN:
+            if not self.current_frame == None:
+                pixel = self.current_frame[mouseY, mouseX]
+                print "I: [X,Y](H,S,V):", [mouseX, mouseY], pixel
+            
+        elif event == cv.CV_EVENT_RBUTTONDOWN:
+            self.nextView()
+            
+    def nextView( self ):
+        pass
+    
+    def update_frame( self ):
+        if self.viewMode == 0:
+            self.show_frame = self.current_frame
+            
+    def show( self ):
+        cv2.imshow(self.windowName, self.show_frame)
+
+
 
 
 
@@ -64,7 +97,9 @@ if __name__ == "__main__":
             frame_event.clear()
             
             if not main.paused:
-                cv2.imshow('preview', main.grabber.framebuffer[0])
+                main.current_frame = main.grabber.framebuffer[0]
+                main.update_frame()
+                main.show()
         
         total_elapsed = (time.clock() - main.grabber.ts_last_frame) * 1000
         t = int(1000/main.grabber.fps - total_elapsed) - 1
