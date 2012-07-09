@@ -8,7 +8,7 @@ Created on Mon Jul 09 00:02:20 2012
 import cv, cv2, sys, argparse, time, threading
 
 sys.path.append('./lib')
-import grabber, writer
+import grabber, writer, utils
 
 # Parse command line arguments:
 parser = argparse.ArgumentParser(description = 'track colored LEDs and sync signal from live camera feed or recorded video file')
@@ -57,6 +57,7 @@ class Main(object):
             if not self.current_frame == None:
                 pixel = self.current_frame[mouseY, mouseX]
                 print "I: [X,Y](H,S,V):", [mouseX, mouseY], pixel
+                print utils.RGBpix2HSV(pixel)
             
         elif event == cv.CV_EVENT_RBUTTONDOWN:
             self.nextView()
@@ -103,6 +104,9 @@ if __name__ == "__main__":
         
         total_elapsed = (time.clock() - main.grabber.ts_last_frame) * 1000
         t = int(1000/main.grabber.fps - total_elapsed) - 1
+        if t =< 0:
+            print 'Missed next frame by: ' + str(t*1000) + ' ms'
+            t = 1        
         
         key = cv2.waitKey(t)
         

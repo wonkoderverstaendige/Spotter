@@ -1,0 +1,15 @@
+I: "width" is set to "[640.0]"
+I: "display" is set to "1"
+I: "outfile" is set to "test.avi"
+I: "camera" is set to "0"
+I: "fps" is set to "auto"
+I: "threshold" is set to "[0, 80, 60]"
+I: "height" is set to "[360.0]"
+I: "infile" is set to "None"
+Trying to open device 0
+Camera returned <VideoCapture 02AD16F0>
+test.avi
+fps: 30
+Exiting...
+Flushing remaining frames from  buffer to file...
+Done! Grabbed 45950 frames in 1542.23731174s, with 29.7943770716 fps
