@@ -4,8 +4,7 @@ Created on Mon Jul 09 00:29:00 2012
 
 @author: Ronny
 """
-import cv
-import cv2
+import cv, cv2, time
 
 class Writer:
     config = None
@@ -14,6 +13,7 @@ class Writer:
     _writer = None
     _size = None
     _alive = True
+    _ev_timeout = 1.0
     
     def __init__(self, args):
         self.config = args
@@ -33,7 +33,7 @@ class Writer:
         while self._alive:
             ev.wait()
             if not self._alive:
-                print 'Flushing remaining frames from  buffer to file...'
+                print 'Flushing remaining frames from buffer to file...'
                 nleave_frames = 0
 
             frames_written = 0
@@ -41,7 +41,7 @@ class Writer:
                 self._writer.write( fb.pop() )
                 frames_written += 1
                 if frames_written > 1:                
-                    print str(frames_written) + ' frames written!'
+                    print time.strftime('%Y-%m-%d %H:%M:%S ') + str(frames_written) + ' frames written!'
         
     def close( self ):
         del( self._writer )

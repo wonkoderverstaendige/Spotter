@@ -28,7 +28,7 @@ for (key, value) in vars(ARGUMENTS).items():
     
 class Main(object):
     paused = False
-    windowName = 'main'
+    windowName = 'Capture'
     viewMode = 0
     current_frame = None
     show_frame = None
@@ -43,7 +43,7 @@ class Main(object):
         self.writer = writer.Writer(args)
         
         if args.display:
-            cv2.namedWindow(self.windowName, 1)
+            cv2.namedWindow(self.windowName)
             cv2.setMouseCallback(self.windowName, self.onMouse)
 
 
@@ -56,8 +56,7 @@ class Main(object):
         if event == cv.CV_EVENT_LBUTTONDOWN:
             if not self.current_frame == None:
                 pixel = self.current_frame[mouseY, mouseX]
-                print "I: [X,Y](H,S,V):", [mouseX, mouseY], pixel
-                print utils.BGRpix2HSV(pixel)
+                print "[X,Y][B G R](H, S, V):", [mouseX, mouseY], pixel, utils.BGRpix2HSV(pixel)
             
         elif event == cv.CV_EVENT_RBUTTONDOWN:
             self.nextView()

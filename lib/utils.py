@@ -29,7 +29,6 @@ def BGRpix2HSV( pixel ):
         H = 120 + 60 * (B-R)/S
     elif V == B:
         H = 240 + 60 * (R-G)/S
-    else:
 
     if H < 0:
         H += 360
