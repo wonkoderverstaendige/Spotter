@@ -31,6 +31,7 @@ class Main(object):
     windowName = 'Capture'
     viewMode = 0
     current_frame = None
+    hsv_frame = None
     show_frame = None
     selection = None
     drag_start = None
@@ -92,7 +93,7 @@ class Main(object):
     
     def update_frame( self ):
         if self.viewMode == 0:
-            self.show_frame = self.current_frame
+            self.show_frame = cv2.bitwise_and(self.current_frame, self.current_frame, mask = self.tracker.mask)
             
     def show( self ):
         cv2.imshow(self.windowName, self.show_frame)
@@ -101,6 +102,9 @@ class Main(object):
         self.hist.calcHist( self.hsv_frame )
         self.hist.overlayHistMap()
         cv2.imshow('histogram', self.hist.overlay)
+        
+    def trackLeds( self ):
+        self.tracker.preprocess( self.hsv_frame )
 
 
 
@@ -130,6 +134,7 @@ if __name__ == "__main__":
             if not main.paused:
                 main.current_frame = main.grabber.framebuffer[0]
                 main.hsv_frame = cv2.cvtColor(main.current_frame, cv2.COLOR_BGR2HSV)
+                main.trackLeds()
                 main.update_frame()
                 main.show()
                 main.updateHist()
