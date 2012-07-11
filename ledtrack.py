@@ -5,10 +5,10 @@ Created on Mon Jul 09 00:02:20 2012
 @author: Ronny
 """
 
-import cv, cv2, sys, argparse, time, threading
+import cv2, sys, argparse, time, threading
 
 sys.path.append('./lib')
-import grabber, writer, utils
+import grabber, writer, tracker, utils
 
 # Parse command line arguments:
 parser = argparse.ArgumentParser(description = 'track colored LEDs and sync signal from live camera feed or recorded video file')
@@ -32,7 +32,10 @@ class Main(object):
     viewMode = 0
     current_frame = None
     show_frame = None
-
+    selection = None
+    drag_start = None
+    
+    
     def __init__( self, args ):
         
         self.grabber = grabber.Grabber(args)
@@ -42,23 +45,46 @@ class Main(object):
         
         self.writer = writer.Writer(args)
         
+        self.tracker = tracker.Tracker()
+        
         if args.display:
             cv2.namedWindow(self.windowName)
             cv2.setMouseCallback(self.windowName, self.onMouse)
+            
+        self.hist = utils.HSVHist()
 
 
-    def onMouse( self, event, mouseX, mouseY, flags, param ):
+    def onMouse( self, event, x, y, flags, param ):
         """ 
         Mouse interactions with Main window:
             - Left mouse button gives pixel data under cursor
             - Right mouse button switches view mode
         """
-        if event == cv.CV_EVENT_LBUTTONDOWN:
+        if event == cv2.EVENT_LBUTTONDOWN:
             if not self.current_frame == None:
-                pixel = self.current_frame[mouseY, mouseX]
-                print "[X,Y][B G R](H, S, V):", [mouseX, mouseY], pixel, utils.BGRpix2HSV(pixel)
+                self.drag_start = (x, y)
+        if event == cv2.EVENT_LBUTTONUP:
+                self.drag_start = None
+                
+                if self.selection == None:
+                    pixel = self.current_frame[y, x]
+                    print "[X,Y][B G R](H, S, V):", [x, y], pixel, utils.BGRpix2HSV(pixel)
+                else:
+                    self.track_window = self.selection
+                    print self.track_window
+
+        if self.drag_start:
+            xmin = min(x, self.drag_start[0])
+            ymin = min(y, self.drag_start[1])
+            xmax = max(x, self.drag_start[0])
+            ymax = max(y, self.drag_start[1])
             
-        elif event == cv.CV_EVENT_RBUTTONDOWN:
+            if xmax - xmin < 2 and ymax - ymin < 2:
+                self.selection = None
+            else:
+                self.selection = (xmin, ymin, xmax - xmin, ymax - ymin)
+                
+        if event == cv2.EVENT_RBUTTONDOWN:
             self.nextView()
             
     def nextView( self ):
@@ -70,6 +96,11 @@ class Main(object):
             
     def show( self ):
         cv2.imshow(self.windowName, self.show_frame)
+        
+    def updateHist( self ):
+        self.hist.calcHist( self.hsv_frame )
+        self.hist.overlayHistMap()
+        cv2.imshow('histogram', self.hist.overlay)
 
 
 
@@ -89,7 +120,7 @@ if __name__ == "__main__":
         t = int(1000/main.grabber.fps)
     else:
         t = 33
-
+        
     ts_start = time.clock()
     while True:
         if main.grabber.grab_next():
@@ -98,13 +129,15 @@ if __name__ == "__main__":
             
             if not main.paused:
                 main.current_frame = main.grabber.framebuffer[0]
+                main.hsv_frame = cv2.cvtColor(main.current_frame, cv2.COLOR_BGR2HSV)
                 main.update_frame()
                 main.show()
+                main.updateHist()
         
         total_elapsed = (time.clock() - main.grabber.ts_last_frame) * 1000
         t = int(1000/main.grabber.fps - total_elapsed) - 1
         if t <= 0:
-            print 'Missed next frame by: ' + str(t*1000*-1.) + ' ms'
+            print 'Missed next frame by: ' + str(t*-1.) + ' ms'
             t = 1        
         
         key = cv2.waitKey(t)
