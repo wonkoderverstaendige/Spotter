@@ -20,21 +20,16 @@ def BGRpix2HSV( pixel ):
         S = float_info.epsilon
     else:
         S = (V-min(R, G, B))/V
-        print 'S = ' + str(S)
         if S < 2*float_info.epsilon:
             S = float_info.epsilon
     
     if V == R:
         H = 60 * (G-B)/S
-        print 'Red!' + str(H)
     elif V == G:
         H = 120 + 60 * (B-R)/S
-        print 'Green!' + str(H)
     elif V == B:
         H = 240 + 60 * (R-G)/S
-        print 'Blue!'
     else:
-        print 'Neither!' + str(H)
 
     if H < 0:
         H += 360
