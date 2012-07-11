@@ -168,3 +168,9 @@ pip-log.txt
 
 .spyderworkspace
 .spyderproject
+
+#############
+## project specific
+#############
+
+test.avi

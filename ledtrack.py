@@ -57,7 +57,7 @@ class Main(object):
             if not self.current_frame == None:
                 pixel = self.current_frame[mouseY, mouseX]
                 print "I: [X,Y](H,S,V):", [mouseX, mouseY], pixel
-                print utils.RGBpix2HSV(pixel)
+                print utils.BGRpix2HSV(pixel)
             
         elif event == cv.CV_EVENT_RBUTTONDOWN:
             self.nextView()
@@ -104,8 +104,8 @@ if __name__ == "__main__":
         
         total_elapsed = (time.clock() - main.grabber.ts_last_frame) * 1000
         t = int(1000/main.grabber.fps - total_elapsed) - 1
-        if t =< 0:
-            print 'Missed next frame by: ' + str(t*1000) + ' ms'
+        if t <= 0:
+            print 'Missed next frame by: ' + str(t*1000*-1.) + ' ms'
             t = 1        
         
         key = cv2.waitKey(t)

@@ -4,35 +4,44 @@ Created on Mon Jul 09 14:45:41 2012
 
 @author: Ronny
 """
+from sys import float_info
 
-def RGBpix2HSV( pixel ):
-    """ Converts RGB color information of a single pixel to HSV """
-    R = pixel[0]/255.
+def BGRpix2HSV( pixel ):
+    """ Converts BGR color information of a single pixel to HSV """
+    B = pixel[0]/255.
     G = pixel[1]/255.
-    B = pixel[2]/255.
+    R = pixel[2]/255.
     
     V = max(R, G, B)
-    print V
-    
-    if V == 0:
-        S = 0
+
+    # This requires some corner case handling when V or S get 0 to avoid
+    # div by Zeros, will be rounded away upon return again
+    if V < 2*float_info.epsilon:
+        S = float_info.epsilon
     else:
         S = (V-min(R, G, B))/V
-        print(S)
+        print 'S = ' + str(S)
+        if S < 2*float_info.epsilon:
+            S = float_info.epsilon
     
     if V == R:
         H = 60 * (G-B)/S
+        print 'Red!' + str(H)
     elif V == G:
         H = 120 + 60 * (B-R)/S
+        print 'Green!' + str(H)
     elif V == B:
         H = 240 + 60 * (R-G)/S
+        print 'Blue!'
+    else:
+        print 'Neither!' + str(H)
 
     if H < 0:
         H += 360
 
-    H /= 2
-    S *= 255
-    V *= 255    
-    
+    H /= 2.
+    S *= 255.
+    V *= 255.   
+
     return int(H), int(S), int(V)
     
