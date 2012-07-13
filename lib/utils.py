@@ -41,6 +41,19 @@ def BGRpix2HSV( pixel ):
 
     return int(H), int(S), int(V)
     
+def drawCross( frame, x, y, size, color, gap = 7 ):
+    #left    
+    cv2.line(frame, (x - size - gap, y), (x - gap, y), color, 1)
+    #right
+    cv2.line(frame, (x + size + gap, y), (x + gap, y), color, 1)
+    #up
+    cv2.line(frame, (x, y - size - gap), (x, y - gap), color, 1)
+    #down
+    cv2.line(frame, (x, y + size + gap), (x, y + gap), color, 1)
+    #return frame
+        
+        
+    
 class HSVHist:
     """ Calculate and show HSV histogram for the current frame shown
     in the main window. Clicking equally returns pixel information.
@@ -93,4 +106,6 @@ class HSVHist:
                 cv2.rectangle(self.overlay, (pos, h), (pos+1, h-hbin), (pos, 255, 128), -1)
                 
         self.overlay = cv2.cvtColor(self.overlay, cv2.COLOR_HSV2BGR)
+        
+
        

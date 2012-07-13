@@ -23,15 +23,18 @@ class Grabber:
     ts_last_frame = None
     ts_first = None
     framebuffer = deque(maxlen=256)
+    capture_is_file = False
     
     def __init__(self, args):
            
         self.config = args
         
-        if self.config.infile and self.config.infile.length > 0:
-            print 'Trying to open file' + self.config.infile
-            self.capture = cv2.VideoCapture(self.config.infile)
+        if self.config.infile and len(self.config.infile[0]) > 0:
+            filepath = self.config.infile[0]
+            print 'Attempting to open file ' + filepath + 'as capture... '
+            self.capture = cv2.VideoCapture(filepath)
             print 'File returned ' + str(self.capture)
+            self.capture_is_file = True
             
         elif self.config.camera >= 0:
             print 'Trying to open device ' + str(self.config.camera)
@@ -44,7 +47,7 @@ class Grabber:
 
     def grab_first( self ):
         rv = False
-        while not rv:        
+        while not rv:   
             rv, img = self.capture.read()
             if rv:
                 # get FOURCC code as Integer

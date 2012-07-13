@@ -20,7 +20,7 @@ class Writer:
         self._filedst = self.config.outfile
         self._size = self.config.size
         cc = self._codecs[0]
-        self._writer = cv2.VideoWriter(self._filedst, cv.CV_FOURCC(cc[0], cc[1], cc[2], cc[3]), 30.0, self._size, 1)
+        self._writer = cv2.VideoWriter(self._filedst[0], cv.CV_FOURCC(cc[0], cc[1], cc[2], cc[3]), 30.0, self._size, 1)
   
     def opendst(self):
         print self._filedst

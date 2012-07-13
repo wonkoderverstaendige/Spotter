@@ -4,7 +4,7 @@ Created on Mon Jul 09 00:02:20 2012
 
 @author: Ronny
 """
-
+#-i ./media/r52r2f123.avi
 import cv2, sys, argparse, time, threading
 
 sys.path.append('./lib')
@@ -13,8 +13,8 @@ import grabber, writer, tracker, utils
 # Parse command line arguments:
 parser = argparse.ArgumentParser(description = 'track colored LEDs and sync signal from live camera feed or recorded video file')
 parser.add_argument('-c', '--camera', type=int, default=0, help='Camera ID (V4L default: 0, WMF default: 0)')
-parser.add_argument('-i', '--infile', nargs = 1, help='Path to videop file')
-parser.add_argument('-o', '--outfile', help='Path to output video file path/name')
+parser.add_argument('-i', '--infile', type = str, nargs = 1, help='Path to videop file')
+parser.add_argument('-o', '--outfile', type = str, nargs = 1, help='Path to output video file path/name')
 parser.add_argument('-d', '--display', default=1, type=int, help='Live preview, default: 1')
 parser.add_argument('-t', '--threshold', type=int, nargs=3, help='HSV threshold [0, 0, 30]', default=[0, 80, 60])
 parser.add_argument('-iw', '--width', nargs=1, type=float, help='width of image in pixel, default:auto', default=0)
@@ -30,11 +30,13 @@ class Main(object):
     paused = False
     windowName = 'Capture'
     viewMode = 0
+    nviewModes = 1
     current_frame = None
     hsv_frame = None
     show_frame = None
     selection = None
     drag_start = None
+    record_to_file = True
     
     
     def __init__( self, args ):
@@ -44,7 +46,12 @@ class Main(object):
         args.fourcc = self.grabber.fourcc
         args.size = (self.grabber.width, self.grabber.height)
         
-        self.writer = writer.Writer(args)
+        if self.grabber.capture_is_file:
+            self.record_to_file = False
+            self.writer = None
+            print 'Recording video to file!'
+        else:
+            self.writer = writer.Writer(args)
         
         self.tracker = tracker.Tracker()
         
@@ -64,6 +71,7 @@ class Main(object):
         if event == cv2.EVENT_LBUTTONDOWN:
             if not self.current_frame == None:
                 self.drag_start = (x, y)
+                
         if event == cv2.EVENT_LBUTTONUP:
                 self.drag_start = None
                 
@@ -89,10 +97,21 @@ class Main(object):
             self.nextView()
             
     def nextView( self ):
-        pass
+        self.viewMode += 1
+        if self.viewMode > self.nviewModes:
+            self.viewMode = 0
     
     def update_frame( self ):
+
+#        utils.drawCross( self.current_frame, 100, 100, 10, (100, 255, 255) )
         if self.viewMode == 0:
+            self.show_frame = self.current_frame
+            ledcoords = self.tracker.sumTrack( self.show_frame )
+            colors = [(0, 0, 255), (0, 255, 0), (255, 0, 0)]
+            for cf, coord in enumerate(ledcoords):
+                utils.drawCross( self.show_frame, coord[0], coord[1], 5, colors[cf], gap = 3 )
+                
+        elif self.viewMode == 1:
             self.show_frame = cv2.bitwise_and(self.current_frame, self.current_frame, mask = self.tracker.mask)
             
     def show( self ):
@@ -104,7 +123,7 @@ class Main(object):
         cv2.imshow('histogram', self.hist.overlay)
         
     def trackLeds( self ):
-        self.tracker.preprocess( self.hsv_frame )
+        self.tracker.sumTrack( self.current_frame )
 
 
 
@@ -116,8 +135,9 @@ if __name__ == "__main__":
 
     # seperate video writer thread
     frame_event = threading.Event()
-    writer_thread = threading.Thread(target = main.writer.write_thread, args = (main.grabber.framebuffer, frame_event, ))
-    writer_thread.start()
+    if main.record_to_file:    
+        writer_thread = threading.Thread(target = main.writer.write_thread, args = (main.grabber.framebuffer, frame_event, ))
+        writer_thread.start()
 
     print 'fps: ' + str(main.grabber.fps)
     if main.grabber.fps and main.grabber.fps > 0:
@@ -134,11 +154,11 @@ if __name__ == "__main__":
             if not main.paused:
                 main.current_frame = main.grabber.framebuffer[0]
                 main.hsv_frame = cv2.cvtColor(main.current_frame, cv2.COLOR_BGR2HSV)
-                main.trackLeds()
+                #main.trackLeds()
                 main.update_frame()
                 main.show()
                 main.updateHist()
-        
+
         total_elapsed = (time.clock() - main.grabber.ts_last_frame) * 1000
         t = int(1000/main.grabber.fps - total_elapsed) - 1
         if t <= 0:
@@ -154,12 +174,15 @@ if __name__ == "__main__":
         if ( key % 0x100 == 27 ):
             print 'Exiting...'            
             cv2.destroyAllWindows()
+            
             # wake up threads to let them stop themselves
-            main.writer._alive = False
-            frame_event.set()
+            if main.record_to_file:            
+                main.writer._alive = False
+                frame_event.set()
+                main.writer.close()
             
             main.grabber.close()
-            main.writer.close()
+
             
             fc = main.grabber.framecount
             tt = (time.clock() - ts_start)
