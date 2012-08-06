@@ -56,8 +56,8 @@ class Main(object):
         self.tracker = tracker.Tracker()
         
         if args.display:
-            cv2.namedWindow(self.windowName)
-            cv2.setMouseCallback(self.windowName, self.onMouse)
+            cv2.namedWindow( self.windowName )
+            cv2.setMouseCallback( self.windowName, self.onMouse )
             
         self.hist = utils.HSVHist()
 
@@ -65,7 +65,9 @@ class Main(object):
     def onMouse( self, event, x, y, flags, param ):
         """ 
         Mouse interactions with Main window:
-            - Left mouse button gives pixel data under cursor
+            - Left mouse click gives pixel data under cursor
+            - Left mouse drag selects rectangle
+            
             - Right mouse button switches view mode
         """
         if event == cv2.EVENT_LBUTTONDOWN:
@@ -79,19 +81,19 @@ class Main(object):
                     pixel = self.current_frame[y, x]
                     print "[X,Y][B G R](H, S, V):", [x, y], pixel, utils.BGRpix2HSV(pixel)
                 else:
-                    self.track_window = self.selection
-                    print self.track_window
+                    #self.track_window = self.selection
+                    print self.selection    #self.track_window
 
         if self.drag_start:
-            xmin = min(x, self.drag_start[0])
-            ymin = min(y, self.drag_start[1])
-            xmax = max(x, self.drag_start[0])
-            ymax = max(y, self.drag_start[1])
+            xmin = min( x, self.drag_start[0] )
+            ymin = min( y, self.drag_start[1] )
+            xmax = max( x, self.drag_start[0] )
+            ymax = max( y, self.drag_start[1] )
             
             if xmax - xmin < 2 and ymax - ymin < 2:
                 self.selection = None
             else:
-                self.selection = (xmin, ymin, xmax - xmin, ymax - ymin)
+                self.selection = ( xmin, ymin, xmax - xmin, ymax - ymin )
                 
         if event == cv2.EVENT_RBUTTONDOWN:
             self.nextView()
@@ -112,15 +114,15 @@ class Main(object):
                 utils.drawCross( self.show_frame, coord[0], coord[1], 5, colors[cf], gap = 3 )
                 
         elif self.viewMode == 1:
-            self.show_frame = cv2.bitwise_and(self.current_frame, self.current_frame, mask = self.tracker.mask)
+            self.show_frame = cv2.bitwise_and( self.current_frame, self.current_frame, mask = self.tracker.mask )
             
     def show( self ):
-        cv2.imshow(self.windowName, self.show_frame)
+        cv2.imshow( self.windowName, self.show_frame )
         
     def updateHist( self ):
         self.hist.calcHist( self.hsv_frame )
         self.hist.overlayHistMap()
-        cv2.imshow('histogram', self.hist.overlay)
+        cv2.imshow( 'histogram', self.hist.overlay )
         
     def trackLeds( self ):
         self.tracker.sumTrack( self.current_frame )
@@ -136,12 +138,12 @@ if __name__ == "__main__":
     # seperate video writer thread
     frame_event = threading.Event()
     if main.record_to_file:    
-        writer_thread = threading.Thread(target = main.writer.write_thread, args = (main.grabber.framebuffer, frame_event, ))
+        writer_thread = threading.Thread( target = main.writer.write_thread, args = ( main.grabber.framebuffer, frame_event, ) )
         writer_thread.start()
 
-    print 'fps: ' + str(main.grabber.fps)
+    print 'fps: ' + str( main.grabber.fps )
     if main.grabber.fps and main.grabber.fps > 0:
-        t = int(1000/main.grabber.fps)
+        t = int( 1000/main.grabber.fps )
     else:
         t = 33
         
@@ -153,16 +155,16 @@ if __name__ == "__main__":
             
             if not main.paused:
                 main.current_frame = main.grabber.framebuffer[0]
-                main.hsv_frame = cv2.cvtColor(main.current_frame, cv2.COLOR_BGR2HSV)
+                main.hsv_frame = cv2.cvtColor( main.current_frame, cv2.COLOR_BGR2HSV )
                 #main.trackLeds()
                 main.update_frame()
                 main.show()
                 main.updateHist()
 
-        total_elapsed = (time.clock() - main.grabber.ts_last_frame) * 1000
-        t = int(1000/main.grabber.fps - total_elapsed) - 1
+        total_elapsed = ( time.clock() - main.grabber.ts_last_frame ) * 1000
+        t = int( 1000/main.grabber.fps - total_elapsed ) - 1
         if t <= 0:
-            print 'Missed next frame by: ' + str(t*-1.) + ' ms'
+            print 'Missed next frame by: ' + str( t * -1. ) + ' ms'
             t = 1        
         
         key = cv2.waitKey(t)
@@ -173,18 +175,18 @@ if __name__ == "__main__":
         # escape key closes windows/exits
         if ( key % 0x100 == 27 ):
             print 'Exiting...'            
-            cv2.destroyAllWindows()
             
             # wake up threads to let them stop themselves
             if main.record_to_file:            
                 main.writer._alive = False
                 frame_event.set()
-                main.writer.close()
+                #main.writer.close()
             
             main.grabber.close()
 
+            cv2.destroyAllWindows()
             
             fc = main.grabber.framecount
-            tt = (time.clock() - ts_start)
-            print 'Done! Grabbed ' + str(fc) + ' frames in ' + str(tt) + 's, with ' + str(fc/tt) + ' fps'
-            sys.exit(0)
+            tt = ( time.clock() - ts_start )
+            print 'Done! Grabbed ' + str( fc ) + ' frames in ' + str( tt ) + 's, with ' + str( fc / tt ) + ' fps'
+            sys.exit( 0 )

@@ -8,6 +8,7 @@ from sys import float_info
 import numpy as np
 import cv2, time
 
+
 def BGRpix2HSV( pixel ):
     """ Converts BGR color information of a single pixel to HSV """
     B = pixel[0]/255.
@@ -41,6 +42,8 @@ def BGRpix2HSV( pixel ):
 
     return int(H), int(S), int(V)
     
+    
+    
 def drawCross( frame, x, y, size, color, gap = 7 ):
     #left    
     cv2.line(frame, (x - size - gap, y), (x - gap, y), color, 1)
@@ -50,7 +53,6 @@ def drawCross( frame, x, y, size, color, gap = 7 ):
     cv2.line(frame, (x, y - size - gap), (x, y - gap), color, 1)
     #down
     cv2.line(frame, (x, y + size + gap), (x, y + gap), color, 1)
-    #return frame
         
         
     
@@ -80,32 +82,32 @@ class HSVHist:
         """ Creates a HSV map with given size, best to give multiples of 180
             width
             height"""
-        hsv_map = np.zeros((self.map_height, self.map_width, 3), np.uint8)
-        hsv_map[:,:,0] = np.uint8(np.linspace(0, 180, self.map_width))
+        hsv_map = np.zeros( ( self.map_height, self.map_width, 3 ), np.uint8 )
+        hsv_map[:,:,0] = np.uint8( np.linspace( 0, 180, self.map_width ) )
         hsv_map[:,:,1] = 255
         hsv_map[:,:,2] = 64
         self.Map = np.copy(hsv_map)
         
     def calcHist( self, frame ):
-        self.frame = np.copy(frame)
+        self.frame = np.copy( frame )
         """ Calculate Hue histogram of given frame """
         hist_item = cv2.calcHist([self.frame], [0], None, [180], [0,179])
         if self.log:        
-            hist_item = cv2.log(hist_item+1)
-        cv2.normalize(hist_item, hist_item, 0, self.map_height, cv2.NORM_MINMAX)
-        self.hist=np.copy(np.uint8(np.around(hist_item)))
+            hist_item = cv2.log( hist_item + 1)
+        cv2.normalize( hist_item, hist_item, 0, self.map_height, cv2.NORM_MINMAX )
+        self.hist = np.copy( np.uint8( np.around( hist_item ) ) )
 
     
     def overlayHistMap( self ):
-        self.overlay = np.copy(self.Map)
+        self.overlay = np.copy( self.Map )
         h, w = self.map_height, self.map_width
         
 #         this is terribly inefficient and should be done with numpy functions!
-        for pos, hbin in enumerate(self.hist):
+        for pos, hbin in enumerate( self.hist ):
             if hbin > 3:
-                cv2.rectangle(self.overlay, (pos, h), (pos+1, h-hbin), (pos, 255, 128), -1)
+                cv2.rectangle( self.overlay, (pos, h), ( pos + 1, h-hbin ), ( pos, 255, 128 ), -1 )
                 
-        self.overlay = cv2.cvtColor(self.overlay, cv2.COLOR_HSV2BGR)
+        self.overlay = cv2.cvtColor( self.overlay, cv2.COLOR_HSV2BGR )
         
 
        
