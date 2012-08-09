@@ -37,7 +37,7 @@ class Grabber:
             self.capture_is_file = True
             
         elif self.config.camera >= 0:
-            print 'Trying to open device ' + str(self.config.camera)
+            print 'Trying to open device #' + str(self.config.camera)
             self.capture = cv2.VideoCapture(self.config.camera)
             self.capture.set(cv.CV_CAP_PROP_FPS, 30.0)
             self.capture.set(cv.CV_CAP_PROP_FRAME_WIDTH, self.config.width[0])

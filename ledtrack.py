@@ -46,12 +46,19 @@ class Main(object):
         args.fourcc = self.grabber.fourcc
         args.size = (self.grabber.width, self.grabber.height)
         
+        """ Setup VideoWriter if required """        
         if self.grabber.capture_is_file:
             self.record_to_file = False
             self.writer = None
-            print 'Recording video to file!'
+            print 'NOT recording, source is file.'
         else:
-            self.writer = writer.Writer(args)
+            if args.outfile and len(args.outfile[0]) > 0:
+                self.writer = writer.Writer(args)
+                print 'Recording video to file:' + args.outfile[0]
+            else:
+                self.record_to_file = False
+                self.writer = None
+                print 'NOT recording to file, no proper destination given.'
         
         self.tracker = tracker.Tracker()
         
