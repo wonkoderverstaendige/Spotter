@@ -54,7 +54,7 @@ class Tracker:
     def addLED( self, label, min_sat, min_val, hist ):
         self.leds.append(LED(hist, label))
         print self.leds
-
+        
     def camshift(self, led, frame ):
         print 'camshifting shifty figures'
         
@@ -92,5 +92,6 @@ class Tracker:
         
         #print Bx
         
-    def threshTrack( self, led ):
-        pass
+    def threshTrack( self, led, frame ):
+        kernel = np.ones((3,3),'uint8')
+        dilatedframe = cv2.dilate(frame, kernel)

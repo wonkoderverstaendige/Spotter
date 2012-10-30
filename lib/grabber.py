@@ -11,7 +11,7 @@ to termination!
 @author: Ronny
 """
 
-import cv, cv2, time
+import cv, cv2, time, os
 from collections import deque
 
 class Grabber:
@@ -31,10 +31,14 @@ class Grabber:
         
         if self.config.infile and len(self.config.infile[0]) > 0:
             filepath = self.config.infile[0]
-            print 'Attempting to open file ' + filepath + 'as capture... '
-            self.capture = cv2.VideoCapture(filepath)
-            print 'File returned ' + str(self.capture)
-            self.capture_is_file = True
+            print 'Attempting to open file ' + filepath + ' as capture... '
+            if os.path.isfile(filepath):
+                self.capture = cv2.VideoCapture(filepath)
+                print 'File returned ' + str(self.capture)
+                self.capture_is_file = True
+            else:
+                print "Input file not found!"
+                self.capture = None
             
         elif self.config.camera >= 0:
             print 'Trying to open device #' + str(self.config.camera)

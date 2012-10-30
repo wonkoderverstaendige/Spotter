@@ -1,11 +1,28 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Jul 09 00:02:20 2012
+Track position LEDs and sync signal from camera or video file.
 
+Usage: 
+    ledtrack.py --camera=<DEVID> [--outfile=<OUTPATH>] [-s=<SIZE> -f=<FPS> -Bvh]
+    ledtrack.py --infile=<INPATH> [-Bvh]
+    
+Options:
+    -h, --help              Show this screen
+    -v, --version           Show version
+    -i, --infile=<INPATH>   Path to source video file
+    -c, --camera=<DEVID>    Camera ID [default: 0]
+    -o, --outfile=<OUTPUT>  Path to video out file
+    -s, --size=<SIZE>       Frame size [default: 320x200]
+    -B, --Blind             Run without interface
+
+Created on Mon Jul 09 00:02:20 2012
 @author: Ronny
+-iw 160 -ih 120 -o test.avi -i media/r52r2f117.avi -fps 30
+
 """
-#-i ./media/r52r2f123.avi
+#-i ./media/r52r2f117,.avi
 import cv2, sys, argparse, time, threading
+from docopt import docopt
 
 sys.path.append('./lib')
 import grabber, writer, tracker, utils
@@ -21,10 +38,12 @@ parser.add_argument('-iw', '--width', nargs=1, type=float, help='width of image 
 parser.add_argument('-ih', '--height', nargs=1, type=float, help='height of image in pixel, default:auto', default=0)
 parser.add_argument('-fps', '--fps', nargs=1, help='frames per second, changes video playback or camera polling interval', default='auto')
 
-ARGUMENTS = parser.parse_args()
 
-for (key, value) in vars(ARGUMENTS).items():
-    print 'I: "%s" is set to "%s"' % ( key, value )
+VERSION = 0.01
+
+#ARGUMENTS = parser.parse_args()
+#for (key, value) in vars(ARGUMENTS).items():
+#    print 'I: "%s" is set to "%s"' % ( key, value )
     
 class Main(object):
     paused = False
@@ -140,6 +159,8 @@ class Main(object):
 
 
 if __name__ == "__main__":
+    ARGUMENTS = docopt(__doc__, version=VERSION)
+    print(ARGUMENTS)
     main = Main( ARGUMENTS )
 
     # seperate video writer thread
