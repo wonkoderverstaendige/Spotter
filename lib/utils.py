@@ -109,5 +109,13 @@ class HSVHist:
                 
         self.overlay = cv2.cvtColor( self.overlay, cv2.COLOR_HSV2BGR )
         
+def dst_file_name( destination ):
+    """ Allows to automatically generate the output file name from tokens:
+        %date-FORMAT        FORMAT as YYYYMMDDhhmmss
+        %iterator           If file with base till this point exists, iterate
+        $fixedString        $Animal52
+    """
+    return destination
+        
 
        

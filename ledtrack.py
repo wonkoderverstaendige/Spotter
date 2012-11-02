@@ -1,51 +1,47 @@
 # -*- coding: utf-8 -*-
 """
+Created on Mon Jul 09 00:02:20 2012
+@author: <Ronny Eichler> ronny.eichler@gmail.com
+
 Track position LEDs and sync signal from camera or video file.
 
 Usage: 
-    ledtrack.py --camera=<DEVID> [--outfile=<OUTPATH>] [-s=<SIZE> -f=<FPS> -Bvh]
-    ledtrack.py --infile=<INPATH> [-Bvh]
+    ledtrack.py --source SRC [--outfile OUT] [options]
+    ledtrack.py -h | --help
     
 Options:
-    -h, --help              Show this screen
-    -v, --version           Show version
-    -i, --infile=<INPATH>   Path to source video file
-    -c, --camera=<DEVID>    Camera ID [default: 0]
-    -o, --outfile=<OUTPUT>  Path to video out file
-    -s, --size=<SIZE>       Frame size [default: 320x200]
-    -B, --Blind             Run without interface
+    -h --help           Show this screen
+    -f --fps FPS        Fps for camera and video
+    -s --source SRC     Path to file or device ID [default: 0]
+    -o --outfile OUT    Path to video out file [default: None]
+    -d --dims DIMS      Frame size [default: 320x200]
+    -H --Headless       Run without interface
+    -D --DEBUG          Verbose output
 
-Created on Mon Jul 09 00:02:20 2012
-@author: Ronny
--iw 160 -ih 120 -o test.avi -i media/r52r2f117.avi -fps 30
+To do:
+    - destination file name may consist of tokens to automatically create,
+      i.e., %date%now%iterator3$fixedstring
+    - track low res, but store full resolution
+    - can never overwrite a file
 
 """
-#-i ./media/r52r2f117,.avi
-import cv2, sys, argparse, time, threading
-from docopt import docopt
+#Example:
+#    docopt:
+#        --source 0 --outfile test.avi --size=320x200 --fps=30
+
+
+import cv2, os, sys, time, threading
 
 sys.path.append('./lib')
+from docopt import docopt
 import grabber, writer, tracker, utils
 
-# Parse command line arguments:
-parser = argparse.ArgumentParser(description = 'track colored LEDs and sync signal from live camera feed or recorded video file')
-parser.add_argument('-c', '--camera', type=int, default=0, help='Camera ID (V4L default: 0, WMF default: 0)')
-parser.add_argument('-i', '--infile', type = str, nargs = 1, help='Path to videop file')
-parser.add_argument('-o', '--outfile', type = str, nargs = 1, help='Path to output video file path/name')
-parser.add_argument('-d', '--display', default=1, type=int, help='Live preview, default: 1')
-parser.add_argument('-t', '--threshold', type=int, nargs=3, help='HSV threshold [0, 0, 30]', default=[0, 80, 60])
-parser.add_argument('-iw', '--width', nargs=1, type=float, help='width of image in pixel, default:auto', default=0)
-parser.add_argument('-ih', '--height', nargs=1, type=float, help='height of image in pixel, default:auto', default=0)
-parser.add_argument('-fps', '--fps', nargs=1, help='frames per second, changes video playback or camera polling interval', default='auto')
+global DEBUG
 
-
-VERSION = 0.01
-
-#ARGUMENTS = parser.parse_args()
-#for (key, value) in vars(ARGUMENTS).items():
-#    print 'I: "%s" is set to "%s"' % ( key, value )
-    
 class Main(object):
+    grabber = None
+    writer = None
+    
     paused = False
     windowName = 'Capture'
     viewMode = 0
@@ -58,33 +54,25 @@ class Main(object):
     record_to_file = True
     
     
-    def __init__( self, args ):
+    def __init__( self, source, destination, fps, size, gui='cv2.highgui' ):
         
-        self.grabber = grabber.Grabber(args)
-        self.grabber.grab_first()
-        args.fourcc = self.grabber.fourcc
-        args.size = (self.grabber.width, self.grabber.height)
+        # Setup frame grab object, fills framebuffer        
+        self.grabber = grabber.Grabber( source, fps, size )
         
-        """ Setup VideoWriter if required """        
-        if self.grabber.capture_is_file:
-            self.record_to_file = False
-            self.writer = None
-            print 'NOT recording, source is file.'
-        else:
-            if args.outfile and len(args.outfile[0]) > 0:
-                self.writer = writer.Writer(args)
-                print 'Recording video to file:' + args.outfile[0]
-            else:
-                self.record_to_file = False
-                self.writer = None
-                print 'NOT recording to file, no proper destination given.'
+        # Setup writer if required, writes frames from buffer to video file.    
+        if destination:
+            # instantiate video writer object
+            self.writer = writer.Writer( destination, fps, size )
         
+        # tracker object finds LEDs in frames
         self.tracker = tracker.Tracker()
         
-        if args.display:
+        # Only OpenCV's HighGui is currently used as user interface
+        if gui=='cv2.highgui':
             cv2.namedWindow( self.windowName )
             cv2.setMouseCallback( self.windowName, self.onMouse )
             
+        # histogram instance required to do... what, again?
         self.hist = utils.HSVHist()
 
 
@@ -159,18 +147,36 @@ class Main(object):
 
 
 if __name__ == "__main__":
-    ARGUMENTS = docopt(__doc__, version=VERSION)
-    print(ARGUMENTS)
-    main = Main( ARGUMENTS )
 
-    # seperate video writer thread
+    # Command line parsing    
+    ARGDICT = docopt( __doc__, version=None )
+    DEBUG   = ARGDICT['--DEBUG']
+    if DEBUG: print( ARGDICT )
+
+    # no GUI, may later select GUI backend, i.e., Qt or cv2.highgui etc.
+    gui = 'cv2.highgui' if not ARGDICT['--Headless'] else ARGDICT['--Headless']
+     
+    # Frame size parameter string 'WIDTHxHEIGHT' to size list [WIDTH, HEIGHT]
+    size = [0, 0] if not ARGDICT['--dims'] else list( ARGDICT['--dims'].split('x') )
+        
+    # Instantiating main class ... no shit, Sherlock!
+    main = Main( source      = ARGDICT['--source'],
+                 destination = utils.dst_file_name( ARGDICT['--outfile'] ),
+                 fps         = ARGDICT['--fps'], 
+                 size        = size, 
+                 gui         = gui )
+
+
+    # Event for Thread wake-up, required even if no writer Thread present
     frame_event = threading.Event()
-    if main.record_to_file:    
+    # seperate video writer thread if Writer Instantiated
+    if main.writer:    
         writer_thread = threading.Thread( target = main.writer.write_thread, args = ( main.grabber.framebuffer, frame_event, ) )
         writer_thread.start()
 
-    print 'fps: ' + str( main.grabber.fps )
-    if main.grabber.fps and main.grabber.fps > 0:
+    # It's Math. 3rd grade Math.
+    if DEBUG: print 'fps: ' + str( main.grabber.fps )
+    if main.grabber.fps > 0.0:
         t = int( 1000/main.grabber.fps )
     else:
         t = 33
@@ -192,7 +198,7 @@ if __name__ == "__main__":
         total_elapsed = ( time.clock() - main.grabber.ts_last_frame ) * 1000
         t = int( 1000/main.grabber.fps - total_elapsed ) - 1
         if t <= 0:
-            print 'Missed next frame by: ' + str( t * -1. ) + ' ms'
+            if DEBUG: print 'Missed next frame by: ' + str( t * -1. ) + ' ms'
             t = 1        
         
         key = cv2.waitKey(t)
@@ -202,7 +208,7 @@ if __name__ == "__main__":
         
         # escape key closes windows/exits
         if ( key % 0x100 == 27 ):
-            print 'Exiting...'            
+            if DEBUG: print 'Exiting...'            
             
             # wake up threads to let them stop themselves
             if main.record_to_file:            

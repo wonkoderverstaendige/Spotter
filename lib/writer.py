@@ -4,23 +4,34 @@ Created on Mon Jul 09 00:29:00 2012
 
 @author: Ronny
 """
-import cv, cv2, time
+import cv, cv2, time, os, sys
+
+DEBUG = True
 
 class Writer:
-    config = None
-    _filedst = None
-    _codecs = (('X','V','I','D'), ('D','I','V','X'), ('I','Y','U','V'))
+    __destination = None
+    __codecs = (('XVID'), ('DIVX'), ('IYUV'))
     _writer = None
-    _size = None
-    _alive = True
-    _ev_timeout = 1.0
+    __size = None
+    __alive = True
+    __ev_timeout = 1.0
     
-    def __init__( self, args ):
-        self.config = args
-        self._filedst = self.config.outfile
-        self._size = self.config.size
-        cc = self._codecs[0]
-        self._writer = cv2.VideoWriter( self._filedst[0], cv.CV_FOURCC(cc[0], cc[1], cc[2], cc[3]), 30.0, self._size, 1 )
+    def __init__( self, destination, size, fps, codec=0, overwrite=False ):
+
+        # If destination file given, check if file exists 
+        if os.path.isfile( destination ):
+            print 'Destination file exists. Exiting.'
+            sys.exit(0)
+
+        self.__dst    = destination
+        self.__size   = size
+        cc            = list( self._codecs[codec] )
+        self.__writer = cv2.VideoWriter( self.__destination, 
+                                              cv.CV_FOURCC( cc[0], cc[1], cc[2], cc[3] ), 
+                                              fps,
+                                              self._size, 1 )
+  
+        if DEBUG: print str( self.__writer ) + ' destination: ' + self.__destination  
   
     def opendst( self ):
         print self._filedst
