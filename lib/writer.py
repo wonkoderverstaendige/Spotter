@@ -106,6 +106,7 @@ class Writer:
         del( self.writer )
 
 
+##########################
 if __name__ == '__main__':
 
     # Parsing CLI arguments

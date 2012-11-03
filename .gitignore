@@ -1,4 +1,12 @@
 #############
+## project specific
+#############
+
+test.avi
+/media/img/*.jpg
+*.log
+
+#############
 ## Python
 #############
 
@@ -39,13 +47,6 @@ pip-log.txt
 
 .spyderworkspace
 .spyderproject
-
-#############
-## project specific
-#############
-
-test.avi
-/media/img/*.jpg
 
 
 #################

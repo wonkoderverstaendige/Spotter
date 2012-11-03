@@ -30,13 +30,22 @@ To do:
 #        --source 0 --outfile test.avi --size=320x200 --fps=30
 
 
-import cv2, os, sys, time, threading
+import cv2, os, sys, time, threading, logging
 
 sys.path.append('./lib')
 from docopt import docopt
 import grabber, writer, tracker, utils
 
 global DEBUG
+
+# Debug logging
+log = logging.getLogger('ledtrack')
+loghdl = logging.FileHandler('ledtrack.log')
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s') #
+loghdl.setFormatter( formatter )
+log.addHandler( loghdl )
+log.setLevel( logging.ERROR ) #INFO
+
 
 class Main(object):
     grabber = None
@@ -143,10 +152,7 @@ class Main(object):
         self.tracker.sumTrack( self.current_frame )
 
 
-
-
-
-
+##########################
 if __name__ == "__main__":
 
     # Command line parsing
@@ -179,15 +185,17 @@ if __name__ == "__main__":
     if DEBUG: print 'fps: ' + str( main.grabber.fps )
     if main.grabber.fps > 0.0:
         t = int( 1000/main.grabber.fps )
-    else:
-        t = 33
+#    else:
+#        t = 33
 
     ts_start = time.clock()
     while True:
+        # Get new frame and trigger write process/thread
         if main.grabber.grab_next():
             frame_event.set()
             frame_event.clear()
 
+            # pauses interface but should let tracking/writing continue
             if not main.paused:
                 main.current_frame = main.grabber.framebuffer[0]
                 main.hsv_frame = cv2.cvtColor( main.current_frame, cv2.COLOR_BGR2HSV )
@@ -199,26 +207,22 @@ if __name__ == "__main__":
         total_elapsed = ( time.clock() - main.grabber.ts_last_frame ) * 1000
         t = int( 1000/main.grabber.fps - total_elapsed ) - 1
         if t <= 0:
-            if DEBUG: print 'Missed next frame by: ' + str( t * -1. ) + ' ms'
+            log.debug('Missed next frame by: ' + str( t * -1. ) + ' ms')
             t = 1
 
         key = cv2.waitKey(t)
 
-        if ( key % 0x100 == 32 ):
-            main.paused = not main.paused
+        # Pause video with <SPACE>
+        main.paused = not main.paused if ( key % 0x100 == 32 ) else main.paused
 
-        # escape key closes windows/exits
+        # <ESCAPE> to EXIT
         if ( key % 0x100 == 27 ):
-            if DEBUG: print 'Exiting...'
-
             # wake up threads to let them stop themselves
-            if main.record_to_file:
+            if main.writer:
                 main.writer.alive = False
                 frame_event.set()
-                #main.writer.close()
 
             main.grabber.close()
-            cv2.destroyAllWindows()
 
             fc = main.grabber.framecount
             tt = ( time.clock() - ts_start )

@@ -122,7 +122,7 @@ class Grabber:
         self.capture.release()
 
 
-
+##########################
 if __name__ == "__main__":
 
     # Parsing arguments
