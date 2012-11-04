@@ -30,7 +30,7 @@ To do:
 #        --source 0 --outfile test.avi --size=320x200 --fps=30
 
 
-import cv2, os, sys, time, threading, logging
+import cv2, os, sys, time, multiprocessing, logging
 
 sys.path.append('./lib')
 from docopt import docopt
@@ -40,27 +40,30 @@ global DEBUG
 
 # Debug logging
 log = logging.getLogger('ledtrack')
-loghdl = logging.FileHandler('ledtrack.log')
+loghdl = logging.StreamHandler()#logging.FileHandler('ledtrack.log')
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s') #
 loghdl.setFormatter( formatter )
 log.addHandler( loghdl )
-log.setLevel( logging.ERROR ) #INFO
+log.setLevel( logging.INFO ) #INFOERROR
 
 
 class Main(object):
     grabber = None
-    writer = None
+    writer_process = None
+    queue = multiprocessing.Queue( 16 )
 
     paused = False
     windowName = 'Capture'
     viewMode = 0
     nviewModes = 1
+    last_frame = None
     current_frame = None
     hsv_frame = None
     show_frame = None
     selection = None
     drag_start = None
     record_to_file = True
+    ts_start = None
 
 
     def __init__( self, source, destination, fps, size, gui='cv2.highgui' ):
@@ -70,7 +73,15 @@ class Main(object):
 
         # Setup writer if required, writes frames from buffer to video file.
         if destination:
-            self.writer = writer.Writer( destination, self.grabber.fps, self.grabber.size )
+            print str(multiprocessing.cpu_count()) + ' CPUs found'
+            self.writer_process = multiprocessing.Process(
+                        target = writer.Writer,
+                        args = ( destination,
+                                self.grabber.fps,
+                                self.grabber.size,
+                                self.queue, ) )
+            self.writer_process.start()
+            self.check_writer()
 
         # tracker object finds LEDs in frames
         self.tracker = tracker.Tracker()
@@ -128,8 +139,6 @@ class Main(object):
 
 
     def update_frame( self ):
-
-#        utils.drawCross( self.current_frame, 100, 100, 10, (100, 255, 255) )
         if self.viewMode == 0:
             self.show_frame = self.current_frame
             ledcoords = self.tracker.sumTrack( self.show_frame )
@@ -151,9 +160,34 @@ class Main(object):
     def trackLeds( self ):
         self.tracker.sumTrack( self.current_frame )
 
+        #if not self.alive, close:
+#        if not self.writer.alive: self.writer.close()
 
-##########################
-if __name__ == "__main__":
+    def check_writer( self ):
+        if not self.writer_process.is_alive():
+            print 'Writing to disk failed.'
+            self.exitMain()
+        else:
+            return True
+
+    def exitMain( self ):
+        if self.grabber:
+            self.grabber.close()
+        if self.writer_process and self.writer_process.is_alive():
+            self.queue.put( 'terminate' )
+            self.writer_process.join( 1 )
+            if self.writer_process.is_alive(): main.writer_process.terminate()
+
+        fc = self.grabber.framecount
+        tt = ( time.clock() - self.ts_start )
+        print 'Done! Grabbed ' + str( fc ) + ' frames in ' + str( tt ) + 's, with ' + str( fc / tt ) + ' fps'
+        sys.exit( 0 )
+
+
+
+#############################################################
+if __name__ == "__main__":                                  #
+#############################################################
 
     # Command line parsing
     ARGDICT = docopt( __doc__, version=None )
@@ -173,31 +207,28 @@ if __name__ == "__main__":
                  size        = size,
                  gui         = gui )
 
-
-    # Event for Thread wake-up, required even if no writer Thread present
-    frame_event = threading.Event()
-    # seperate video writer thread if Writer Instantiated
-    if main.writer:
-        writer_thread = threading.Thread( target = main.writer.write_thread, args = ( main.grabber.framebuffer, frame_event, ) )
-        writer_thread.start()
-
     # It's Math. 3rd grade Math.
     if DEBUG: print 'fps: ' + str( main.grabber.fps )
-    if main.grabber.fps > 0.0:
-        t = int( 1000/main.grabber.fps )
-#    else:
-#        t = 33
+    t = int( 1000/main.grabber.fps )
 
-    ts_start = time.clock()
+    log.info('starting main loop')
+
+    main.ts_start = time.clock()
     while True:
-        # Get new frame and trigger write process/thread
+        # Get new frame
         if main.grabber.grab_next():
-            frame_event.set()
-            frame_event.clear()
+            main.last_frame = main.grabber.framebuffer.pop()
+            # Check if writer process is still alive
+            # Otherwise might lose data without knowing!
+            if main.check_writer():
+                # Copy numoy array, otherwise queue references same object
+                # like frame that will be worked on
+                main.queue.put( main.last_frame.copy() )
+                time.sleep( 0.001 )
 
             # pauses interface but should let tracking/writing continue
             if not main.paused:
-                main.current_frame = main.grabber.framebuffer[0]
+                main.current_frame = main.last_frame.copy()
                 main.hsv_frame = cv2.cvtColor( main.current_frame, cv2.COLOR_BGR2HSV )
                 #main.trackLeds()
                 main.update_frame()
@@ -207,7 +238,7 @@ if __name__ == "__main__":
         total_elapsed = ( time.clock() - main.grabber.ts_last_frame ) * 1000
         t = int( 1000/main.grabber.fps - total_elapsed ) - 1
         if t <= 0:
-            log.debug('Missed next frame by: ' + str( t * -1. ) + ' ms')
+            log.info('Missed next frame by: ' + str( t * -1. ) + ' ms')
             t = 1
 
         key = cv2.waitKey(t)
@@ -217,14 +248,5 @@ if __name__ == "__main__":
 
         # <ESCAPE> to EXIT
         if ( key % 0x100 == 27 ):
-            # wake up threads to let them stop themselves
-            if main.writer:
-                main.writer.alive = False
-                frame_event.set()
+            main.exitMain()
 
-            main.grabber.close()
-
-            fc = main.grabber.framecount
-            tt = ( time.clock() - ts_start )
-            print 'Done! Grabbed ' + str( fc ) + ' frames in ' + str( tt ) + 's, with ' + str( fc / tt ) + ' fps'
-            sys.exit( 0 )

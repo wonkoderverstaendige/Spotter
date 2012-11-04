@@ -25,12 +25,13 @@ Options:
 #    - check if codec on list of known working ones.
 #    - if destination exists, offer file name change
 
-import cv, cv2, os, sys #time,
+import cv, cv2, os, sys, time
 sys.path.append('./lib')
 import utils
 from docopt import docopt
 
 DEBUG = True
+OVERWRITE = True
 
 class Writer:
     codecs = ( ('XVID'), ('DIVX'), ('IYUV') )
@@ -39,11 +40,11 @@ class Writer:
     size = None
     alive = True
 
-    def __init__( self, dst, fps, size, codec='DIVX' ):
+    def __init__( self, dst, fps, size, queue = None , codec='DIVX' ):
 
         # check if output file exists
         self.destination = utils.dst_file_name( dst )
-        if os.path.isfile( self.destination ):
+        if os.path.isfile( self.destination ) and not OVERWRITE:
             print 'Destination file exists. Exiting.'
             sys.exit(0)
 
@@ -69,36 +70,29 @@ class Writer:
                         self.size, 1 )
         if DEBUG: print str( self.writer ) + ' destination: ' + self.destination
 
+        if queue:
+            self.write_process( queue )
 
     def write( self, frame ):
         self.writer.write( frame )
 
 
-    def write_thread( self, fb, ev ):
-        """ When woken, writes frames from framebuffer until only nleaves number of
-        frames left. If _alive flag set to false, flushes all remaining frames from
-        buffer and deletes capture object to allow proper exit"""
+    def write_process( self, queue ):
+        """ Writes frames from the queue. If alive flag set to
+        false, deletes capture object to allow proper exit"""
+        while self.alive:
+            if not queue.empty():
+                item = queue.get()
+                if item == 'terminate':
+                    self.alive = False
+                    if DEBUG: print 'Writer received termination signal'
+                else:
+                    self.write( item )
+            # refresh time to keep CPU utilization down
+            time.sleep(0.01)
 
-        minimum_frames = 1
-        mini_fb = list()
-
-        while self.alive or len( fb ) > 0:
-            # waiting for wake up signal from main loop
-            ev.wait()
-
-            # main loop shutting down
-            if not self.alive:
-                if DEBUG: print 'Flushing buffer to file...'
-                minimum_frames = 0
-
-            # flush frames to file. Writing to disk may take time and block
-            # parent thread, fb content moved to temporary list and then written.
-            mini_fb = list( fb.pop() for i in range( len(fb) - minimum_frames ) )
-            while len(mini_fb):
-                self.writer.write( mini_fb.pop() )
-
-        #if not self.alive, close:
-        self.close()
+        # Close writer upon termination signal
+        if not self.alive: self.close()
 
 
     def close( self ):
@@ -106,8 +100,10 @@ class Writer:
         del( self.writer )
 
 
-##########################
-if __name__ == '__main__':
+
+#############################################################
+if __name__ == '__main__':                                  #
+#############################################################
 
     # Parsing CLI arguments
     ARGDICT = docopt( __doc__, version=None )
