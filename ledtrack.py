@@ -144,7 +144,7 @@ class Main(object):
             ledcoords = self.tracker.sumTrack( self.show_frame )
             colors = [(0, 0, 255), (0, 255, 0), (255, 0, 0)]
             for cf, coord in enumerate(ledcoords):
-                utils.drawCross( self.show_frame, coord[0], coord[1], 5, colors[cf], gap = 3 )
+                utils.drawCross( self.show_frame, coord, 5, colors[cf], gap = 3 )
 
         elif self.viewMode == 1:
             self.show_frame = cv2.bitwise_and( self.current_frame, self.current_frame, mask = self.tracker.mask )

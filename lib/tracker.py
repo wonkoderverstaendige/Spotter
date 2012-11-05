@@ -3,112 +3,204 @@
 Created on Wed Jul 11 09:28:37 2012
 @author: <Ronny Eichler> ronny.eichler@gmail.com
 
-Wrapper for VideoWriter, can either work as seperate thread fed by frame buffer
-or being provided one frame a time.
+Tracks colored spots in images or series of images
 
 Usage:
-    grabber.py --source SRC [--dims DIMS --fps FPS -D]
-    grabber.py -h | --help
+    tracker.py --source SRC [--continuous -D -H]
+    tracker.py -h | --help
 
 Options:
     -h --help        Show this screen
-    -f --fps FPS     Fps for camera and video
     -s --source SRC  Source, path to file or integer device ID [default: 0]
-    -d --dims DIMS   Frame size [default: 320x200]
+    -c --continuous  Track spots over time, not frame by frame
     -D --DEBUG       Verbose debug output
+    -H --Headless    No Interface
 
 """
-import time, cv2
+
+import time, cv2, sys
 import numpy as np
+sys.path.append('./lib')
+from docopt import docopt
+import utils
+
+
+DEBUG = True
 
 class LED:
     """ Each instance is a spot to track in the image. Holds histogram to do
     camshift with plus ROI/Mask"""
 
     hue_hist = None
+    hue_range = None # np.array uint8 of (lowerBound, higherBound), red: 170,10
     min_sat = 150
     min_val = 90
     label = None
     roi = None
     fixed_pos = False
-    pos_hist = []
+    pos_hist = None
 
-    def __init__( self, led_hist, label ):
+
+    def __init__( self, label, hue_range, fixed_pos = False ):
+        self.label = label
+        self.fixed_pos = fixed_pos
+        self.hue_range = hue_range
+        self.pos_hist = list()
+
+    def updateHistogram( self, led_hist ):
         pass
 
-    def updateFeature( self, led_hist ):
+    def gethistory( ):
         pass
+
+    def updateHistory( self, coords):
+        pass
+
+
 
 class Tracker:
     """ Performs tracking and returns positions of found LEDs """
-    leds = []
-    min_sat = 200
-    min_val = 150
+    leds = list()
+    min_sat = 50
+    min_val = 50
 
     frame = None
 
-    def __init__( self, leds = [] ):
-        self.leds = leds
+    def __init__( self ):
+#        self.leds = led_list
+        pass
 
-    def preprocess( self, hsv_img ):
-        # split
-        h, s, v = cv2.split(hsv_img)
 
-        #threshold
-        rv, st = cv2.threshold(s, self.min_sat, 1, cv2.THRESH_BINARY)
-        cstart = time.clock()
-        rv, vt = cv2.threshold(v, self.min_val, 1, cv2.THRESH_BINARY)
-        print (time.clock() - cstart)*1000
-        self.mask = cv2.max( st, vt )
-        self.frame = cv2.bitwise_and( hsv_img, hsv_img, mask = self.mask )
+    def addLED( self, label, hue_range, fixed_pos = False ):
+        # TODO: More comprehensive LED types, including val/sat ranges etc.
+        self.leds.append( LED( label, hue_range, fixed_pos ) )
 
-        return self.mask, self.frame
 
-    def addLED( self, label, min_sat, min_val, hist ):
-        self.leds.append(LED(hist, label))
-        print self.leds
+    def threshTrack( self ):
+
+        # dilate bright spots
+        kernel = np.ones( (3,3), 'uint8' )
+        dilatedframe = cv2.dilate( self.frame, kernel )
+
+        # conversion to HSV before dilation causes artifacts
+        dilatedframe = cv2.cvtColor( dilatedframe, cv2.COLOR_BGR2HSV )
+
+        for l in self.leds:
+            # if range[0] > range[1], i.e., color is red and wraps around,
+            # invert range and perform NOT on result
+            invert_range = False if not l.hue_range[0] > l.hue_range[1] else True
+
+            # All colors except red
+            if not invert_range:
+                lowerBound = np.array( [l.hue_range[0], l.min_sat, l.min_val], np.uint8 )
+                upperBound = np.array( [l.hue_range[1], 255, 255], np.uint8 )
+                ranged_frame = cv2.inRange( dilatedframe, lowerBound, upperBound )
+
+            # Red requires double thresholding!
+            else:
+                # min-180 (or, 255)
+                lowerBound = np.array( [l.hue_range[0], l.min_sat, l.min_val], np.uint8 )
+                upperBound = np.array( [255, 255, 255], np.uint8 )
+                ranged_frame = cv2.inRange( dilatedframe, lowerBound, upperBound )
+                # 0-max (or, 255)
+                lowerBound = np.array( [0, l.min_sat, l.min_val], np.uint8 )
+                upperBound = np.array( [l.hue_range[1], 255, 255], np.uint8 )
+                redrange = cv2.inRange( dilatedframe, lowerBound, upperBound )
+                # combine both ends for complete mask
+                ranged_frame = cv2.bitwise_or( ranged_frame, redrange )
+
+
+            # find largest contour
+            ranged_frame = cv2.dilate( ranged_frame, kernel )
+            contour = self.findContour( ranged_frame, min_area = 5 )
+
+            # finding centroids of best_cnt and draw a circle there
+            if not contour == None:
+                M = cv2.moments( contour )
+                cx,cy = int( M['m10']/M['m00'] ), int( M['m01']/M['m00'] )
+#                cv2.circle(ranged_frame,(cx,cy),5,255,-1)
+                l.pos_hist.append( tuple( [cx, cy] ) )
+            else:
+                # Couldn't find a good enough spot
+                l.pos_hist.append( None )
+
 
     def camshift(self, led, frame ):
         print 'camshifting shifty figures'
 
-    def sumTrack( self, BGRframe ):
-        # this may be the simplest and fastest way UNDER IDEAL CONDITIONS!!
 
-        # TODO: test area, refuse if too small, too far apart
-        #       mask RGB image with mask from hsv thresholding!
-        #       dilate + smooth image
-        #       'None ' if not found!
+    def findContour( self, frame, min_area = 5 ):
+        """ Return contour with largest area. Returns None if no contour
+            larger than min_area """
+        contours, hierarchy = cv2.findContours( frame,
+                                                cv2.RETR_LIST,
+                                                cv2.CHAIN_APPROX_SIMPLE )
+        max_area = 0
+        best_cnt = None
+        for cnt in contours:
+            area = cv2.contourArea(cnt)
+            if area > max_area and area > min_area:
+                max_area = area
+                best_cnt = cnt
 
-        kernel = np.ones((3,3),'uint8')
-        BGRframe = cv2.dilate(BGRframe, kernel)
+        return best_cnt
 
-        B, G, R = cv2.split(BGRframe)
-        RG = R>G
-        RB = R>B
-        GB = G>B
+    def camshiftTrack( self, hsv_frame ):
+        kernel = np.ones( (3,3), 'uint8' )
+        dilatedframe = cv2.dilate( hsv_frame, kernel )
+        h, s, v = cv2.split(dilatedframe)
 
-        G[ RG & ~GB ] = 0
-        B[ RB & GB ] = 0
-        R[ ~RG & ~RB ] = 0
+        rv, st = cv2.threshold(s, self.min_sat, 1, cv2.THRESH_BINARY)
 
-        Bx = B.sum(1).argmax()
-        Gx = G.sum(1).argmax()
-        Rx = R.sum(1).argmax()
-
-        Ry = R.sum(0).argmax()
-        Gy = G.sum(0).argmax()
-        By = B.sum(0).argmax()
-
-        ledcoords = [(Ry, Rx), (Gy, Gx), (By, Bx)]
-
-        return ledcoords
-
-        #print Bx
-
-    def threshTrack( self, led, frame ):
-        kernel = np.ones((3,3),'uint8')
-        dilatedframe = cv2.dilate(frame, kernel)
+        ledpos = ( 100, 100 )
+        return ledpos
 
 
-if __name__ == '__main__':
-    pass
+
+#############################################################
+if __name__ == '__main__':                                  #
+#############################################################
+
+    # Parsing CLI arguments
+    ARGDICT = docopt( __doc__, version=None )
+    DEBUG = ARGDICT['--DEBUG']
+    if DEBUG: print ARGDICT
+
+    # Run in command line without user interface to slow things down
+    GUI = not ARGDICT['--Headless']
+
+    # Instantiate frame source to get something to write
+    import grabber
+    frame_source = grabber.Grabber( ARGDICT['--source'] )
+    fps = frame_source.fps
+
+    tracker = Tracker()
+
+    tracker.addLED( 'red', ( 160, 5 ) )
+    tracker.addLED( 'sync', ( 15, 90 ), fixed_pos = True )
+    tracker.addLED( 'blue', ( 105, 135 ) )
+
+    colors = [(0, 0, 255), (0, 255, 0), (255, 0, 0)]
+
+    # Main loop till EOF or Escape key pressed
+    key = 0
+    while frame_source.grab_next() and not ( key % 100 == 27 ):
+        tracker.frame = frame_source.framebuffer.pop()
+
+        tracker.threshTrack()
+
+        for idx, led in enumerate( tracker.leds ):
+            if not led.pos_hist[-1] == None:
+                utils.drawCross( tracker.frame, led.pos_hist[-1], 5, colors[idx], gap = 3 )
+
+        if not ( tracker.leds[2].pos_hist[-1] == None or tracker.leds[0].pos_hist[-1] == None ):
+            utils.drawPointer( tracker.frame,
+                               tracker.leds[2].pos_hist[-1],
+                               tracker.leds[0].pos_hist[-1] )
+
+        if GUI: cv2.imshow( 'Main', tracker.frame )
+        if GUI: key = cv2.waitKey(1)
+
+    # Exiting gracefully
+    frame_source.close()
+    sys.exit(0)

@@ -128,7 +128,6 @@ if __name__ == '__main__':                                  #
     # Instantiate frame source to get something to write
     import grabber
     frame_source = grabber.Grabber( ARGDICT['--source'] )
-    frame_source.grab_first()
     fps = 30.0 if not ARGDICT['--fps'] else frame_source.fps
 
     if DEBUG: print str( fps ) + ':' + str( size )
