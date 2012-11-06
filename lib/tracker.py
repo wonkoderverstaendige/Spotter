@@ -21,8 +21,10 @@ Options:
 import time, cv2, sys
 import numpy as np
 sys.path.append('./lib')
-from docopt import docopt
 import utils
+sys.path.append('./lib/docopt')
+from docopt import docopt
+
 
 
 DEBUG = True
@@ -39,12 +41,14 @@ class LED:
     roi = None
     fixed_pos = False
     pos_hist = None
+    linked_to = None # physically linked to another LED?
 
 
-    def __init__( self, label, hue_range, fixed_pos = False ):
+    def __init__( self, label, hue_range, fixed_pos = False, linked_to = None ):
         self.label = label
         self.fixed_pos = fixed_pos
         self.hue_range = hue_range
+        self.linked_to = None
         self.pos_hist = list()
 
     def updateHistogram( self, led_hist ):
@@ -71,21 +75,35 @@ class Tracker:
         pass
 
 
-    def addLED( self, label, hue_range, fixed_pos = False ):
+    def addLED( self, label, hue_range, fixed_pos = False, linked_to = None ):
         # TODO: More comprehensive LED types, including val/sat ranges etc.
-        self.leds.append( LED( label, hue_range, fixed_pos ) )
+        self.leds.append( LED( label, hue_range, fixed_pos, linked_to ) )
 
 
-    def threshTrack( self ):
+    def trackLeds( self, frame, method = 'hsv_thresh' ):
+        """ Intermediate method selecting tracking method and seperating those
+            tracking methods from the frames stored in the instantiatd Tracker
+        """
+        if method == 'hsv_thresh':
+            self.frame = frame.copy()
+            coord_list = self.threshTrack( self.frame, self.leds )
+            for i, l in enumerate( self.leds ):
+                l.pos_hist.append( coord_list[i] )
+
+
+    def threshTrack( self, hsv_frame, led_list ):
+        """ Tracks LEDs from a list in a HSV frame by thresholding
+            hue, saturation, followed by thresholding for each LEDs hue.
+            Large enough contours will have coords returned, or None
+        """
+        coord_list = list()
 
         # dilate bright spots
-        kernel = np.ones( (3,3), 'uint8' )
-        dilatedframe = cv2.dilate( self.frame, kernel )
+#        kernel = np.ones( (3,3), 'uint8' )
+#        # conversion to HSV before dilation causes artifacts
+#        dilatedframe = cv2.cvtColor( self.frame, cv2.COLOR_BGR2HSV )
 
-        # conversion to HSV before dilation causes artifacts
-        dilatedframe = cv2.cvtColor( dilatedframe, cv2.COLOR_BGR2HSV )
-
-        for l in self.leds:
+        for l in led_list:
             # if range[0] > range[1], i.e., color is red and wraps around,
             # invert range and perform NOT on result
             invert_range = False if not l.hue_range[0] > l.hue_range[1] else True
@@ -94,24 +112,23 @@ class Tracker:
             if not invert_range:
                 lowerBound = np.array( [l.hue_range[0], l.min_sat, l.min_val], np.uint8 )
                 upperBound = np.array( [l.hue_range[1], 255, 255], np.uint8 )
-                ranged_frame = cv2.inRange( dilatedframe, lowerBound, upperBound )
+                ranged_frame = cv2.inRange( hsv_frame, lowerBound, upperBound )
 
             # Red requires double thresholding!
             else:
                 # min-180 (or, 255)
                 lowerBound = np.array( [l.hue_range[0], l.min_sat, l.min_val], np.uint8 )
                 upperBound = np.array( [255, 255, 255], np.uint8 )
-                ranged_frame = cv2.inRange( dilatedframe, lowerBound, upperBound )
+                ranged_frame = cv2.inRange( hsv_frame, lowerBound, upperBound )
                 # 0-max (or, 255)
                 lowerBound = np.array( [0, l.min_sat, l.min_val], np.uint8 )
                 upperBound = np.array( [l.hue_range[1], 255, 255], np.uint8 )
-                redrange = cv2.inRange( dilatedframe, lowerBound, upperBound )
+                redrange = cv2.inRange( hsv_frame, lowerBound, upperBound )
                 # combine both ends for complete mask
                 ranged_frame = cv2.bitwise_or( ranged_frame, redrange )
 
-
             # find largest contour
-            ranged_frame = cv2.dilate( ranged_frame, kernel )
+            ranged_frame = cv2.dilate( ranged_frame, np.ones( (3,3), 'uint8' ) )
             contour = self.findContour( ranged_frame, min_area = 5 )
 
             # finding centroids of best_cnt and draw a circle there
@@ -119,14 +136,15 @@ class Tracker:
                 M = cv2.moments( contour )
                 cx,cy = int( M['m10']/M['m00'] ), int( M['m01']/M['m00'] )
 #                cv2.circle(ranged_frame,(cx,cy),5,255,-1)
-                l.pos_hist.append( tuple( [cx, cy] ) )
+                coord_list.append( tuple( [cx, cy] ) )
             else:
                 # Couldn't find a good enough spot
-                l.pos_hist.append( None )
+                coord_list.append( None )
 
-
-    def camshift(self, led, frame ):
-        print 'camshifting shifty figures'
+        # having a returnlist may be overly complicated, but makes it easier to
+        # track LEDs in frames not part of sequence from the framesource for
+        # fine tuning of parameters.
+        return coord_list
 
 
     def findContour( self, frame, min_area = 5 ):
@@ -135,17 +153,20 @@ class Tracker:
         contours, hierarchy = cv2.findContours( frame,
                                                 cv2.RETR_LIST,
                                                 cv2.CHAIN_APPROX_SIMPLE )
-        max_area = 0
+        largest_area = 0
         best_cnt = None
         for cnt in contours:
             area = cv2.contourArea(cnt)
-            if area > max_area and area > min_area:
-                max_area = area
+            if area > largest_area and area > min_area:
+                largest_area = area
                 best_cnt = cnt
 
         return best_cnt
 
-    def camshiftTrack( self, hsv_frame ):
+
+    def camshiftTrack( self, hsv_frame, led_list ):
+        """ camshifting shifty histograms
+        """
         kernel = np.ones( (3,3), 'uint8' )
         dilatedframe = cv2.dilate( hsv_frame, kernel )
         h, s, v = cv2.split(dilatedframe)
@@ -186,8 +207,7 @@ if __name__ == '__main__':                                  #
     key = 0
     while frame_source.grab_next() and not ( key % 100 == 27 ):
         tracker.frame = frame_source.framebuffer.pop()
-
-        tracker.threshTrack()
+        tracker.trackLeds()
 
         for idx, led in enumerate( tracker.leds ):
             if not led.pos_hist[-1] == None:

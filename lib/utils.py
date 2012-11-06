@@ -116,7 +116,7 @@ class HSVHist:
         hsv_map[:,:,2] = 64
         self.Map = np.copy(hsv_map)
 
-    def calcHist( self, frame ):
+    def hueHist( self, frame ):
         self.frame = np.copy( frame )
         """ Calculate Hue histogram of given frame """
         hist_item = cv2.calcHist([self.frame], [0], None, [180], [0,179])

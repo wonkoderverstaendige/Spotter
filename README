@@ -1,19 +1,19 @@
 
-LedTrack : Unsophisticated video tracking
------------------------------------------
+Spotter : Unsophisticated video tracking
+========================================
 
-LedTrack can track LEDs in a video stream--either from a webcam or
+Spotter can track LEDs in a video stream--either from a webcam or
 video file--and simultaneously write encoded video to disk. It is
 based on the OpenCV library. It's a very early alpha and hardly working.
 
 Simple Example
 --------------
 
-    python ledtrack.py --source video.avi
+    python spotter.py --source video.avi
 
 or
 
-    python ledtrack.py --source 0 --outfile result.avi --dims 640x360 --fps 15
+    python spotter.py --source 0 --outfile result.avi --dims 640x360 --fps 15
 
 Requirements
 ------------

@@ -28,6 +28,7 @@ Options:
 import cv, cv2, os, sys, time
 sys.path.append('./lib')
 import utils
+sys.path.append('./lib/docopt')
 from docopt import docopt
 
 DEBUG = True

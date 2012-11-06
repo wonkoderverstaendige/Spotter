@@ -6,8 +6,8 @@ Created on Mon Jul 09 00:02:20 2012
 Track position LEDs and sync signal from camera or video file.
 
 Usage:
-    ledtrack.py --source SRC [--outfile DST] [options]
-    ledtrack.py -h | --help
+    spotter.py --source SRC [--outfile DST] [options]
+    spotter.py -h | --help
 
 Options:
     -h --help           Show this screen
@@ -33,8 +33,10 @@ To do:
 import cv2, os, sys, time, multiprocessing, logging
 
 sys.path.append('./lib')
-from docopt import docopt
 import grabber, writer, tracker, utils
+sys.path.append('./lib/docopt')
+from docopt import docopt
+
 
 global DEBUG
 
@@ -44,25 +46,31 @@ loghdl = logging.StreamHandler()#logging.FileHandler('ledtrack.log')
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s') #
 loghdl.setFormatter( formatter )
 log.addHandler( loghdl )
-log.setLevel( logging.INFO ) #INFOERROR
+log.setLevel( logging.ERROR ) #INFOERROR
 
 
-class Main(object):
+class Spotter(object):
+
+    # helper instances
     grabber = None
     writer_process = None
-    queue = multiprocessing.Queue( 16 )
 
+    # state variables
     paused = False
-    windowName = 'Capture'
-    viewMode = 0
-    nviewModes = 1
-    last_frame = None
-    current_frame = None
-    hsv_frame = None
-    show_frame = None
     selection = None
     drag_start = None
     record_to_file = True
+    viewMode = 0
+    nviewModes = 1
+
+    # frame buffers
+    queue = multiprocessing.Queue( 16 ) # pipe to writer process
+    newest_frame = None  # fresh from the frame source; to be processed/written
+    still_frame = None   # frame shown in GUI, may be an older one
+    hsv_frame = None     # converted into HSV colorspace for tracking
+    gui_frame = None     # still_frame + Menu side bar + overlays
+
+    windowName = 'Spotter'
     ts_start = None
 
 
@@ -85,6 +93,9 @@ class Main(object):
 
         # tracker object finds LEDs in frames
         self.tracker = tracker.Tracker()
+        self.tracker.addLED( 'red', ( 160, 5 ) )
+        self.tracker.addLED( 'sync', ( 15, 90 ), fixed_pos = True )
+        self.tracker.addLED( 'blue', ( 105, 135 ) )
 
         # Only OpenCV's HighGui is currently used as user interface
         if gui=='cv2.highgui':
@@ -104,14 +115,14 @@ class Main(object):
             - Right mouse button switches view mode
         """
         if event == cv2.EVENT_LBUTTONDOWN:
-            if not self.current_frame == None:
+            if not self.gui_frame == None:
                 self.drag_start = (x, y)
 
         if event == cv2.EVENT_LBUTTONUP:
                 self.drag_start = None
 
                 if self.selection == None:
-                    pixel = self.current_frame[y, x]
+                    pixel = self.gui_frame[y, x]
                     print "[X,Y][B G R](H, S, V):", [x, y], pixel, utils.BGRpix2HSV(pixel)
                 else:
                     #self.track_window = self.selection
@@ -132,55 +143,81 @@ class Main(object):
             self.nextView()
 
 
+    def buildGui( self ):
+        """ Assembles GUI by taking a still frame and adding additional space
+            for GUI elements and markers
+        """
+        # still frame selection
+        # 0: normal RGB from raw source
+        # 1: dense overlay of debugging information
+        if self.viewMode == 0:
+            self.gui_frame = self.still_frame.copy()
+            # overlay information onto stillframe
+            self.overlay()
+
+        elif self.viewMode == 1:
+            pass
+        elif self.viewMode == 2:
+            pass
+#            self.show_frame = cv2.bitwise_and( self.current_frame, self.current_frame, mask = self.tracker.mask )
+
+
     def nextView( self ):
         self.viewMode += 1
         if self.viewMode > self.nviewModes:
             self.viewMode = 0
 
 
-    def update_frame( self ):
-        if self.viewMode == 0:
-            self.show_frame = self.current_frame
-            ledcoords = self.tracker.sumTrack( self.show_frame )
-            colors = [(0, 0, 255), (0, 255, 0), (255, 0, 0)]
-            for cf, coord in enumerate(ledcoords):
-                utils.drawCross( self.show_frame, coord, 5, colors[cf], gap = 3 )
+    def overlay( self ):
+        """ Writes information into still frame of GUI, like crosses on tracked
+            spots or textual information and ROI borders
+        """
+        colors = [(0, 0, 255), (0, 255, 0), (255, 0, 0)]
+        for i, l in enumerate(self.tracker.leds):
+            coords = l.pos_hist[-1]
+            if not coords == None:
+                # TODO: HSV_to_RGB conversion function
+                utils.drawCross( self.gui_frame, coords, 5, colors[i], gap = 3 )
 
-        elif self.viewMode == 1:
-            self.show_frame = cv2.bitwise_and( self.current_frame, self.current_frame, mask = self.tracker.mask )
 
     def show( self ):
-        cv2.imshow( self.windowName, self.show_frame )
+        cv2.imshow( self.windowName, self.gui_frame )
+
 
     def updateHist( self ):
-        self.hist.calcHist( self.hsv_frame )
+        self.hist.hueHist( self.hsv_frame )
         self.hist.overlayHistMap()
         cv2.imshow( 'histogram', self.hist.overlay )
 
-    def trackLeds( self ):
-        self.tracker.sumTrack( self.current_frame )
-
-        #if not self.alive, close:
-#        if not self.writer.alive: self.writer.close()
 
     def check_writer( self ):
+        """ True if alive, otherwise causes script to terminate. """
         if not self.writer_process.is_alive():
-            print 'Writing to disk failed.'
+            print('Writing to disk failed.')
+            log.error('Writing to disk failed.')
             self.exitMain()
         else:
             return True
 
+
     def exitMain( self ):
+        """ Graceful exit. """
+
+        # closing grabber is straight forward, will release capture object
         if self.grabber:
             self.grabber.close()
+
+        # writer is a bit trickier, may have frames left to write away
         if self.writer_process and self.writer_process.is_alive():
             self.queue.put( 'terminate' )
+            # gives the child process one second to finish up, will be
+            # terminated otherwise
             self.writer_process.join( 1 )
             if self.writer_process.is_alive(): main.writer_process.terminate()
 
         fc = self.grabber.framecount
         tt = ( time.clock() - self.ts_start )
-        print 'Done! Grabbed ' + str( fc ) + ' frames in ' + str( tt ) + 's, with ' + str( fc / tt ) + ' fps'
+        log.info('Done! Grabbed ' + str( fc ) + ' frames in ' + str( tt ) + 's, with ' + str( fc / tt ) + ' fps')
         sys.exit( 0 )
 
 
@@ -201,39 +238,48 @@ if __name__ == "__main__":                                  #
     size = (0, 0) if not ARGDICT['--dims'] else tuple( ARGDICT['--dims'].split('x') )
 
     # Instantiating main class ... no shit, Sherlock!
-    main = Main( source      = ARGDICT['--source'],
-                 destination = utils.dst_file_name( ARGDICT['--outfile'] ),
-                 fps         = ARGDICT['--fps'],
-                 size        = size,
-                 gui         = gui )
+    main = Spotter( source      = ARGDICT['--source'],
+                    destination = utils.dst_file_name( ARGDICT['--outfile'] ),
+                    fps         = ARGDICT['--fps'],
+                    size        = size,
+                    gui         = gui )
 
-    # It's Math. 3rd grade Math.
-    if DEBUG: print 'fps: ' + str( main.grabber.fps )
+    # It's Math. 3rd grade Math. Wait time between frames, if any left
+    log.debug( 'fps: ' + str( main.grabber.fps ) )
     t = int( 1000/main.grabber.fps )
 
-    log.info('starting main loop')
-
+    # Main loop, runs until EOF or <ESCAPE> key pressed
+    log.debug( 'starting main loop' )
     main.ts_start = time.clock()
+
+
     while True:
+
         # Get new frame
         if main.grabber.grab_next():
-            main.last_frame = main.grabber.framebuffer.pop()
+            main.newest_frame = main.grabber.framebuffer.pop()
+
             # Check if writer process is still alive
             # Otherwise might lose data without knowing!
+            # Copy numpy array, otherwise queue references same object
+            # like frame that will be worked on
             if main.check_writer():
-                # Copy numoy array, otherwise queue references same object
-                # like frame that will be worked on
-                main.queue.put( main.last_frame.copy() )
+                main.queue.put( main.newest_frame.copy() )
                 time.sleep( 0.001 )
 
-            # pauses interface but should let tracking/writing continue
+            main.hsv_frame = cv2.cvtColor( main.newest_frame, cv2.COLOR_BGR2HSV )
+            main.tracker.trackLeds( main.hsv_frame )
+
+            # freezes frame being shown, but not frame being processed/written
             if not main.paused:
-                main.current_frame = main.last_frame.copy()
-                main.hsv_frame = cv2.cvtColor( main.current_frame, cv2.COLOR_BGR2HSV )
-                #main.trackLeds()
-                main.update_frame()
-                main.show()
-                main.updateHist()
+                main.still_frame = main.newest_frame.copy()
+
+            main.buildGui()
+            main.show()
+#            main.updateHist()
+
+        else:
+            print 'No new frame returned!!! What does it mean??? We are going to die! Eventually!'
 
         total_elapsed = ( time.clock() - main.grabber.ts_last_frame ) * 1000
         t = int( 1000/main.grabber.fps - total_elapsed ) - 1

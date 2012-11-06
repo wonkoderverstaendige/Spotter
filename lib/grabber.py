@@ -22,6 +22,7 @@ Options:
 
 import cv, cv2, time, os, sys
 sys.path.append('./lib')
+sys.path.append('./lib/docopt')
 from docopt import docopt
 from collections import deque
 
@@ -31,7 +32,7 @@ class Grabber:
     capture = None          # Capture object to frame source
     fourcc = None           # Source frame coding
 
-    fps_init = None              # Current source fps, may differ from CLI parameter
+    fps_init = None         # Current source fps, may differ from CLI parameter
     fps = None
 
     size_init = None
