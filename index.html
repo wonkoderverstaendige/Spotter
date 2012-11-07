@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Spotter : Led Tracker w/ opencv and python" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Spotter</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/wonkoderverstaendige/Spotter">View on GitHub</a>
+
+          <h1 id="project_title">Spotter</h1>
+          <h2 id="project_tagline">Led Tracker w/ opencv and python</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/wonkoderverstaendige/Spotter/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/wonkoderverstaendige/Spotter/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>Spotter : Unsophisticated video tracking</h1>
+
+<p>Spotter can track LEDs in a video stream--either from a webcam or video file--and simultaneously write encoded video to disk. It is based on the <a href="http://opencv.org/">OpenCV</a> library. It's a very early alpha and hardly working.</p>
+
+<p><img src="https://raw.github.com/wonkoderverstaendige/Spotter/master/media/img/ScriptStructure.png" alt="Structure"></p>
+
+<h2>Simple Example</h2>
+
+<pre><code>python spotter.py --source video.avi
+</code></pre>
+
+<p>or</p>
+
+<pre><code>python spotter.py --source 0 --outfile result.avi --dims 640x360 --fps 15
+</code></pre>
+
+<h2>Requirements</h2>
+
+<p>Tested on Windows 7 64bit, (X)Ubuntu 12.04 64bit</p>
+
+<ul>
+<li>Python 2.7+</li>
+<li>OpenCV 2.4.3+</li>
+<li>docopt 0.5</li>
+</ul><h2>Future</h2>
+
+<p>Position information and crossing of ROIs will be sent to a microcontroller via serial port.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Spotter maintained by <a href="https://github.com/wonkoderverstaendige">wonkoderverstaendige</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
