@@ -155,5 +155,5 @@ if __name__ == "__main__":
             cv2.destroyAllWindows()
             sys.exit( 0 )
         else:
-            cv2.imshow( 'Main', main.framebuffer.pop() )
+            cv2.imshow( 'Grabber', main.framebuffer.pop() )
             key = cv2.waitKey( t )

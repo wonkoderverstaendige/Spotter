@@ -97,6 +97,10 @@ class Spotter(object):
         self.tracker.addLED( 'sync', ( 15, 90 ), fixed_pos = True )
         self.tracker.addLED( 'blue', ( 105, 135 ) )
 
+        self.Object = tracker.Mob( [self.tracker.leds[0],
+                                       self.tracker.leds[2]],
+                                       'SpotThisThing' )
+
         # Only OpenCV's HighGui is currently used as user interface
         if gui=='cv2.highgui':
             cv2.namedWindow( self.windowName )
@@ -179,6 +183,7 @@ class Spotter(object):
                 # TODO: HSV_to_RGB conversion function
                 utils.drawCross( self.gui_frame, coords, 5, colors[i], gap = 3 )
 
+        utils.drawTrace( self.gui_frame, self.Object.pos_hist, 255, 100 )
 
     def show( self ):
         cv2.imshow( self.windowName, self.gui_frame )
@@ -268,7 +273,8 @@ if __name__ == "__main__":                                  #
                 time.sleep( 0.001 )
 
             main.hsv_frame = cv2.cvtColor( main.newest_frame, cv2.COLOR_BGR2HSV )
-            main.tracker.trackLeds( main.hsv_frame )
+            main.tracker.trackLeds( main.hsv_frame, method = 'hsv_thresh' )
+            main.Object.updatePosition()
 
             # freezes frame being shown, but not frame being processed/written
             if not main.paused:

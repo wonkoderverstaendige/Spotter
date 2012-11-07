@@ -42,6 +42,23 @@ def BGRpix2HSV( pixel ):
 
     return int(H), int(S), int(V)
 
+def middle_point( coord_list ):
+    """ Find center point of a list of not None coordinates. E.g. find center
+        of group of LEDs to track. Returns None if no valid LEDs found,
+        and position of single LED if only one valid, etc.
+    """
+    # TODO: Proper type checking, corner cases, None etc.
+    if len( coord_list ) > 0:
+        x = y = 0
+        n = len( coord_list )
+        for c in coord_list:
+            x += c[0]
+            y += c[1]
+        return [x/n, y/n]
+    else:
+        return None
+
+
 
 def drawPointer( frame, p1, p2, color=(255, 255, 255), length = 50):
     """ draws line prependicular to midpoint of line section between p1 and p2"""
@@ -57,6 +74,25 @@ def drawPointer( frame, p1, p2, color=(255, 255, 255), length = 50):
     line_end = (line_start[0] + ldx, line_start[1] + ldy)
 
     cv2.line(frame, line_start, line_end, color )
+
+
+def drawTrace( frame, history, color, N ):
+    N = min( N, len(history) )
+    if N >= 2:
+        for n in range(N-1, 0, -1):
+            col = int( color/N * (N-n) )
+            if history[-(n+1)] is None:
+                continue
+            elif history[-n] is None:
+                n+=1
+                continue
+            else:
+                cv2.line(frame,
+                         tuple(history[-n]),
+                         tuple(history[-(n+1)]),
+                         [col, col, col],
+                         1 )
+
 
 
 def drawCross( frame, coords, size, color, gap = 7 ):

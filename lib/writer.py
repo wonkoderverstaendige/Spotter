@@ -142,7 +142,7 @@ if __name__ == '__main__':                                  #
     # Main loop till EOF or Escape key pressed
     key = 0
     while frame_source.grab_next() and not ( key % 100 == 27 ):
-        if GUI: cv2.imshow( 'Main', frame_source.framebuffer[0] )
+        if GUI: cv2.imshow( 'Writer', frame_source.framebuffer[0] )
         main.write( frame_source.framebuffer.pop() )
         if GUI: key = cv2.waitKey(1)
 

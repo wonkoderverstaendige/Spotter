@@ -19,8 +19,9 @@ Requirements
 Tested on Windows 7 64bit, (X)Ubuntu 12.04 64bit
 
 - Python 2.7+
-- OpenCV 2.4.3+
-- docopt 0.5
+- OpenCV 2.4+
+- docopt 0.5+
+- pySerial
 
 Future
 ------

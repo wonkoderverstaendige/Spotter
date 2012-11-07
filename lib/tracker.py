@@ -61,6 +61,31 @@ class LED:
         pass
 
 
+class Mob:
+    """ Mobile object LEDs are attached to, if any.
+    """
+
+    pos_hist = None
+    leds = None
+    label = None
+
+    def __init__( self, led_list, label = 'trackme' ):
+        self.pos_hist = list()
+        self.leds = led_list
+        self.label = label
+
+    def updatePosition( self ):
+        coords = []
+        for l in self.leds:
+            if not l.pos_hist[-1] is None:
+                coords.append( l.pos_hist[-1] )
+
+        # find !mean! coordinates
+        self.pos_hist.append( utils.middle_point( coords ) )
+
+    def predictPosition( self, frame_idx ):
+        pass
+
 
 class Tracker:
     """ Performs tracking and returns positions of found LEDs """
@@ -68,7 +93,12 @@ class Tracker:
     min_sat = 50
     min_val = 50
 
+    # frame buffer
     frame = None
+
+    # mobile object, linked to LEDs
+    ooi = None
+
 
     def __init__( self ):
 #        self.leds = led_list
@@ -80,12 +110,16 @@ class Tracker:
         self.leds.append( LED( label, hue_range, fixed_pos, linked_to ) )
 
 
+    def addObjectOfInterest( self, led_list, label = 'trackme' ):
+        self.ooi = Mob( led_list, label )
+
+
     def trackLeds( self, frame, method = 'hsv_thresh' ):
         """ Intermediate method selecting tracking method and seperating those
             tracking methods from the frames stored in the instantiatd Tracker
         """
         if method == 'hsv_thresh':
-            self.frame = frame.copy()
+            self.frame = frame
             coord_list = self.threshTrack( self.frame, self.leds )
             for i, l in enumerate( self.leds ):
                 l.pos_hist.append( coord_list[i] )
@@ -118,11 +152,11 @@ class Tracker:
             else:
                 # min-180 (or, 255)
                 lowerBound = np.array( [l.hue_range[0], l.min_sat, l.min_val], np.uint8 )
-                upperBound = np.array( [255, 255, 255], np.uint8 )
+                upperBound = np.array( [179, 255, 253], np.uint8 )
                 ranged_frame = cv2.inRange( hsv_frame, lowerBound, upperBound )
                 # 0-max (or, 255)
                 lowerBound = np.array( [0, l.min_sat, l.min_val], np.uint8 )
-                upperBound = np.array( [l.hue_range[1], 255, 255], np.uint8 )
+                upperBound = np.array( [l.hue_range[1], 255, 253], np.uint8 )
                 redrange = cv2.inRange( hsv_frame, lowerBound, upperBound )
                 # combine both ends for complete mask
                 ranged_frame = cv2.bitwise_or( ranged_frame, redrange )
@@ -201,26 +235,45 @@ if __name__ == '__main__':                                  #
     tracker.addLED( 'sync', ( 15, 90 ), fixed_pos = True )
     tracker.addLED( 'blue', ( 105, 135 ) )
 
+    tracker.addObjectOfInterest( [tracker.leds[0],
+                                  tracker.leds[2]],
+                                  'MovingObject' )
+
     colors = [(0, 0, 255), (0, 255, 0), (255, 0, 0)]
 
     # Main loop till EOF or Escape key pressed
+    ts = time.clock()
+    n = 0
     key = 0
     while frame_source.grab_next() and not ( key % 100 == 27 ):
-        tracker.frame = frame_source.framebuffer.pop()
-        tracker.trackLeds()
+        frame = frame_source.framebuffer.pop()
+
+        tracker.frame = cv2.cvtColor( frame, cv2.COLOR_BGR2HSV )
+        tracker.trackLeds( tracker.frame, method = 'hsv_thresh' )
+        tracker.ooi.updatePosition()
 
         for idx, led in enumerate( tracker.leds ):
             if not led.pos_hist[-1] == None:
-                utils.drawCross( tracker.frame, led.pos_hist[-1], 5, colors[idx], gap = 3 )
+                utils.drawCross( frame, led.pos_hist[-1], 5, colors[idx], gap = 3 )
 
-        if not ( tracker.leds[2].pos_hist[-1] == None or tracker.leds[0].pos_hist[-1] == None ):
-            utils.drawPointer( tracker.frame,
-                               tracker.leds[2].pos_hist[-1],
-                               tracker.leds[0].pos_hist[-1] )
+#        if not ( tracker.leds[2].pos_hist[-1] == None or tracker.leds[0].pos_hist[-1] == None ):
+#            utils.drawPointer( frame,
+#                               tracker.leds[2].pos_hist[-1],
+#                               tracker.leds[0].pos_hist[-1] )
 
-        if GUI: cv2.imshow( 'Main', tracker.frame )
-        if GUI: key = cv2.waitKey(1)
+        # 0.12ms for 10, 0.5ms for 100 points
+        utils.drawTrace( frame, tracker.ooi.pos_hist, 255, 100 )
+
+
+        if GUI:
+            cv2.imshow( 'Tracker', frame )
+            key = cv2.waitKey(1)
+
+        n+=1
 
     # Exiting gracefully
+    tt = time.clock() - ts
+    t_fps = n*1.0/tt
+    print 'Tracked ' + str(n) + ' frames in ' + str(tt) + 's, ' + str(t_fps) + ' fps'
     frame_source.close()
     sys.exit(0)
