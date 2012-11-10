@@ -262,7 +262,8 @@ if __name__ == '__main__':                                  #
         tracker.ooi.updatePosition()
 
         if not tracker.ooi.pos_hist[-1] == None:
-            tracker.funker.send(tracker.ooi.pos_hist[-1][0])
+#            tracker.funker.send(tracker.ooi.pos_hist[-1][0])
+            tracker.funker.send(tracker.ooi.guessed_pos)
 
         for idx, led in enumerate( tracker.leds ):
             if not led.pos_hist[-1] == None:

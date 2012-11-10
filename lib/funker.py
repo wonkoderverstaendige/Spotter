@@ -37,9 +37,10 @@ class Funker:
     ser = None
     port = None
 
-    def __init__( self, port = 2, X_range = (0, 639), DAC_range = (0, 4095) ):
+    def __init__( self, port = 2, X_range = (0, 639), Y_range = (0, 359), DAC_range = (0, 4095) ):
 
         self.X_range = X_range
+        self.Y_range = Y_range
         self.DAC_range = DAC_range
         
         for l in list_ports.comports():
@@ -51,16 +52,25 @@ class Funker:
         print 'Opened serial port ' + self.ser.portstr  # check which port was really used
 
 
-    def send( self, num ):
+    def send( self, coords ):
 
-        num = max(self.X_range) if num > max(self.X_range) else num
-        num = min(self.X_range) if num < min(self.X_range) else num
+#        num = max(self.X_range) if num > max(self.X_range) else num
+#        num = min(self.X_range) if num < min(self.X_range) else num
 
-        num = utils.scale(num, self.X_range, self.DAC_range)
+        num1 = utils.scale(coords[0], self.X_range, self.DAC_range)
+        num2 = utils.scale(coords[1], self.Y_range, self.DAC_range)
 
-        sendString = str(int(num) ) + '\n'
+        sendString = str(int(num1) ) + '\t'
+#        print sendString
         rb = self.ser.write( sendString )
         self.ser.flush()
+
+        sendString = str(int(num2) ) + '\n'
+#        print sendString
+        rb = self.ser.write( sendString )
+        self.ser.flush()
+
+
 #        print sendString
 #        print 'Wrote ' + str(rb) + ' Bytes'
 ##        print 'start reading:'

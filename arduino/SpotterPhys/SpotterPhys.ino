@@ -24,9 +24,12 @@
 #include "SPI.h" // handles SPI communication to MCP4921 DAC
 
 #define pin_SCK 52
-#define pin_SS 53
 #define pin_MOSI 51
 #define pin_MISO 50
+
+// SPI clients
+#define pin_dev0 46
+#define pin_dev1 47
 
 // digital input pins
 #define pin_din0 30
@@ -50,6 +53,7 @@ char charBuffer[16];
 word outputValue = 0; // 16 bit, 12 bit DAC
 byte data = 0;
 int value = 0;
+byte device = 0;
 
 void setup() {
   // initialize serial:
@@ -58,7 +62,8 @@ void setup() {
   inputString.reserve(16);
   
   // ready SPI to talk to DAC
-  pinMode(pin_SS, OUTPUT);
+  pinMode(pin_dev0, OUTPUT);
+  pinMode(pin_dev1, OUTPUT);
   SPI.begin();
   SPI.setBitOrder(MSBFIRST);
   
@@ -80,12 +85,8 @@ void setup() {
 void loop() {
   // print the string when a newline arrives:
   if (stringComplete) {
-//    value = value + 1024;
-//    if (value-1 > 4095) {
-//      value = 0;
-//    }
     value = inputString.toInt();
-    setDAC(0, value); 
+    setDAC(device, value); 
     // clear the string:
     inputString = "";
     stringComplete = false;
@@ -104,9 +105,13 @@ void serialEvent() {
     // get the new byte:
     char inChar = (char)Serial.read(); 
     // add it to the inputString:
-    if (inChar == '\n') {
+    if (inChar == '\t') {
       stringComplete = true;
+      device = 0;
       //Serial.println(inputString.toInt());
+    } else if (inChar == '\n') {
+      stringComplete = true;
+      device = 1;  
     } else {
       inputString += inChar;
     }
@@ -115,14 +120,22 @@ void serialEvent() {
 
 void setDAC(int device, int outputValue) {
     // should set device!
-    digitalWrite(pin_SS, LOW);
+    if (device == 0 ) {
+      digitalWrite(pin_dev0, LOW);
+    } else if (device == 1) {
+      digitalWrite(pin_dev1, LOW);
+    }
     data = highByte(outputValue);
     data = 0b00001111 & data;
     data = 0b00110000 | data;
     SPI.transfer(data);
     data = lowByte(outputValue);
     SPI.transfer(data);
-    digitalWrite(pin_SS, HIGH);
+    if (device == 0 ) {
+      digitalWrite(pin_dev0, HIGH);
+    } else if (device == 1) {
+      digitalWrite(pin_dev1, HIGH);
+    }
 }
 
 

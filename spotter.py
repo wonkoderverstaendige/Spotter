@@ -282,7 +282,7 @@ if __name__ == "__main__":                                  #
             
             # send position of tracked object to serial port
             if not main.Object.guessed_pos is None:
-                main.tracker.funker.send( main.Object.guessed_pos[0] )
+                main.tracker.funker.send( main.Object.guessed_pos )
 
             # freezes frame being shown, but not frame being processed/written
             if not main.paused:
