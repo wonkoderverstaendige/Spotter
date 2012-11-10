@@ -211,6 +211,9 @@ class Spotter(object):
         # closing grabber is straight forward, will release capture object
         if self.grabber:
             self.grabber.close()
+            
+        if self.tracker:
+            self.tracker.close()
 
         # writer is a bit trickier, may have frames left to write away
         if self.writer_process and self.writer_process.is_alive():
@@ -272,9 +275,14 @@ if __name__ == "__main__":                                  #
                 main.queue.put( main.newest_frame.copy() )
                 time.sleep( 0.001 )
 
+            # Find and update position of tracked object
             main.hsv_frame = cv2.cvtColor( main.newest_frame, cv2.COLOR_BGR2HSV )
             main.tracker.trackLeds( main.hsv_frame, method = 'hsv_thresh' )
             main.Object.updatePosition()
+            
+            # send position of tracked object to serial port
+            if not main.Object.guessed_pos is None:
+                main.tracker.funker.send( main.Object.guessed_pos[0] )
 
             # freezes frame being shown, but not frame being processed/written
             if not main.paused:
@@ -282,7 +290,7 @@ if __name__ == "__main__":                                  #
 
             main.buildGui()
             main.show()
-#            main.updateHist()
+            main.updateHist()
 
         else:
             print 'No new frame returned!!! What does it mean??? We are going to die! Eventually!'

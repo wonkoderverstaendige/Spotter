@@ -42,6 +42,7 @@ def BGRpix2HSV( pixel ):
 
     return int(H), int(S), int(V)
 
+
 def middle_point( coord_list ):
     """ Find center point of a list of not None coordinates. E.g. find center
         of group of LEDs to track. Returns None if no valid LEDs found,
@@ -59,6 +60,33 @@ def middle_point( coord_list ):
         return None
 
 
+def scale(val, range1, range2):
+    """ 
+    Maps val of numerical range 1 to numerical range 2.
+    """
+    # normalize by range of range1, multiply by range of range2, offset
+    return ((float(val) - range1[0]) / (range1[1] - range1[0])) * (range2[1] - range2[0]) + range2[0]
+    
+def extrapolateLinear( p1, p2 ):
+    """ 
+    Linear extrapolation of missing point
+    """
+    dx = p2[0] - p1[0]
+    dy = p2[1] - p2[1]
+    
+    return( tuple([p2[0]+dx, p2[1]+dy]) )
+    
+def guessedPosition( pos_hist ):
+    if len(pos_hist) >= 3:
+        if not (pos_hist[-1] is None):
+            return pos_hist[-1]
+        elif not ( (pos_hist[-2] is None) or (pos_hist[-3] is None) ):
+                return extrapolateLinear( pos_hist[-3], pos_hist[-2] )
+        else:
+            return None
+    else:
+        return None
+    
 
 def drawPointer( frame, p1, p2, color=(255, 255, 255), length = 50):
     """ draws line prependicular to midpoint of line section between p1 and p2"""
@@ -131,13 +159,16 @@ class HSVHist:
     overlay = None
     frame = None
     log = True
+    binwidth = None
 
-    def __init__( self, width = 180, height = 100 ):
+    def __init__( self, width = 180, height = 100, binwidth = 4 ):
         if not width == None:
             self.map_width = width
 
         if not height == None:
             self.map_height = height
+            
+        self.binwidth = binwidth
 
         self.createMap()
 
@@ -152,10 +183,16 @@ class HSVHist:
         hsv_map[:,:,2] = 64
         self.Map = np.copy(hsv_map)
 
+
     def hueHist( self, frame ):
+        """ Calculate Hue histogram """
+        _,_,v = cv2.split( frame )
+        lowerBound = np.array( [5], np.uint8 )
+        upperBound = np.array( [254], np.uint8 )
+        mask = cv2.inRange( frame, lowerBound, upperBound )
+        
         self.frame = np.copy( frame )
-        """ Calculate Hue histogram of given frame """
-        hist_item = cv2.calcHist([self.frame], [0], None, [180], [0,179])
+        hist_item = cv2.calcHist([self.frame], [0], mask, [self.map_width/self.binwidth], [0,179])
         if self.log:
             hist_item = cv2.log( hist_item + 1)
         cv2.normalize( hist_item, hist_item, 0, self.map_height, cv2.NORM_MINMAX )
@@ -165,10 +202,11 @@ class HSVHist:
     def overlayHistMap( self ):
         self.overlay = np.copy( self.Map )
         h, w = self.map_height, self.map_width
+        ofs = self.binwidth
 
 #         this is terribly inefficient and should be done with numpy functions!
         for pos, hbin in enumerate( self.hist ):
-            if hbin > 3:
-                cv2.rectangle( self.overlay, (pos, h), ( pos + 1, h-hbin ), ( pos, 255, 128 ), -1 )
+            if hbin > 1:
+                cv2.rectangle( self.overlay, (ofs*pos, h), ( ofs*pos + (ofs-1), h-hbin ), ( ofs*pos, 255, 128 ), -1 )
 
         self.overlay = cv2.cvtColor( self.overlay, cv2.COLOR_HSV2BGR )

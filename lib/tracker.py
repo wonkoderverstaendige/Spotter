@@ -21,7 +21,7 @@ Options:
 import time, cv2, sys
 import numpy as np
 sys.path.append('./lib')
-import utils
+import funker, utils
 sys.path.append('./lib/docopt')
 from docopt import docopt
 
@@ -66,6 +66,7 @@ class Mob:
     """
 
     pos_hist = None
+    guessed_pos = None
     leds = None
     label = None
 
@@ -82,8 +83,13 @@ class Mob:
 
         # find !mean! coordinates
         self.pos_hist.append( utils.middle_point( coords ) )
+        self.guessed_pos = utils.guessedPosition( self.pos_hist )
 
-    def predictPosition( self, frame_idx ):
+
+    def predictPositionFast( self, frame_idx ):
+        pass
+    
+    def predictPositionAccurate( self, frame_idx ):
         pass
 
 
@@ -102,7 +108,7 @@ class Tracker:
 
     def __init__( self ):
 #        self.leds = led_list
-        pass
+        self.funker = funker.Funker()
 
 
     def addLED( self, label, hue_range, fixed_pos = False, linked_to = None ):
@@ -209,6 +215,9 @@ class Tracker:
 
         ledpos = ( 100, 100 )
         return ledpos
+        
+    def close( self ):
+        self.funker.close()
 
 
 
@@ -251,6 +260,9 @@ if __name__ == '__main__':                                  #
         tracker.frame = cv2.cvtColor( frame, cv2.COLOR_BGR2HSV )
         tracker.trackLeds( tracker.frame, method = 'hsv_thresh' )
         tracker.ooi.updatePosition()
+
+        if not tracker.ooi.pos_hist[-1] == None:
+            tracker.funker.send(tracker.ooi.pos_hist[-1][0])
 
         for idx, led in enumerate( tracker.leds ):
             if not led.pos_hist[-1] == None:
