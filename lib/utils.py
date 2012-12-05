@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Jul 09 14:45:41 2012
+@author: <Ronny Eichler> ronny.eichler@gmail.com
 
-@author: Ronny
+Helper functions.
+
 """
 from sys import float_info
 import numpy as np
-import cv2, time
+import cv2
+import time
 
 
 def BGRpix2HSV( pixel ):
@@ -42,51 +45,6 @@ def BGRpix2HSV( pixel ):
 
     return int(H), int(S), int(V)
 
-
-def middle_point( coord_list ):
-    """ Find center point of a list of not None coordinates. E.g. find center
-        of group of LEDs to track. Returns None if no valid LEDs found,
-        and position of single LED if only one valid, etc.
-    """
-    # TODO: Proper type checking, corner cases, None etc.
-    if len( coord_list ) > 0:
-        x = y = 0
-        n = len( coord_list )
-        for c in coord_list:
-            x += c[0]
-            y += c[1]
-        return [x/n, y/n]
-    else:
-        return None
-
-
-def scale(val, range1, range2):
-    """ 
-    Maps val of numerical range 1 to numerical range 2.
-    """
-    # normalize by range of range1, multiply by range of range2, offset
-    return ((float(val) - range1[0]) / (range1[1] - range1[0])) * (range2[1] - range2[0]) + range2[0]
-    
-def extrapolateLinear( p1, p2 ):
-    """ 
-    Linear extrapolation of missing point
-    """
-    dx = p2[0] - p1[0]
-    dy = p2[1] - p2[1]
-    
-    return( tuple([p2[0]+dx, p2[1]+dy]) )
-    
-def guessedPosition( pos_hist ):
-    if len(pos_hist) >= 3:
-        if not (pos_hist[-1] is None):
-            return pos_hist[-1]
-        elif not ( (pos_hist[-2] is None) or (pos_hist[-3] is None) ):
-                return extrapolateLinear( pos_hist[-3], pos_hist[-2] )
-        else:
-            return None
-    else:
-        return None
-    
 
 def drawPointer( frame, p1, p2, color=(255, 255, 255), length = 50):
     """ draws line prependicular to midpoint of line section between p1 and p2"""
@@ -167,7 +125,7 @@ class HSVHist:
 
         if not height == None:
             self.map_height = height
-            
+
         self.binwidth = binwidth
 
         self.createMap()
@@ -190,7 +148,7 @@ class HSVHist:
         lowerBound = np.array( [5], np.uint8 )
         upperBound = np.array( [254], np.uint8 )
         mask = cv2.inRange( frame, lowerBound, upperBound )
-        
+
         self.frame = np.copy( frame )
         hist_item = cv2.calcHist([self.frame], [0], mask, [self.map_width/self.binwidth], [0,179])
         if self.log:

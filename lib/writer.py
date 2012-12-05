@@ -7,7 +7,7 @@ Wrapper for VideoWriter, can either work as seperate thread fed by frame buffer
 or being provided one frame a time.
 
 Usage:
-    writer.py --outfile DST --dims DIMS --fps FPS [--source SRC --codec CODEC -DH]
+    writer.py --outfile DST [options]
     writer.py -h | --help
 
 Options:
@@ -25,14 +25,23 @@ Options:
 #    - check if codec on list of known working ones.
 #    - if destination exists, offer file name change
 
-import cv, cv2, os, sys, time
+import cv
+import cv2
+import os
+import sys
+import time
+
+#project libraries
 sys.path.append('./lib')
 import utils
+
+#command line handling
 sys.path.append('./lib/docopt')
 from docopt import docopt
 
 DEBUG = True
-OVERWRITE = True
+OVERWRITE = False
+TIMEOUT = .5 #seconds till writer process times out
 
 class Writer:
     codecs = ( ('XVID'), ('DIVX'), ('IYUV') )
@@ -40,6 +49,7 @@ class Writer:
     writer = None
     size = None
     alive = True
+    ts_last = time.clock()
 
     def __init__( self, dst, fps, size, queue = None , codec='DIVX' ):
 
@@ -82,7 +92,13 @@ class Writer:
         """ Writes frames from the queue. If alive flag set to
         false, deletes capture object to allow proper exit"""
         while self.alive:
+            # Process should terminate if not being talked to for a while
+            if time.clock() - self.ts_last > TIMEOUT:
+                print "Terminating unattended Writer process!"
+                sys.exit(0)
+
             if not queue.empty():
+                self.ts_last = time.clock()
                 item = queue.get()
                 if item == 'terminate':
                     self.alive = False

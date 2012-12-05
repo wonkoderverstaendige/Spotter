@@ -6,22 +6,32 @@ Created on Wed Jul 11 09:28:37 2012
 Tracks colored spots in images or series of images
 
 Usage:
-    tracker.py --source SRC [--continuous -D -H]
+    tracker.py --source SRC [options]
     tracker.py -h | --help
 
 Options:
     -h --help        Show this screen
     -s --source SRC  Source, path to file or integer device ID [default: 0]
+    -S --Serial      Serial port to uC [default: None]
     -c --continuous  Track spots over time, not frame by frame
     -D --DEBUG       Verbose debug output
     -H --Headless    No Interface
 
 """
 
-import time, cv2, sys
+import cv2
+import time
+import sys
 import numpy as np
+
+#project libraries
 sys.path.append('./lib')
-import funker, utils
+import funker
+import utils
+import geometry as geom
+import trackables as trkbl
+
+#command line handling
 sys.path.append('./lib/docopt')
 from docopt import docopt
 
@@ -29,73 +39,9 @@ from docopt import docopt
 
 DEBUG = True
 
-class LED:
-    """ Each instance is a spot to track in the image. Holds histogram to do
-    camshift with plus ROI/Mask"""
-
-    hue_hist = None
-    hue_range = None # np.array uint8 of (lowerBound, higherBound), red: 170,10
-    min_sat = 150
-    min_val = 90
-    label = None
-    roi = None
-    fixed_pos = False
-    pos_hist = None
-    linked_to = None # physically linked to another LED?
-
-
-    def __init__( self, label, hue_range, fixed_pos = False, linked_to = None ):
-        self.label = label
-        self.fixed_pos = fixed_pos
-        self.hue_range = hue_range
-        self.linked_to = None
-        self.pos_hist = list()
-
-    def updateHistogram( self, led_hist ):
-        pass
-
-    def gethistory( ):
-        pass
-
-    def updateHistory( self, coords):
-        pass
-
-
-class Mob:
-    """ Mobile object LEDs are attached to, if any.
-    """
-
-    pos_hist = None
-    guessed_pos = None
-    leds = None
-    label = None
-
-    def __init__( self, led_list, label = 'trackme' ):
-        self.pos_hist = list()
-        self.leds = led_list
-        self.label = label
-
-    def updatePosition( self ):
-        coords = []
-        for l in self.leds:
-            if not l.pos_hist[-1] is None:
-                coords.append( l.pos_hist[-1] )
-
-        # find !mean! coordinates
-        self.pos_hist.append( utils.middle_point( coords ) )
-        self.guessed_pos = utils.guessedPosition( self.pos_hist )
-
-
-    def predictPositionFast( self, frame_idx ):
-        pass
-    
-    def predictPositionAccurate( self, frame_idx ):
-        pass
-
-
 class Tracker:
     """ Performs tracking and returns positions of found LEDs """
-    leds = list()
+
     min_sat = 50
     min_val = 50
 
@@ -103,21 +49,25 @@ class Tracker:
     frame = None
 
     # mobile object, linked to LEDs
-    ooi = None
+    oois = []
+    rois = []
+    leds = []
 
 
-    def __init__( self ):
-#        self.leds = led_list
-        self.funker = funker.Funker()
+    def __init__( self, serial = None ):
+        self.funker = funker.Funker( serial )
 
 
     def addLED( self, label, hue_range, fixed_pos = False, linked_to = None ):
         # TODO: More comprehensive LED types, including val/sat ranges etc.
-        self.leds.append( LED( label, hue_range, fixed_pos, linked_to ) )
+        self.leds.append( trkbl.LED( label, hue_range, fixed_pos, linked_to ))
+
+    def addROI( self, points ):
+        self.rois.append( trkbl.ROI(points, (100, 0, 100) ))
 
 
-    def addObjectOfInterest( self, led_list, label = 'trackme' ):
-        self.ooi = Mob( led_list, label )
+    def addOOI( self, led_list, label = 'trackme' ):
+        self.oois.append( trkbl.Mob( led_list, label ))
 
 
     def trackLeds( self, frame, method = 'hsv_thresh' ):
@@ -215,11 +165,11 @@ class Tracker:
 
         ledpos = ( 100, 100 )
         return ledpos
-        
+
+
     def close( self ):
-        self.funker.close()
-
-
+        if self.funker:
+            self.funker.close()
 
 #############################################################
 if __name__ == '__main__':                                  #
@@ -238,7 +188,7 @@ if __name__ == '__main__':                                  #
     frame_source = grabber.Grabber( ARGDICT['--source'] )
     fps = frame_source.fps
 
-    tracker = Tracker()
+    tracker = Tracker( ARGDICT['--Serial'] )
 
     tracker.addLED( 'red', ( 160, 5 ) )
     tracker.addLED( 'sync', ( 15, 90 ), fixed_pos = True )
@@ -257,26 +207,24 @@ if __name__ == '__main__':                                  #
     while frame_source.grab_next() and not ( key % 100 == 27 ):
         frame = frame_source.framebuffer.pop()
 
+        # tracker works with HSV frames, not BGR
         tracker.frame = cv2.cvtColor( frame, cv2.COLOR_BGR2HSV )
         tracker.trackLeds( tracker.frame, method = 'hsv_thresh' )
         tracker.ooi.updatePosition()
 
         if not tracker.ooi.pos_hist[-1] == None:
-#            tracker.funker.send(tracker.ooi.pos_hist[-1][0])
             tracker.funker.send(tracker.ooi.guessed_pos)
 
         for idx, led in enumerate( tracker.leds ):
             if not led.pos_hist[-1] == None:
                 utils.drawCross( frame, led.pos_hist[-1], 5, colors[idx], gap = 3 )
 
-#        if not ( tracker.leds[2].pos_hist[-1] == None or tracker.leds[0].pos_hist[-1] == None ):
-#            utils.drawPointer( frame,
-#                               tracker.leds[2].pos_hist[-1],
-#                               tracker.leds[0].pos_hist[-1] )
-
-        # 0.12ms for 10, 0.5ms for 100 points
+        # 0.12ms for 10, 0.5ms to draw 100 points
         utils.drawTrace( frame, tracker.ooi.pos_hist, 255, 100 )
 
+        # draw ROIs
+        for r in tracker.rois:
+            r.draw( frame )
 
         if GUI:
             cv2.imshow( 'Tracker', frame )

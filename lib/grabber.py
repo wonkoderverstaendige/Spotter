@@ -8,23 +8,33 @@ frames of requested type.
 Capture object must be closed with Grabber.close() or script will not terminate!
 
 Usage:
-    grabber.py --source SRC [--dims DIMS --fps FPS -D]
+    grabber.py --source SRC [--dims DIMS] [options]
     grabber.py -h | --help
 
 Options:
     -h --help        Show this screen
     -f --fps FPS     Fps for camera and video
     -s --source SRC  Source, path to file or integer device ID [default: 0]
+    -S --Serial      Serial port to uC [default: None]
     -d --dims DIMS   Frame size [default: 320x200]
     -D --DEBUG       Verbose debug output
 
 """
 
-import cv, cv2, time, os, sys
+import cv
+import cv2
+import time
+import os
+import sys
+from collections import deque
+
+#project libraries
 sys.path.append('./lib')
+
+#command line handling
 sys.path.append('./lib/docopt')
 from docopt import docopt
-from collections import deque
+
 
 DEBUG = True
 
@@ -85,12 +95,13 @@ class Grabber:
             self.capture.set( cv.CV_CAP_PROP_FRAME_HEIGHT, float(self.size_init[1]) )
 
         # Grab first frame, don't append to framebuffer
+        # TODO: Thats nasty for video file, losing first frame! I.e. transcoding
+        # would be lossy!
         self.grab_first()
 
 
     def grab_first( self ):
         """ Grabs first frame to get source image parameters. """
-
         # Possibly eternal loop until first frame returned
         rv = False
         while not rv:
@@ -119,7 +130,7 @@ class Grabber:
 
 
     def close( self ):
-        print 'Closing Grabber'
+        if DEBUG: print 'Closing Grabber'
         self.capture.release()
 
 
