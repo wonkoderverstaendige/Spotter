@@ -12,7 +12,7 @@ Usage:
 
 Options:
     -h --help         Show this screen
-    -c --codec CODEC  FOURCC letter code [default: XVID]
+    -c --codec CODEC  FOURCC letter code [default: IYUV]
     -f --fps FPS      Fps for camera and video
     -o --outfile DST  Path to video out file [default: None]
     -s --source SRC   Source, path to file or integer device ID [default: 0]
@@ -51,7 +51,7 @@ class Writer:
     alive = True
     ts_last = time.clock()
 
-    def __init__( self, dst, fps, size, queue = None , codec='DIVX' ):
+    def __init__( self, dst, fps, size, queue = None , codec='XVID' ):
 
         # check if output file exists
         self.destination = utils.dst_file_name( dst )
@@ -64,6 +64,7 @@ class Writer:
 
         # Explode the string into characters as required by archaic VideoWriter
         cc = list( codec )
+        print codec
 
         # Proper fps values only important if lower than what camera can provide,
         # or for video files, which are limited by CPU speed and 1ms min of waitKey()

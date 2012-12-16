@@ -103,7 +103,10 @@ def dst_file_name( destination ):
         $fixedString        $Animal52
     """
     # TODO: Destination file name generation
-    return destination
+    if destination == 'None':
+        return None
+    else:
+        return destination
 
 
 class HSVHist:

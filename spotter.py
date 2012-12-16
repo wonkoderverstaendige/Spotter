@@ -85,6 +85,8 @@ class Spotter(object):
                                 self.write_queue, ) )
             self.writer_process.start()
             self.check_writer()
+        else:
+            self.writer_process = None
 
         # tracker object finds LEDs in frames
         self.tracker = Tracker( serial )
@@ -124,7 +126,7 @@ class Spotter(object):
             self.tracker.close()
 
         # writer is a bit trickier, may have frames left to write away
-        if self.writer_process and self.writer_process.is_alive():
+        if not self.writer_process == None and self.writer_process.is_alive():
             self.write_queue.put( 'terminate' )
             # gives the child process one second to finish up, will be
             # terminated otherwise
@@ -190,7 +192,7 @@ if __name__ == "__main__":                                  #
             # Otherwise might lose data without knowing!
             # Copy numpy array, otherwise queue references same object
             # like frame that will be worked on
-            if main.check_writer():
+            if not main.writer_process == None and main.check_writer():
                 main.write_queue.put( main.newest_frame.copy() )
                 time.sleep( 0.001 ) # required, or may crash?
 
@@ -207,7 +209,7 @@ if __name__ == "__main__":                                  #
             main.gui.update( main.newest_frame )
 
         else:
-            print 'No new frame returned!!! What does it mean??? We are going to die! Eventually!'
+            print 'No new frame returned!!! What does it mean??? We are going to die! Eventually!!!'
 
         total_elapsed = ( time.clock() - main.grabber.ts_last_frame ) * 1000
         t = int( 1000/main.grabber.fps - total_elapsed ) - 1
