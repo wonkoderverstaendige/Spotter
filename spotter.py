@@ -51,7 +51,7 @@ sys.path.append('./lib/docopt')
 from docopt import docopt
 
 
-class Spotter(object):
+class Spotter:
 
     # helper instances
     grabber = None
@@ -69,7 +69,7 @@ class Spotter(object):
     ts_start = None
 
 
-    def __init__( self, source, destination, fps, size, serial, gui ):
+    def __init__( self, source, destination, fps, size, gui, serial ):
 
         # Setup frame grabber object, fills framebuffer
         self.grabber = Grabber( source, fps, size )
@@ -99,10 +99,46 @@ class Spotter(object):
                               'SpotThisThing' )
 
         self.gui = GUI( self, gui, "Spotter", size )
+#        sys.exit(app.exec_())        
+#        self.gui.show()
+#        self.frame.testframe()        
 
         # histogram instance required to do... what, again?
         self.hist = utils.HSVHist()
+        
+    def update( self ):
+        # Get new frame
+        if self.grabber.grab_next():
+            self.newest_frame = self.grabber.framebuffer.pop()
 
+            # Check if writer process is still alive
+            # Otherwise might lose data without knowing!
+            # Copy numpy array, otherwise queue references same object
+            # like frame that will be worked on
+            if not self.writer_process == None and self.check_writer():
+                self.write_queue.put( self.newest_frame.copy() )
+                time.sleep( 0.001 ) # required, or may crash?
+
+            # Find and update position of tracked object
+            self.hsv_frame = cv2.cvtColor( self.newest_frame, cv2.COLOR_BGR2HSV )
+            self.tracker.trackLeds( self.hsv_frame, method = 'hsv_thresh' )
+#            self.Object.updatePosition()
+
+            # send position of tracked object to serial port
+#            if not self.Object.guessed_pos is None:
+#                self.tracker.funker.send( self.Object.guessed_pos )
+
+            # freezes frame being shown, but not frame being processed/written
+#            self.gui.update( self.newest_frame )
+
+        else:
+            print 'No new frame returned!!! What does it mean??? We are going to die! Eventually!!!'
+
+        total_elapsed = ( time.clock() - self.grabber.ts_last_frame ) * 1000
+        t = int( 1000/self.grabber.fps - total_elapsed ) - 1
+        if t <= 0:
+            log.info('Missed next frame by: ' + str( t * -1. ) + ' ms')
+            t = 1
 
     def check_writer( self ):
         """ True if alive, otherwise causes script to terminate. """
@@ -161,8 +197,8 @@ if __name__ == "__main__":                                  #
         log.setLevel( logging.ERROR ) #INFOERROR
 
     # no GUI, may later select GUI backend, i.e., Qt or cv2.highgui etc.
-    gui = 'cv2.highgui' if not ARGDICT['--Headless'] else ARGDICT['--Headless']
-
+    guistring = 'cv2.highgui' if not ARGDICT['--Headless'] else ARGDICT['--Headless']
+    
     # Frame size parameter string 'WIDTHxHEIGHT' to size tupple (WIDTH, HEIGHT)
     size = (0, 0) if not ARGDICT['--dims'] else tuple( ARGDICT['--dims'].split('x') )
 
@@ -171,7 +207,7 @@ if __name__ == "__main__":                                  #
                     destination = utils.dst_file_name( ARGDICT['--outfile'] ),
                     fps         = ARGDICT['--fps'],
                     size        = size,
-                    gui         = gui,
+                    gui         = guistring,
                     serial      = ARGDICT['--Serial'])
 
     # It's Math. 3rd grade Math. Wait time between frames, if any left
@@ -200,8 +236,8 @@ if __name__ == "__main__":                                  #
             main.hsv_frame = cv2.cvtColor( main.newest_frame, cv2.COLOR_BGR2HSV )
             main.tracker.trackLeds( main.hsv_frame, method = 'hsv_thresh' )
 #            main.Object.updatePosition()
-#
-#            # send position of tracked object to serial port
+
+            # send position of tracked object to serial port
 #            if not main.Object.guessed_pos is None:
 #                main.tracker.funker.send( main.Object.guessed_pos )
 
@@ -216,7 +252,7 @@ if __name__ == "__main__":                                  #
         if t <= 0:
             log.info('Missed next frame by: ' + str( t * -1. ) + ' ms')
             t = 1
-
+#        main.update()
         main.gui.onKey( cv2.waitKey(t) )
 
-
+#    sys.exit(app.exec_())    

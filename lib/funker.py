@@ -51,9 +51,9 @@ class Funker:
     ser = None
     port = None
 
-    def __init__( self, serial, X_range = (0, 639), Y_range = (0, 359), DAC_range = (0, 4095) ):
+    def __init__( self, port, X_range = (0, 639), Y_range = (0, 359), DAC_range = (0, 4095) ):
 
-        if serial:
+        if port and not port=="None":
             self.X_range = X_range
             self.Y_range = Y_range
             self.DAC_range = DAC_range
@@ -61,7 +61,7 @@ class Funker:
             for l in list_ports.comports():
                 print l
 
-            self.port = serial
+            self.port = port
 
             self.ser = serial.Serial( self.port, 9600, 8, 'N', 1, timeout=1 )
             print 'Opened serial port ' + self.ser.portstr  # check which port was really used
