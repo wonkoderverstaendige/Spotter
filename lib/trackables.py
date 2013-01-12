@@ -59,7 +59,7 @@ class LED:
         pass
 
 
-class Mob:
+class OOI:
     """ Mobile object LEDs are attached to, if any."""
 
     # TODO: Use general "features" rather than LEDs specifically

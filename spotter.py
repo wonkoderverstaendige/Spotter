@@ -56,6 +56,7 @@ class Spotter:
     # helper instances
     grabber = None
     writer_process = None
+    tracker = None
 
     # state variables
     record_to_file = True
@@ -99,9 +100,6 @@ class Spotter:
                               'SpotThisThing' )
 
         self.gui = GUI( self, gui, "Spotter", size )
-#        sys.exit(app.exec_())        
-#        self.gui.show()
-#        self.frame.testframe()        
 
         # histogram instance required to do... what, again?
         self.hist = utils.HSVHist()

@@ -67,7 +67,7 @@ class Tracker:
 
 
     def addOOI( self, led_list, label = 'trackme' ):
-        self.oois.append( trkbl.Mob( led_list, label ))
+        self.oois.append( trkbl.OOI( led_list, label ))
 
 
     def trackLeds( self, frame, method = 'hsv_thresh' ):
