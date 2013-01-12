@@ -57,7 +57,6 @@ class Tracker:
     def __init__( self, serial = None ):
         self.funker = funker.Funker( serial )
 
-
     def addLED( self, label, hue_range, fixed_pos = False, linked_to = None ):
         # TODO: More comprehensive LED types, including val/sat ranges etc.
         self.leds.append( trkbl.LED( label, hue_range, fixed_pos, linked_to ))
@@ -74,67 +73,62 @@ class Tracker:
         """ Intermediate method selecting tracking method and seperating those
             tracking methods from the frames stored in the instantiatd Tracker
         """
-        if method == 'hsv_thresh':
-            self.frame = frame
-            coord_list = self.threshTrack( self.frame, self.leds )
-            for i, l in enumerate( self.leds ):
-                l.pos_hist.append( coord_list[i] )
-
-
-    def threshTrack( self, hsv_frame, led_list ):
-        """ Tracks LEDs from a list in a HSV frame by thresholding
-            hue, saturation, followed by thresholding for each LEDs hue.
-            Large enough contours will have coords returned, or None
-        """
-        coord_list = list()
 
         # dilate bright spots
 #        kernel = np.ones( (3,3), 'uint8' )
 #        # conversion to HSV before dilation causes artifacts
 #        dilatedframe = cv2.cvtColor( self.frame, cv2.COLOR_BGR2HSV )
 
-        for l in led_list:
-            # if range[0] > range[1], i.e., color is red and wraps around,
-            # invert range and perform NOT on result
-            invert_range = False if not l.hue_range[0] > l.hue_range[1] else True
+        if method == 'hsv_thresh':
+            self.frame = frame
+#            comp_coord_list = self.threshTrack( self.frame, self.leds )
+            for led in self.leds:
+                self.threshTrack( self.frame, led )
+#                l.pos_hist.append( comp_coord_list.pop() )
 
-            # All colors except red
-            if not invert_range:
-                lowerBound = np.array( [l.hue_range[0], l.min_sat, l.min_val], np.uint8 )
-                upperBound = np.array( [l.hue_range[1], 255, 255], np.uint8 )
-                ranged_frame = cv2.inRange( hsv_frame, lowerBound, upperBound )
 
-            # Red requires double thresholding!
-            else:
-                # min-180 (or, 255)
-                lowerBound = np.array( [l.hue_range[0], l.min_sat, l.min_val], np.uint8 )
-                upperBound = np.array( [179, 255, 253], np.uint8 )
-                ranged_frame = cv2.inRange( hsv_frame, lowerBound, upperBound )
-                # 0-max (or, 255)
-                lowerBound = np.array( [0, l.min_sat, l.min_val], np.uint8 )
-                upperBound = np.array( [l.hue_range[1], 255, 253], np.uint8 )
-                redrange = cv2.inRange( hsv_frame, lowerBound, upperBound )
-                # combine both ends for complete mask
-                ranged_frame = cv2.bitwise_or( ranged_frame, redrange )
+    def threshTrack( self, hsv_frame, l ):
+        """ Tracks LEDs from a list in a HSV frame by thresholding
+            hue, saturation, followed by thresholding for each LEDs hue.
+            Large enough contours will have coords returned, or None
+        """
 
-            # find largest contour
-            ranged_frame = cv2.dilate( ranged_frame, np.ones( (3,3), 'uint8' ) )
-            contour = self.findContour( ranged_frame, min_area = 5 )
+        # if range[0] > range[1], i.e., color is red and wraps around,
+        # invert range and perform NOT on result
+        invert_range = False if not l.hue_range[0] > l.hue_range[1] else True
 
-            # finding centroids of best_cnt and draw a circle there
-            if not contour == None:
-                M = cv2.moments( contour )
-                cx,cy = int( M['m10']/M['m00'] ), int( M['m01']/M['m00'] )
-#                cv2.circle(ranged_frame,(cx,cy),5,255,-1)
-                coord_list.append( tuple( [cx, cy] ) )
-            else:
-                # Couldn't find a good enough spot
-                coord_list.append( None )
+        # All colors except red
+        if not invert_range:
+            lowerBound = np.array( [l.hue_range[0], l.min_sat, l.min_val], np.uint8 )
+            upperBound = np.array( [l.hue_range[1], 255, 255], np.uint8 )
+            ranged_frame = cv2.inRange( hsv_frame, lowerBound, upperBound )
 
-        # having a returnlist may be overly complicated, but makes it easier to
-        # track LEDs in frames not part of sequence from the framesource for
-        # fine tuning of parameters.
-        return coord_list
+        # Red hue requires double thresholding due to wraparound in hue domain
+        else:
+            # min-180 (or, 255)
+            lowerBound = np.array( [l.hue_range[0], l.min_sat, l.min_val], np.uint8 )
+            upperBound = np.array( [179, 255, 253], np.uint8 )
+            ranged_frame = cv2.inRange( hsv_frame, lowerBound, upperBound )
+            # 0-max (or, 255)
+            lowerBound = np.array( [0, l.min_sat, l.min_val], np.uint8 )
+            upperBound = np.array( [l.hue_range[1], 255, 253], np.uint8 )
+            redrange = cv2.inRange( hsv_frame, lowerBound, upperBound )
+            # combine both ends for complete mask
+            ranged_frame = cv2.bitwise_or( ranged_frame, redrange )
+
+        # find largest contour
+        ranged_frame = cv2.dilate( ranged_frame, np.ones( (3,3), 'uint8' ) )
+        contour = self.findContour( ranged_frame, min_area = 5 )
+
+        # finding centroids of best_cnt and draw a circle there
+        if not contour == None:
+            M = cv2.moments( contour )
+            cx = int( M['m10']/M['m00'] )
+            cy = int( M['m01']/M['m00'] )
+            l.pos_hist.append( tuple( [cx, cy] ) )
+        else:
+            # Couldn't find a good enough spot
+            l.pos_hist.append(None)
 
 
     def findContour( self, frame, min_area = 5 ):
@@ -168,8 +162,12 @@ class Tracker:
 
 
     def close( self ):
+        """ Free up serial connection on exit.
+        TODO: __del__
+        """
         if self.funker:
             self.funker.close()
+
 
 #############################################################
 if __name__ == '__main__':                                  #

@@ -9,8 +9,7 @@ Helper functions.
 from sys import float_info
 import numpy as np
 import cv2
-import time
-
+#import time
 
 def BGRpix2HSV( pixel ):
     """ Converts BGR color information of a single pixel to HSV """
@@ -44,6 +43,36 @@ def BGRpix2HSV( pixel ):
     V *= 255.
 
     return int(H), int(S), int(V)
+
+
+def HSVpix2RGB( pixel ):
+    """ Converts HSV color information of a single pixel to RGB """
+    h, s, v = pixel
+    S = s/255.0
+    V = v/255.0
+    H = h*2
+    C = V * S;
+    Hn = H/60.0
+    
+    X = C * (1 - abs((Hn % 2) -1))
+    
+    if 0 <= Hn and Hn < 1:
+        RGB1 = (C, X, 0)
+    elif 1 <= Hn and Hn < 2:
+        RGB1 = (X, C, 0)
+    elif 2 <= Hn and Hn < 3:
+        RGB1 = (0, C, X)
+    elif 3 <= Hn and Hn < 4:
+        RGB1 = (0, X, C)
+    elif 4 <= Hn and Hn < 5:
+        RGB1 = (X, 0, C)
+    elif 5 <= Hn and Hn < 6:
+        RGB1 = (C, 0, X)
+    else:
+        print "Something went terribly wrong!"
+        
+    m = V - C
+    return (RGB1[0]+m, RGB1[1]+m, RGB1[2]+m)
 
 
 def drawPointer( frame, p1, p2, color=(255, 255, 255), length = 50):

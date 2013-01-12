@@ -42,7 +42,7 @@ sys.path.append('./lib')
 from grabber import Grabber
 from writer import Writer
 from tracker import Tracker
-from GUI import GUI
+#from GUI import GUI
 import utils
 
 
@@ -68,6 +68,8 @@ class Spotter:
     hsv_frame = None     # converted into HSV colorspace for tracking
 
     ts_start = None
+    
+    paused = False
 
 
     def __init__( self, source, destination, fps, size, gui, serial ):
@@ -92,18 +94,19 @@ class Spotter:
         # tracker object finds LEDs in frames
         self.tracker = Tracker( serial )
         self.tracker.addLED( 'red', ( 160, 5 ) )
-        self.tracker.addLED( 'sync', ( 15, 90 ), fixed_pos = True )
+        self.tracker.addLED( 'green', ( 15, 90 ), fixed_pos = True )
         self.tracker.addLED( 'blue', ( 105, 135 ) )
 
         self.tracker.addOOI( [self.tracker.leds[0],
                               self.tracker.leds[2]],
-                              'SpotThisThing' )
+                              'Subject' )
 
-        self.gui = GUI( self, gui, "Spotter", size )
+#        self.gui = GUI( self, gui, "Spotter", size )
 
         # histogram instance required to do... what, again?
         self.hist = utils.HSVHist()
-        
+
+
     def update( self ):
         # Get new frame
         if self.grabber.grab_next():
@@ -120,7 +123,10 @@ class Spotter:
             # Find and update position of tracked object
             self.hsv_frame = cv2.cvtColor( self.newest_frame, cv2.COLOR_BGR2HSV )
             self.tracker.trackLeds( self.hsv_frame, method = 'hsv_thresh' )
-#            self.Object.updatePosition()
+
+            # Calculate positions for all Objects of Interest
+            for i in range(len(self.tracker.oois)):
+                self.tracker.oois[i].updatePosition()
 
             # send position of tracked object to serial port
 #            if not self.Object.guessed_pos is None:
