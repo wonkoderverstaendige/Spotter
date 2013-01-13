@@ -30,6 +30,8 @@ To do:
 
 """
 
+NO_EXIT_CONFIRMATION = True
+
 import sys
 from PyQt4 import QtGui, QtCore
 import logging
@@ -43,6 +45,8 @@ import utils
 sys.path.append('./ui')
 from GLFrame import GLFrame
 from mainUi import Ui_MainWindow
+from TabFeatures import TabFeatures
+#from tab_featuresUi import Ui_tab_features
 
 #command line handling
 sys.path.append('./lib/docopt')
@@ -72,10 +76,14 @@ class Main(QtGui.QMainWindow):
         self.frame.setSizePolicy( QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding )
 
         # Features tab widget
-        self.connect(self.ui.tab_features, QtCore.SIGNAL('currentChanged(int)'), self.tab_features_update)        
+        self.feature_tabs = []
+        self.connect(self.ui.tab_features, QtCore.SIGNAL('currentChanged(int)'), self.tab_features_switch)
+        self.connect(self.ui.btn_new_feature_tab, QtCore.SIGNAL('clicked()'), self.tab_features_add)
 
         # Objects tab widget
-        self.connect(self.ui.tab_objects, QtCore.SIGNAL('currentChanged(int)'), self.tab_objects_update) 
+        self.connect(self.ui.tab_objects, QtCore.SIGNAL('currentChanged(int)'), self.tab_objects_switch) 
+        self.connect(self.ui.btn_new_object_tab, QtCore.SIGNAL('clicked()'), self.tab_objects_add)
+        self.object_tabs = []
 
         # Starts main frame grabber loop
         self.timer = QtCore.QTimer(self)
@@ -90,22 +98,43 @@ class Main(QtGui.QMainWindow):
         size = self.geometry()
         self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
  
- 
-    def tab_features_update(self, tab):
-        self.add_tab(self.ui.tab_features, tab)
-
-
-    def tab_objects_update(self, tab):
-        self.add_tab(self.ui.tab_objects, tab)
-
- 
-    def add_tab(self, tabwidget, tab):
-        """ Add a new empty tab to the tab widget and switches to it. """
-        if tab == tabwidget.count() - 1:
-            tabwidget.insertTab(tab, QtGui.QWidget(), str(tabwidget.count()))
-            tabwidget.setCurrentIndex(tabwidget.count()-2)
+    #Feature Tab List Updates
+    def tab_features_switch(self, idx_tab = 0):
+        if idx_tab == self.ui.tab_features.count() - 1:
+            self.tab_features_add()
         else:
-            tabwidget.setCurrentIndex(tab)
+            self.ui.tab_features.setCurrentIndex(idx_tab)
+
+    def tab_features_add(self):
+        self.add_tab(self.ui.tab_features, TabFeatures, self.feature_tabs)
+
+    # Object Tab List Updates
+    def tab_objects_switch(self, idx_tab = 0):
+        if idx_tab == self.ui.tab_features.count() - 1:
+            self.tab_objects_add()
+        else:
+            self.ui.tab_objects.setCurrentIndex(idx_tab)
+
+    def tab_objects_add(self,):
+        self.add_tab(self.ui.tab_objects, TabObjects, self.object_tabs)
+
+    def add_tab(self, tabwidget, newTabClass, tab_list, typestr = "LED"):
+        """ Addd new tab with Widget newTabClass and switches to it. """
+        # create a unique label for the Tab
+        num_newLabel = tabwidget.count() - 1
+        lbl_list = []
+        for t in range(tabwidget.count()):
+            lbl_list.append(str(tabwidget.tabText(t)))
+        while ''.join([typestr, str(num_newLabel)]) in lbl_list:
+            num_newLabel += 1
+
+        # Add a new Tab of the class specific to the calling TabWidget
+        new_tab = newTabClass(self, ''.join(["LED", str(num_newLabel)]))
+        tabwidget.insertTab(tabwidget.count() - 1, new_tab, new_tab.name)
+        tab_list.append(new_tab)
+        
+        # switch to new tab            
+        tabwidget.setCurrentIndex(tabwidget.count()-2)
 
 
     def remove_tab(self, tabwidget, tab):
@@ -115,6 +144,9 @@ class Main(QtGui.QMainWindow):
  
  
     def closeEvent(self, event):
+        if NO_EXIT_CONFIRMATION:
+            event.accept()
+            return
         reply = QtGui.QMessageBox.question(self, 'Exit confirmation', 'Are you sure?', QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
         if reply == QtGui.QMessageBox.Yes:
             event.accept()

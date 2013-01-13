@@ -70,6 +70,12 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="minimumSize">
+         <size>
+          <width>320</width>
+          <height>300</height>
+         </size>
+        </property>
         <property name="currentIndex">
          <number>1</number>
         </property>
@@ -139,25 +145,13 @@
          </attribute>
          <layout class="QHBoxLayout" name="horizontalLayout_5">
           <property name="spacing">
-           <number>1</number>
+           <number>0</number>
           </property>
           <property name="margin">
-           <number>1</number>
+           <number>0</number>
           </property>
           <item>
            <widget class="QTabWidget" name="tab_features">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>320</width>
-              <height>300</height>
-             </size>
-            </property>
             <property name="tabPosition">
              <enum>QTabWidget::East</enum>
             </property>
@@ -170,300 +164,21 @@
             <property name="elideMode">
              <enum>Qt::ElideNone</enum>
             </property>
-            <widget class="QWidget" name="tab_features_RLED">
-             <attribute name="title">
-              <string>redLED</string>
-             </attribute>
-             <layout class="QGridLayout" name="gridLayout_3">
-              <property name="margin">
-               <number>3</number>
-              </property>
-              <property name="spacing">
-               <number>1</number>
-              </property>
-              <item row="1" column="0">
-               <widget class="QToolBox" name="toolBox">
-                <property name="frameShape">
-                 <enum>QFrame::NoFrame</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Plain</enum>
-                </property>
-                <property name="lineWidth">
-                 <number>0</number>
-                </property>
-                <property name="currentIndex">
-                 <number>0</number>
-                </property>
-                <property name="tabSpacing">
-                 <number>0</number>
-                </property>
-                <widget class="QWidget" name="page">
-                 <property name="geometry">
-                  <rect>
-                   <x>0</x>
-                   <y>0</y>
-                   <width>281</width>
-                   <height>216</height>
-                  </rect>
-                 </property>
-                 <attribute name="label">
-                  <string>Detection</string>
-                 </attribute>
-                 <layout class="QGridLayout" name="gridLayout_6">
-                  <property name="margin">
-                   <number>2</number>
-                  </property>
-                  <property name="spacing">
-                   <number>2</number>
-                  </property>
-                  <item row="4" column="0">
-                   <layout class="QVBoxLayout" name="verticalLayout_4">
-                    <item>
-                     <widget class="QLabel" name="label_6">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>16777215</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="styleSheet">
-                       <string notr="true">background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(255, 0, 0, 255), stop:0.166 rgba(255, 255, 0, 255), stop:0.333 rgba(0, 255, 0, 255), stop:0.5 rgba(0, 255, 255, 255), stop:0.666 rgba(0, 0, 255, 255), stop:0.833 rgba(255, 0, 255, 255), stop:1 rgba(255, 0, 0, 255));</string>
-                      </property>
-                      <property name="text">
-                       <string/>
-                      </property>
-                     </widget>
-                    </item>
-                   </layout>
-                  </item>
-                  <item row="0" column="0">
-                   <widget class="QCheckBox" name="checkBox_3">
-                    <property name="text">
-                     <string>Tracking Active</string>
-                    </property>
-                    <property name="checked">
-                     <bool>true</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="0">
-                   <layout class="QGridLayout" name="gridLayout_9">
-                    <property name="spacing">
-                     <number>0</number>
-                    </property>
-                    <item row="0" column="2">
-                     <widget class="QLabel" name="label_5">
-                      <property name="layoutDirection">
-                       <enum>Qt::LeftToRight</enum>
-                      </property>
-                      <property name="text">
-                       <string>Max</string>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="0">
-                     <widget class="QLabel" name="label_3">
-                      <property name="text">
-                       <string>Sat</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="1">
-                     <widget class="QSpinBox" name="spinBox_5"/>
-                    </item>
-                    <item row="3" column="0">
-                     <widget class="QLabel" name="label_2">
-                      <property name="text">
-                       <string>Val</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="0" column="1">
-                     <widget class="QLabel" name="label_4">
-                      <property name="layoutDirection">
-                       <enum>Qt::LeftToRight</enum>
-                      </property>
-                      <property name="text">
-                       <string>Min</string>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="3" column="2">
-                     <widget class="QSpinBox" name="spinBox_4"/>
-                    </item>
-                    <item row="3" column="1">
-                     <widget class="QSpinBox" name="spinBox_3"/>
-                    </item>
-                    <item row="1" column="0">
-                     <widget class="QLabel" name="label">
-                      <property name="text">
-                       <string>Hue</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="1">
-                     <widget class="QSpinBox" name="spinBox_2"/>
-                    </item>
-                    <item row="1" column="2">
-                     <widget class="QSpinBox" name="spinBox"/>
-                    </item>
-                    <item row="2" column="2">
-                     <widget class="QSpinBox" name="spinBox_6"/>
-                    </item>
-                    <item row="4" column="1" colspan="2">
-                     <widget class="QPushButton" name="pushButton_10">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="toolTip">
-                       <string>Pick thresholds from image by dragging frame around the spot of interest</string>
-                      </property>
-                      <property name="statusTip">
-                       <string>Pick rage from image</string>
-                      </property>
-                      <property name="text">
-                       <string>Pick</string>
-                      </property>
-                      <property name="checkable">
-                       <bool>true</bool>
-                      </property>
-                      <property name="flat">
-                       <bool>false</bool>
-                      </property>
-                     </widget>
-                    </item>
-                   </layout>
-                  </item>
-                  <item row="1" column="0">
-                   <widget class="QComboBox" name="comboBox">
-                    <property name="editable">
-                     <bool>true</bool>
-                    </property>
-                    <property name="insertPolicy">
-                     <enum>QComboBox::NoInsert</enum>
-                    </property>
-                    <item>
-                     <property name="text">
-                      <string>redLED</string>
-                     </property>
-                    </item>
-                    <item>
-                     <property name="text">
-                      <string>greenLED</string>
-                     </property>
-                    </item>
-                    <item>
-                     <property name="text">
-                      <string>blueLED</string>
-                     </property>
-                    </item>
-                   </widget>
-                  </item>
-                 </layout>
-                </widget>
-                <widget class="QWidget" name="page_5">
-                 <attribute name="label">
-                  <string>Restrictions</string>
-                 </attribute>
-                 <layout class="QGridLayout" name="gridLayout_8"/>
-                </widget>
-                <widget class="QWidget" name="tab_features_buttons">
-                 <property name="geometry">
-                  <rect>
-                   <x>0</x>
-                   <y>0</y>
-                   <width>211</width>
-                   <height>216</height>
-                  </rect>
-                 </property>
-                 <attribute name="label">
-                  <string>In/Out</string>
-                 </attribute>
-                 <layout class="QGridLayout" name="gridLayout_7">
-                  <item row="2" column="3">
-                   <widget class="QPushButton" name="pushButton_8">
-                    <property name="text">
-                     <string>Save</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="1">
-                   <widget class="QPushButton" name="pushButton_9">
-                    <property name="text">
-                     <string>Open</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="1">
-                   <widget class="QPushButton" name="pushButton_4">
-                    <property name="text">
-                     <string>Clone</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="3">
-                   <widget class="QPushButton" name="pushButton_5">
-                    <property name="text">
-                     <string>Delete</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="1">
-                   <spacer name="verticalSpacer_3">
-                    <property name="orientation">
-                     <enum>Qt::Vertical</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>20</width>
-                      <height>40</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                 </layout>
-                </widget>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-            <widget class="QWidget" name="tab_features_GLED">
-             <attribute name="title">
-              <string>greenLED</string>
-             </attribute>
-             <layout class="QVBoxLayout" name="verticalLayout_3"/>
-            </widget>
-            <widget class="QWidget" name="tab_features_BLED">
-             <attribute name="title">
-              <string>redLED</string>
-             </attribute>
-             <layout class="QHBoxLayout" name="horizontalLayout_7"/>
-            </widget>
             <widget class="QWidget" name="tab_features_newTab">
              <attribute name="title">
               <string>+</string>
              </attribute>
              <layout class="QVBoxLayout" name="verticalLayout_2">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <property name="margin">
+               <number>0</number>
+              </property>
               <item>
-               <widget class="QPushButton" name="pushButton_6">
+               <widget class="QPushButton" name="btn_new_feature_tab">
                 <property name="text">
-                 <string>Add New</string>
+                 <string>Add LED/Feature</string>
                 </property>
                </widget>
               </item>
@@ -479,15 +194,15 @@
          </attribute>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <property name="spacing">
-           <number>1</number>
+           <number>0</number>
           </property>
           <property name="margin">
-           <number>3</number>
+           <number>0</number>
           </property>
           <item>
            <widget class="QTabWidget" name="tab_objects">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -510,138 +225,15 @@
             <property name="elideMode">
              <enum>Qt::ElideNone</enum>
             </property>
-            <widget class="QWidget" name="tab_objects_sync">
-             <attribute name="title">
-              <string>Sync</string>
-             </attribute>
-             <layout class="QGridLayout" name="gridLayout">
-              <property name="margin">
-               <number>3</number>
-              </property>
-              <item row="0" column="0" colspan="2">
-               <layout class="QVBoxLayout" name="verticalLayout_5">
-                <item>
-                 <widget class="QToolBox" name="toolBox_2">
-                  <property name="currentIndex">
-                   <number>0</number>
-                  </property>
-                  <widget class="QWidget" name="page_3">
-                   <property name="geometry">
-                    <rect>
-                     <x>0</x>
-                     <y>0</y>
-                     <width>209</width>
-                     <height>223</height>
-                    </rect>
-                   </property>
-                   <attribute name="label">
-                    <string>Page 1</string>
-                   </attribute>
-                   <layout class="QGridLayout" name="gridLayout_5">
-                    <item row="0" column="0">
-                     <widget class="QSlider" name="horizontalSlider">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="tickPosition">
-                       <enum>QSlider::TicksBelow</enum>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="0">
-                     <widget class="QSlider" name="horizontalSlider_2">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="tickPosition">
-                       <enum>QSlider::TicksBelow</enum>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="0">
-                     <widget class="QSlider" name="horizontalSlider_3">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="tickPosition">
-                       <enum>QSlider::TicksBelow</enum>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="3" column="0">
-                     <widget class="QCheckBox" name="checkBox_2">
-                      <property name="text">
-                       <string>CheckBox</string>
-                      </property>
-                     </widget>
-                    </item>
-                   </layout>
-                  </widget>
-                  <widget class="QWidget" name="page_4">
-                   <property name="geometry">
-                    <rect>
-                     <x>0</x>
-                     <y>0</y>
-                     <width>194</width>
-                     <height>78</height>
-                    </rect>
-                   </property>
-                   <attribute name="label">
-                    <string>Page 2</string>
-                   </attribute>
-                   <layout class="QGridLayout" name="gridLayout_4">
-                    <item row="2" column="1">
-                     <widget class="QPushButton" name="pushButton">
-                      <property name="text">
-                       <string>Save</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="0">
-                     <widget class="QPushButton" name="pushButton_7">
-                      <property name="text">
-                       <string>Load</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="3" column="0" colspan="2">
-                     <widget class="QPushButton" name="pushButton_2">
-                      <property name="text">
-                       <string>Delete</string>
-                      </property>
-                     </widget>
-                    </item>
-                   </layout>
-                  </widget>
-                 </widget>
-                </item>
-               </layout>
-              </item>
-             </layout>
-            </widget>
-            <widget class="QWidget" name="tab_object_subject">
-             <attribute name="title">
-              <string>Subject</string>
-             </attribute>
-             <layout class="QHBoxLayout" name="horizontalLayout_6">
-              <item>
-               <widget class="QRadioButton" name="radioButton">
-                <property name="text">
-                 <string>RadioButton</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
             <widget class="QWidget" name="tab_object_newTab">
              <attribute name="title">
               <string>+</string>
              </attribute>
              <layout class="QVBoxLayout" name="verticalLayout">
               <item>
-               <widget class="QPushButton" name="pushButton_3">
+               <widget class="QPushButton" name="btn_new_object_tab">
                 <property name="text">
-                 <string>Add New</string>
+                 <string>Add Object</string>
                 </property>
                </widget>
               </item>
