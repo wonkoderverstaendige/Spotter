@@ -93,13 +93,13 @@ class Spotter:
 
         # tracker object finds LEDs in frames
         self.tracker = Tracker( serial )
-        self.tracker.addLED( 'red', ( 160, 5 ) )
-        self.tracker.addLED( 'green', ( 15, 90 ), fixed_pos = True )
-        self.tracker.addLED( 'blue', ( 105, 135 ) )
-
-        self.tracker.addOOI( [self.tracker.leds[0],
-                              self.tracker.leds[2]],
-                              'Subject' )
+#        self.tracker.addLED( 'red', ( 160, 5 ) )
+#        self.tracker.addLED( 'green', ( 15, 90 ), fixed_pos = True )
+#        self.tracker.addLED( 'blue', ( 105, 135 ) )
+#
+#        self.tracker.addOOI( [self.tracker.leds[0],
+#                              self.tracker.leds[2]],
+#                              'Subject' )
 
 #        self.gui = GUI( self, gui, "Spotter", size )
 

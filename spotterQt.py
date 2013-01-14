@@ -45,8 +45,8 @@ import utils
 sys.path.append('./ui')
 from GLFrame import GLFrame
 from mainUi import Ui_MainWindow
-from TabFeatures import TabFeatures
-#from tab_featuresUi import Ui_tab_features
+import TabFeatures
+import TabObjects
 
 #command line handling
 sys.path.append('./lib/docopt')
@@ -54,6 +54,12 @@ from docopt import docopt
 
 
 class Main(QtGui.QMainWindow):
+
+    led_templates = [['red', ( 160, 5 ), False],
+                     ['blue', ( 105, 135 ), False],
+                     ['green', ( 15, 90 ), True]]
+
+
     def __init__(self, source, destination, fps, size, gui, serial):
         QtGui.QMainWindow.__init__(self)
         
@@ -78,11 +84,11 @@ class Main(QtGui.QMainWindow):
         # Features tab widget
         self.feature_tabs = []
         self.connect(self.ui.tab_features, QtCore.SIGNAL('currentChanged(int)'), self.tab_features_switch)
-        self.connect(self.ui.btn_new_feature_tab, QtCore.SIGNAL('clicked()'), self.tab_features_add)
+        self.connect(self.ui.btn_new_feature_tab, QtCore.SIGNAL('clicked()'), self.add_feature)
 
         # Objects tab widget
         self.connect(self.ui.tab_objects, QtCore.SIGNAL('currentChanged(int)'), self.tab_objects_switch) 
-        self.connect(self.ui.btn_new_object_tab, QtCore.SIGNAL('clicked()'), self.tab_objects_add)
+        self.connect(self.ui.btn_new_object_tab, QtCore.SIGNAL('clicked()'), self.add_object)
         self.object_tabs = []
 
         # Starts main frame grabber loop
@@ -91,7 +97,7 @@ class Main(QtGui.QMainWindow):
         self.refresh()
         self.frame.resizeFrame()
         self.timer.start(30)
-        
+       
 
     def centerWindow(self):
         screen = QtGui.QDesktopWidget().screenGeometry()
@@ -101,40 +107,52 @@ class Main(QtGui.QMainWindow):
     #Feature Tab List Updates
     def tab_features_switch(self, idx_tab = 0):
         if idx_tab == self.ui.tab_features.count() - 1:
-            self.tab_features_add()
+            self.add_feature()
         else:
             self.ui.tab_features.setCurrentIndex(idx_tab)
 
-    def tab_features_add(self):
-        self.add_tab(self.ui.tab_features, TabFeatures, self.feature_tabs)
+    def add_feature(self):
+        # TODO:
+            #Example features, REMOVE   
+        new_led = self.spotter.tracker.addLED(*self.led_templates[self.ui.tab_features.count()-2])
+        new_tab = self.add_tab(self.ui.tab_features, TabFeatures, new_led)
+        self.feature_tabs.append(new_tab)
 
+            
     # Object Tab List Updates
     def tab_objects_switch(self, idx_tab = 0):
         if idx_tab == self.ui.tab_features.count() - 1:
-            self.tab_objects_add()
+            self.add_object()
         else:
             self.ui.tab_objects.setCurrentIndex(idx_tab)
 
-    def tab_objects_add(self,):
-        self.add_tab(self.ui.tab_objects, TabObjects, self.object_tabs)
+    def add_object(self,):
+        # TODO:
+            #Example Object, REMOVE        
+        new_object = self.spotter.tracker.addOOI(self.spotter.tracker.leds[1:3], "Subject")
+        self.add_tab(self.ui.tab_objects, TabObjects, new_object)
+        self.object_tabs.append(new_object)
 
-    def add_tab(self, tabwidget, newTabClass, tab_list, typestr = "LED"):
+        # TODO:
+            #Example Object, REMOVE        
+
+    def add_tab(self, tabwidget, newTabClass, tab_equivalent):
         """ Addd new tab with Widget newTabClass and switches to it. """
-        # create a unique label for the Tab
-        num_newLabel = tabwidget.count() - 1
-        lbl_list = []
-        for t in range(tabwidget.count()):
-            lbl_list.append(str(tabwidget.tabText(t)))
-        while ''.join([typestr, str(num_newLabel)]) in lbl_list:
-            num_newLabel += 1
+#        # create a unique label for the Tab
+#        num_newLabel = tabwidget.count() - 1
+#        lbl_list = []
+#        for t in range(tabwidget.count()):
+#            lbl_list.append(str(tabwidget.tabText(t)))
+#        while ''.join([newTabClass.tab_lbl, str(num_newLabel)]) in lbl_list:
+#            num_newLabel += 1
 
         # Add a new Tab of the class specific to the calling TabWidget
-        new_tab = newTabClass(self, ''.join(["LED", str(num_newLabel)]))
+        new_tab = newTabClass.Tab(self, tab_equivalent ) #''.join([newTabClass.tab_lbl, str(num_newLabel)]), 
         tabwidget.insertTab(tabwidget.count() - 1, new_tab, new_tab.name)
-        tab_list.append(new_tab)
         
         # switch to new tab            
         tabwidget.setCurrentIndex(tabwidget.count()-2)
+        return new_tab
 
 
     def remove_tab(self, tabwidget, tab):

@@ -10,22 +10,21 @@ import sys
 from PyQt4 import QtGui, QtCore
 
 sys.path.append('./ui')
-from tab_featuresUi import Ui_tab_features
+from tab_objectsUi import Ui_tab_objects
 
-tab_type = "newLED"
+tab_type = "object"
 
-class Tab(QtGui.QWidget, Ui_tab_features):
+class Tab(QtGui.QWidget, Ui_tab_objects):
     
     name = None
-    feature = None
+    led = None
     
-    def __init__(self, parent, feature_handle, label = None):
+    def __init__(self, parent, object_handle, label = None):
         if label == None:
             self.name = tab_type
         else:
             self.name = tab_type
         super(QtGui.QWidget, self).__init__(parent)
         self.setupUi(self)
-
-    def update(self):
+        
         self.combo_label.setEditText(self.name)

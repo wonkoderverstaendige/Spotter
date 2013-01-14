@@ -59,7 +59,9 @@ class Tracker:
 
     def addLED( self, label, hue_range, fixed_pos = False, linked_to = None ):
         # TODO: More comprehensive LED types, including val/sat ranges etc.
-        self.leds.append( trkbl.LED( label, hue_range, fixed_pos, linked_to ))
+        led = trkbl.LED( label, hue_range, fixed_pos, linked_to )
+        self.leds.append( led )
+        return led
 
     def addROI( self, points ):
         self.rois.append( trkbl.ROI(points, (100, 0, 100) ))
