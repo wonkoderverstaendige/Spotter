@@ -1,8 +1,8 @@
-
 Spotter : Unsophisticated video tracking
 ========================================
 
-Spotter can track LEDs in a video stream--either from a webcam or video file--and simultaneously write encoded video to disk. It is based on the [OpenCV](http://opencv.org/) library. It's a very early alpha and hardly working.
+[Spotter](http://wonkoderverstaendige.github.com/Spotter) can track LEDs in a video stream--either from a webcam or video file--and simultaneously write encoded video to disk. It is based on the [OpenCV](http://opencv.org/) library. It's a very early alpha and hardly working.
+
 
 Simple Example
 --------------
