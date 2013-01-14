@@ -39,7 +39,7 @@
           <x>0</x>
           <y>0</y>
           <width>317</width>
-          <height>247</height>
+          <height>259</height>
          </rect>
         </property>
         <attribute name="label">
@@ -54,6 +54,9 @@
          </property>
          <item row="11" column="0">
           <layout class="QVBoxLayout" name="verticalLayout_4">
+           <property name="spacing">
+            <number>1</number>
+           </property>
            <item>
             <widget class="QLabel" name="lbl_colorspace">
              <property name="sizePolicy">
@@ -486,7 +489,7 @@
           <x>0</x>
           <y>0</y>
           <width>317</width>
-          <height>247</height>
+          <height>259</height>
          </rect>
         </property>
         <attribute name="label">
@@ -518,7 +521,7 @@
           <x>0</x>
           <y>0</y>
           <width>317</width>
-          <height>247</height>
+          <height>259</height>
          </rect>
         </property>
         <attribute name="label">

@@ -22,7 +22,7 @@ class LED:
     pos_hist = None
     mean_hue = None    # mean color of range for labels/markers etc.
     lblcolor =  None
-    
+
     def __init__( self, label, range_hue, fixed_pos = False, linked_to = None ):
         self.label = label
         self.fixed_pos = fixed_pos
@@ -43,7 +43,7 @@ class LED:
                 self.mean_hue = range_hue[0] + center - 180
             else:
                 self.mean_hue = range_hue[0] + center
-            
+
         self.lblcolor = utils.HSVpix2RGB((self.mean_hue, 255, 255))
         self.pos_hist = []
 
@@ -65,7 +65,7 @@ class OOI:
     pos_hist = None # Has the "real" values
     guessed_pos = None # Holds currently guessed position, either from tracking
                        # or estimation
-    leds = None
+    linked_leds = None
     label = None
 
     def __init__( self, leds, label = 'trackme' ):
