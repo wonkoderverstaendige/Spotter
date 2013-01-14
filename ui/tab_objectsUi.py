@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'tab_objectsUi.ui'
 #
-# Created: Mon Jan 14 04:07:12 2013
+# Created: Mon Jan 14 14:07:24 2013
 #      by: PyQt4 UI code generator 4.8.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -89,8 +89,7 @@ class Ui_tab_objects(object):
         self.gridLayout_3.addLayout(self.gridLayout_5, 1, 5, 1, 1)
         self.list_leds = QtGui.QListWidget(self.page_objects_tracking)
         self.list_leds.setAlternatingRowColors(True)
-        self.list_leds.setSelectionMode(QtGui.QAbstractItemView.MultiSelection)
-        self.list_leds.setModelColumn(0)
+        self.list_leds.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.list_leds.setObjectName(_fromUtf8("list_leds"))
         self.gridLayout_3.addWidget(self.list_leds, 4, 0, 1, 1)
         self.horizontalLayout = QtGui.QHBoxLayout()
@@ -170,7 +169,6 @@ class Ui_tab_objects(object):
         QtCore.QMetaObject.connectSlotsByName(tab_objects)
 
     def retranslateUi(self, tab_objects):
-        self.list_leds.setSortingEnabled(False)
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_objects_tracking), QtGui.QApplication.translate("tab_objects", "Tracking", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_objects_restriction), QtGui.QApplication.translate("tab_objects", "Restrictions and Triggers", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_objects_IO), QtGui.QApplication.translate("tab_objects", "In/Out", None, QtGui.QApplication.UnicodeUTF8))
