@@ -63,7 +63,7 @@
     <item>
      <layout class="QHBoxLayout" name="frame_parameters">
       <item>
-       <widget class="QTabWidget" name="tab_phys">
+       <widget class="QTabWidget" name="tab_parameters">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
           <horstretch>0</horstretch>
@@ -161,8 +161,8 @@
             <property name="currentIndex">
              <number>0</number>
             </property>
-            <property name="elideMode">
-             <enum>Qt::ElideNone</enum>
+            <property name="tabsClosable">
+             <bool>true</bool>
             </property>
             <widget class="QWidget" name="tab_features_newTab">
              <attribute name="title">
@@ -179,6 +179,13 @@
                <widget class="QPushButton" name="btn_new_feature_tab">
                 <property name="text">
                  <string>Add LED/Feature</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="btn_load_templates">
+                <property name="text">
+                 <string>Quickload Templates</string>
                 </property>
                </widget>
               </item>
@@ -222,8 +229,8 @@
             <property name="currentIndex">
              <number>0</number>
             </property>
-            <property name="elideMode">
-             <enum>Qt::ElideNone</enum>
+            <property name="tabsClosable">
+             <bool>true</bool>
             </property>
             <widget class="QWidget" name="tab_object_newTab">
              <attribute name="title">

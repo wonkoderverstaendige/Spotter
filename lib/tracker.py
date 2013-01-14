@@ -42,13 +42,10 @@ DEBUG = True
 class Tracker:
     """ Performs tracking and returns positions of found LEDs """
 
-    min_sat = 50
-    min_val = 50
-
     # frame buffer
     frame = None
 
-    # mobile object, linked to LEDs
+    # Object handle lists
     oois = []
     rois = []
     leds = []
@@ -57,18 +54,24 @@ class Tracker:
     def __init__( self, serial = None ):
         self.funker = funker.Funker( serial )
 
-    def addLED( self, label, hue_range, fixed_pos = False, linked_to = None ):
+
+    def addLED( self, label, range_hue, fixed_pos = False, linked_to = None ):
         # TODO: More comprehensive LED types, including val/sat ranges etc.
-        led = trkbl.LED( label, hue_range, fixed_pos, linked_to )
+        led = trkbl.LED( label, range_hue, fixed_pos, linked_to )
         self.leds.append( led )
         return led
 
+
     def addROI( self, points ):
-        self.rois.append( trkbl.ROI(points, (100, 0, 100) ))
+        roi = trkbl.ROI(points, (100, 0, 100) )
+        self.rois.append( roi )
+        return roi
 
 
     def addOOI( self, led_list, label = 'trackme' ):
-        self.oois.append( trkbl.OOI( led_list, label ))
+        ooi = trkbl.OOI( led_list, label )
+        self.oois.append( ooi )
+        return ooi
 
 
     def trackLeds( self, frame, method = 'hsv_thresh' ):
@@ -85,8 +88,10 @@ class Tracker:
             self.frame = frame
 #            comp_coord_list = self.threshTrack( self.frame, self.leds )
             for led in self.leds:
-                self.threshTrack( self.frame, led )
-#                l.pos_hist.append( comp_coord_list.pop() )
+                if led.detection_active:
+                    self.threshTrack( self.frame, led )
+                else:
+                    led.pos_hist.append(None)
 
 
     def threshTrack( self, hsv_frame, l ):
@@ -97,23 +102,23 @@ class Tracker:
 
         # if range[0] > range[1], i.e., color is red and wraps around,
         # invert range and perform NOT on result
-        invert_range = False if not l.hue_range[0] > l.hue_range[1] else True
+        invert_range = False if not l.range_hue[0] > l.range_hue[1] else True
 
         # All colors except red
         if not invert_range:
-            lowerBound = np.array( [l.hue_range[0], l.min_sat, l.min_val], np.uint8 )
-            upperBound = np.array( [l.hue_range[1], 255, 255], np.uint8 )
+            lowerBound = np.array( [l.range_hue[0], l.range_sat[0], l.range_val[0]], np.uint8 )
+            upperBound = np.array( [l.range_hue[1], 255, 255], np.uint8 )
             ranged_frame = cv2.inRange( hsv_frame, lowerBound, upperBound )
 
         # Red hue requires double thresholding due to wraparound in hue domain
         else:
             # min-180 (or, 255)
-            lowerBound = np.array( [l.hue_range[0], l.min_sat, l.min_val], np.uint8 )
+            lowerBound = np.array( [l.range_hue[0], l.range_sat[0], l.range_val[0]], np.uint8 )
             upperBound = np.array( [179, 255, 253], np.uint8 )
             ranged_frame = cv2.inRange( hsv_frame, lowerBound, upperBound )
             # 0-max (or, 255)
-            lowerBound = np.array( [0, l.min_sat, l.min_val], np.uint8 )
-            upperBound = np.array( [l.hue_range[1], 255, 253], np.uint8 )
+            lowerBound = np.array( [0, l.range_sat[0], l.range_val[0]], np.uint8 )
+            upperBound = np.array( [l.range_hue[1], 255, 253], np.uint8 )
             redrange = cv2.inRange( hsv_frame, lowerBound, upperBound )
             # combine both ends for complete mask
             ranged_frame = cv2.bitwise_or( ranged_frame, redrange )

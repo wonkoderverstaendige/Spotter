@@ -55,9 +55,9 @@ from docopt import docopt
 
 class Main(QtGui.QMainWindow):
 
-    led_templates = [['red', ( 160, 5 ), False],
-                     ['blue', ( 105, 135 ), False],
-                     ['green', ( 15, 90 ), True]]
+    led_templates = [['redLED', ( 160, 5 ), False],
+                     ['blueLED', ( 105, 135 ), False],
+                     ['greenLED', ( 15, 90 ), True]]
 
 
     def __init__(self, source, destination, fps, size, gui, serial):
@@ -80,6 +80,9 @@ class Main(QtGui.QMainWindow):
         self.frame = GLFrame()
         self.ui.frame_video.addWidget(self.frame)
         self.frame.setSizePolicy( QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding )
+
+        # For debugging, later as standard use loader
+        self.connect(self.ui.btn_load_templates, QtCore.SIGNAL('clicked()'), self.load_templates)
 
         # Features tab widget
         self.feature_tabs = []
@@ -104,6 +107,17 @@ class Main(QtGui.QMainWindow):
         size = self.geometry()
         self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
  
+ 
+    def load_templates(self):
+        """ Loads and creates all LEDs and Objects from templates. This will
+        probably be the place later the standard set of features/objects/ROIs
+        etc. will be handled on startup.
+        TODO: Add Object templates
+        """
+        for led in self.led_templates:
+            self.add_feature(led)
+
+ 
     #Feature Tab List Updates
     def tab_features_switch(self, idx_tab = 0):
         if idx_tab == self.ui.tab_features.count() - 1:
@@ -111,11 +125,17 @@ class Main(QtGui.QMainWindow):
         else:
             self.ui.tab_features.setCurrentIndex(idx_tab)
 
-    def add_feature(self):
-        # TODO:
-            #Example features, REMOVE   
-        new_led = self.spotter.tracker.addLED(*self.led_templates[self.ui.tab_features.count()-2])
-        new_tab = self.add_tab(self.ui.tab_features, TabFeatures, new_led)
+    def add_feature(self, template = None):
+        """ Create a feature from trackables and add a corresponding tab to
+        the tab widget, which is linked to show and edit feature properties.
+        TODO: Create new templates when running out by fitting them into
+        the colorspace somehow.
+        """
+        if not template:
+            template = self.led_templates[self.ui.tab_features.count()-2]
+
+        feature = self.spotter.tracker.addLED(*template)
+        new_tab = self.add_tab(self.ui.tab_features, TabFeatures, feature)
         self.feature_tabs.append(new_tab)
 
             
@@ -126,28 +146,26 @@ class Main(QtGui.QMainWindow):
         else:
             self.ui.tab_objects.setCurrentIndex(idx_tab)
 
-    def add_object(self,):
-        # TODO:
-            #Example Object, REMOVE        
-        new_object = self.spotter.tracker.addOOI(self.spotter.tracker.leds[1:3], "Subject")
+    def add_object(self, template = None):
+        """ Create a new object that will be linked to LEDs and/r ROIs to
+        track and trigger events.
+        TODO: Create new objects even when running out of templates for example
+        by randomizing offsets.
+        """
+        new_object = self.spotter.tracker.addOOI(self.spotter.tracker.leds[0:2], "Subject")
+        print new_object
         self.add_tab(self.ui.tab_objects, TabObjects, new_object)
         self.object_tabs.append(new_object)
 
-        # TODO:
-            #Example Object, REMOVE        
 
     def add_tab(self, tabwidget, newTabClass, tab_equivalent):
-        """ Addd new tab with Widget newTabClass and switches to it. """
-#        # create a unique label for the Tab
-#        num_newLabel = tabwidget.count() - 1
-#        lbl_list = []
-#        for t in range(tabwidget.count()):
-#            lbl_list.append(str(tabwidget.tabText(t)))
-#        while ''.join([newTabClass.tab_lbl, str(num_newLabel)]) in lbl_list:
-#            num_newLabel += 1
+        """ Add new tab with Widget newTabClass and switches to it. The
+        tab_equivalent is the object that is being represented by the tab,
+        for example an LED or Object.
+        """
 
         # Add a new Tab of the class specific to the calling TabWidget
-        new_tab = newTabClass.Tab(self, tab_equivalent ) #''.join([newTabClass.tab_lbl, str(num_newLabel)]), 
+        new_tab = newTabClass.Tab(self, tab_equivalent )
         tabwidget.insertTab(tabwidget.count() - 1, new_tab, new_tab.name)
         
         # switch to new tab            
@@ -159,7 +177,20 @@ class Main(QtGui.QMainWindow):
         """ Removing is trickier, as it has to delete the features/objects
         from the tracker!
         """
- 
+        
+    def update_current_tab(self):
+        # get active tab
+        curr_parent_tab = self.ui.tab_parameters.tabText(self.ui.tab_parameters.currentIndex())
+        if curr_parent_tab == "Features":
+            self.ui.tab_features.widget(self.ui.tab_features.currentIndex()).update()
+        elif curr_parent_tab == "Objects":
+            self.ui.tab_objects.widget(self.ui.tab_objects.currentIndex()).update()
+        elif curr_parent_tab == "ROIs":
+            print "ROIs"
+        elif curr_parent_tab == "SerialOut":
+            print "Serial"
+        else:
+            pass
  
     def closeEvent(self, event):
         if NO_EXIT_CONFIRMATION:
@@ -179,7 +210,7 @@ class Main(QtGui.QMainWindow):
         # Append Object tracking markers to the list of things that have 
         # to be drawn onto the GL frame
         for l in self.spotter.tracker.leds:
-            if not l.pos_hist[-1] == None:
+            if not l.pos_hist[-1] == None and l.marker_visible:
                 self.frame.jobs.append([self.frame.drawCross, l.pos_hist[-1][0], l.pos_hist[-1][1], 20, l.lblcolor])
         
         for o in self.spotter.tracker.oois:
@@ -187,6 +218,8 @@ class Main(QtGui.QMainWindow):
                 self.frame.jobs.append([self.frame.drawCross, o.guessed_pos[0], o.guessed_pos[1], 10, (1.0, 1.0, 1.0, 1.0)])
 
         self.frame.updateWorld()
+        
+        self.update_current_tab()
 
 
 def main(source, destination, fps, size, gui, serial):

@@ -15,32 +15,34 @@ class LED:
     camshift with plus ROI/Mask"""
 
     hue_hist = None
-    hue_range = None # np.array uint8 of (lowerBound, higherBound), red: 170,10
-    min_sat = 150
-    min_val = 90
+    range_hue = None # np.array uint8 of (lowerBound, higherBound), red: 170,10
+    range_sat = None
+    range_val = None
     label = None
-#    pos_hist = list()
     pos_hist = None
-#    pos_hist = []
     mean_hue = None    # mean color of range for labels/markers etc.
     lblcolor =  None
-
-
-    def __init__( self, label, hue_range, fixed_pos = False, linked_to = None ):
+    
+    def __init__( self, label, range_hue, fixed_pos = False, linked_to = None ):
         self.label = label
         self.fixed_pos = fixed_pos
-        self.hue_range = hue_range
+        self.detection_active = True
+        self.marker_visible = True
+
+        self.range_hue = range_hue
+        self.range_sat = (150, 255)
+        self.range_val = (90, 255)
         self.linked_to = linked_to  # List of linked LEDs
 
         # overly complicated formula to calculate the center color of HSV range
-        if hue_range[0] <= self.hue_range[1]:
-            self.mean_hue = sum(hue_range)/2
+        if range_hue[0] <= self.range_hue[1]:
+            self.mean_hue = sum(range_hue)/2
         else:
-            center = ((180 - hue_range[0]) + hue_range[1])/2
-            if hue_range[0] + center >= 180:
-                self.mean_hue = hue_range[0] + center - 180
+            center = ((180 - range_hue[0]) + range_hue[1])/2
+            if range_hue[0] + center >= 180:
+                self.mean_hue = range_hue[0] + center - 180
             else:
-                self.mean_hue = hue_range[0] + center
+                self.mean_hue = range_hue[0] + center
             
         self.lblcolor = utils.HSVpix2RGB((self.mean_hue, 255, 255))
         self.pos_hist = []
