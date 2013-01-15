@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>319</width>
+    <width>219</width>
     <height>324</height>
    </rect>
   </property>
@@ -38,8 +38,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>317</width>
-          <height>259</height>
+          <width>217</width>
+          <height>247</height>
          </rect>
         </property>
         <attribute name="label">
@@ -313,7 +313,7 @@
          <item row="8" column="0">
           <widget class="QComboBox" name="combo_label">
            <property name="editable">
-            <bool>true</bool>
+            <bool>false</bool>
            </property>
            <property name="currentIndex">
             <number>-1</number>
@@ -343,6 +343,9 @@
            <property name="topMargin">
             <number>0</number>
            </property>
+           <property name="spacing">
+            <number>0</number>
+           </property>
            <item row="1" column="3">
             <spacer name="horizontalSpacer">
              <property name="orientation">
@@ -361,19 +364,6 @@
              <property name="topMargin">
               <number>0</number>
              </property>
-             <item>
-              <widget class="QCheckBox" name="ckb_trace">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="text">
-                <string>Show Trace</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
              <item>
               <widget class="QCheckBox" name="ckb_marker">
                <property name="text">
@@ -488,8 +478,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>317</width>
-          <height>259</height>
+          <width>217</width>
+          <height>247</height>
          </rect>
         </property>
         <attribute name="label">
@@ -520,8 +510,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>317</width>
-          <height>259</height>
+          <width>217</width>
+          <height>247</height>
          </rect>
         </property>
         <attribute name="label">

@@ -67,6 +67,8 @@ class OOI:
                        # or estimation
     linked_leds = None
     label = None
+    
+    tracked = True
 
     def __init__( self, leds, label = 'trackme' ):
         self.linked_leds = leds
@@ -74,15 +76,17 @@ class OOI:
         self.pos_hist = []
 
     def updatePosition( self ):
-        feature_coords = []
-        for linked_led in self.linked_leds:
-            if not linked_led.pos_hist[-1] == None:
-                feature_coords.append( linked_led.pos_hist[-1] )
-
-        # find !mean! coordinates
-        self.pos_hist.append( geom.middle_point( feature_coords ) )
-        self.guessed_pos = geom.guessedPosition( self.pos_hist )
-
+        if self.tracked:
+            feature_coords = []
+            for linked_led in self.linked_leds:
+                if not linked_led.pos_hist[-1] == None:
+                    feature_coords.append( linked_led.pos_hist[-1] )
+    
+            # find !mean! coordinates
+            self.pos_hist.append( geom.middle_point( feature_coords ) )
+            self.guessed_pos = geom.guessedPosition( self.pos_hist )
+        else:
+            self.guessed_pos = None
 
     def predictPositionFast( self, frame_idx ):
         pass
@@ -96,14 +100,16 @@ class ROI:
     If trackables are occupying or intersecting, trigger their specific
     callbacks.
     """
-    def __init__(self, points, color ):
+    def __init__(self, points = None, color = None, label = 'ROI' ):
         self.points = points
         self.color = color
         self.visible = True
+        self.label = label
 
     def draw( self, frame ):
-        if self.visible:
-            cv2.FillPoly(frame, self.points, self.color )
+        if any(self.points):
+            if self.visible:
+                cv2.FillPoly(frame, self.points, self.color )
 
     def move( self, x, y ):
         print "Moving to new position"

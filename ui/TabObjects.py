@@ -20,26 +20,53 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
 
     def __init__(self, parent, object_handle, label = None):
         self.object = object_handle
-        self.all_leds = parent.spotter.tracker.leds
+        self.all_feature = parent.spotter.tracker.leds
         if label == None:
-            self.name = tab_type
+            self.name = self.object.label
         else:
-            self.name = tab_type
+            self.name = label
+            self.object.label  = label
         super(QtGui.QWidget, self).__init__(parent)
         self.setupUi(self)
 
-        # Fill combo box with all available LEDs
-        for l in self.all_leds:
-           self.combo_features.addItem(l.label)
 
-        # Fill list with LEDs linked to this object
-        for l in self.object.linked_leds:
-            self.list_leds.addItem(l.label)
 
-        self.connect(self.btn_link_feature, QtCore.SIGNAL('clicked()'), self.link_led)
-        self.connect(self.btn_unlink_feature, QtCore.SIGNAL('clicked()'), self.unlink_led)
+        # Fill tree/list with all available LEDs and mark linked as checked
+        for l in self.all_feature:
+            feature_item = QtGui.QTreeWidgetItem([l.label])
+            feature_item.feature = l
+            if feature_item.feature in self.object.linked_leds:
+                feature_item.setCheckState(0,QtCore.Qt.Checked)
+            else:
+                feature_item.setCheckState(0,QtCore.Qt.Unchecked)
+            self.tree_link_features.addTopLevelItem(feature_item)
+
+        # I could not get the signal to work in the old connection syntax,
+        # so I had to use the new one here. The new one is of course nice, but
+        # I'd rather stick to the old for consistency. :(
+        # NVM! It works with the old one, but why do I need that star?
+#        self.tree_link_features.itemChanged.connect(self.itemChanged)
+        self.connect(self.tree_link_features, QtCore.SIGNAL('itemChanged(QTreeWidgetItem *, int)'), self.itemChanged)
+
+        self.connect(self.ckb_track, QtCore.SIGNAL('stateChanged(int)'), self.update_object)
+        self.connect(self.ckb_trace, QtCore.SIGNAL('stateChanged(int)'), self.update_object)
 
         self.update()
+
+
+    def itemChanged(self, item, column):
+        """ Checks for differences in checkbox states and linked items.
+        If any item in the tree widget is changed, which should only be
+        the case if the user checks/unchecks a checkbox to link/unlink a
+        feature.
+        """
+        feature_is_linked = (item.feature in self.object.linked_leds)
+        if not item.checkState(column) == feature_is_linked:
+            if item.checkState(column):
+                self.link_feature(item.feature)
+            else:
+                self.unlink_feature(item.feature)
+
 
     def update(self):
         if self.name == None:
@@ -52,20 +79,19 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         else:
             self.lbl_x.setText('---')
             self.lbl_y.setText('---')
+            
 
-    def link_led(self):
-        self.object.linked_leds.append(self.all_leds[self.combo_features.currentIndex()])
-        self.list_leds.addItem(self.combo_features.currentText())
+    def link_feature(self, feature):
+        """ Link the object to the feature. """
+        self.object.linked_leds.append(feature)
 
-    def unlink_led(self):
-        # The order in the list is reversed for some reason.
-        if self.list_leds.count():
-            selection_idx = self.list_leds.count() - self.list_leds.currentRow() -1
-#            print (self.list_leds.count(), selection_idx, self.list_leds.currentRow())
-            self.object.linked_leds.pop(selection_idx)
-            self.list_leds.takeItem(self.list_leds.currentRow())
+    def unlink_feature(self, feature):
+        """ Remove a specific feature from the list. """
+        self.object.linked_leds.pop(self.object.linked_leds.index(feature))
 
     def update_object(self):
         if self.name == None:
             print "Empty object tab! This should not have happened!"
             return
+        self.object.tracked = self.ckb_track.isChecked()
+        self.object.trace = self.ckb_trace.isChecked()

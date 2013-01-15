@@ -161,9 +161,6 @@
             <property name="currentIndex">
              <number>0</number>
             </property>
-            <property name="tabsClosable">
-             <bool>true</bool>
-            </property>
             <widget class="QWidget" name="tab_features_newTab">
              <attribute name="title">
               <string>+</string>
@@ -229,9 +226,6 @@
             <property name="currentIndex">
              <number>0</number>
             </property>
-            <property name="tabsClosable">
-             <bool>true</bool>
-            </property>
             <widget class="QWidget" name="tab_object_newTab">
              <attribute name="title">
               <string>+</string>
@@ -250,10 +244,42 @@
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="tab_2">
+        <widget class="QWidget" name="widget_regions">
          <attribute name="title">
           <string>ROIs</string>
          </attribute>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="margin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QTabWidget" name="tab_regions">
+            <property name="tabPosition">
+             <enum>QTabWidget::East</enum>
+            </property>
+            <property name="currentIndex">
+             <number>0</number>
+            </property>
+            <widget class="QWidget" name="tab_regions_newTab">
+             <attribute name="title">
+              <string>+</string>
+             </attribute>
+             <layout class="QVBoxLayout" name="verticalLayout_3">
+              <item>
+               <widget class="QPushButton" name="btn_new_region_tab">
+                <property name="text">
+                 <string>New Region</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+         </layout>
         </widget>
         <widget class="QWidget" name="tab">
          <attribute name="title">
@@ -305,7 +331,14 @@
     <addaction name="separator"/>
     <addaction name="actionE_xit"/>
    </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
    <addaction name="menu_File"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionE_xit">
@@ -344,6 +377,11 @@
   <action name="actionParameters">
    <property name="text">
     <string>Parameters</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>&amp;About</string>
    </property>
   </action>
  </widget>

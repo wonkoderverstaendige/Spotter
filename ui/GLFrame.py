@@ -108,26 +108,41 @@ class GLFrame(QtOpenGL.QGLWidget):
         glLoadIdentity()
 
 
-    def drawCross(self, x, y, size, color, gap = 7):
+    def drawCross(self, x, y, size, color, gap = 7, angled = False):
         """ Draw colored cross to mark tracked features """
         x = x*1.0/self.width
         y = y*1.0/self.height
+
         dx = size*.5/self.width
         dy = size*.5/self.height
-        glColor(*color)
-        glBegin(GL_LINES)
-        
-        # vertical line
-        glVertex( x-dx, y, 0.0)
-        glVertex( x+dx, y, 0.0)
-        glEnd()
 
-        # horizontal line
+
         glColor(*color)
-        glBegin(GL_LINES)
-        glVertex( x, y+dy, 0.0)
-        glVertex( x, y-dy, 0.0)
-        glEnd()
+        if angled:
+            # diagonal line 1
+            glBegin(GL_LINES)
+            glVertex( x-dx, y-dy, 0.0)
+            glVertex( x+dx, y+dy, 0.0)
+            glEnd()
+    
+            # diagonal line 2
+            glBegin(GL_LINES)
+            glVertex( x-dx, y+dy, 0.0)
+            glVertex( x+dx, y-dy, 0.0)
+            glEnd()
+
+        else:
+            # vertical line
+            glBegin(GL_LINES)
+            glVertex( x-dx, y, 0.0)
+            glVertex( x+dx, y, 0.0)
+            glEnd()
+    
+            # horizontal line
+            glBegin(GL_LINES)
+            glVertex( x, y+dy, 0.0)
+            glVertex( x, y-dy, 0.0)
+            glEnd()
 
 
 #        glColor4f(0.0, 0.0, 1.0, 0.5)
@@ -179,7 +194,7 @@ class GLFrame(QtOpenGL.QGLWidget):
         glEnd()            
 
         
-    def drawTail(self, array):
+    def drawTrace(self, x, y, size, color, gap = 7, angled = False): #array
         """ Draw trace of position given in array.
         TODO: Draw trace in immediate mode via vertex and color arrays
         """

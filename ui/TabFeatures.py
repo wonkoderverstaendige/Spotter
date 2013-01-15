@@ -31,19 +31,20 @@ class Tab(QtGui.QWidget, Ui_tab_features):
         
         self.combo_label.setEditText(self.name)
 
+        # Set spin boxes to the value of the represented feature
         self.spin_hue_min.setValue(self.feature.range_hue[0])
         self.spin_hue_max.setValue(self.feature.range_hue[1])
-        
         self.spin_sat_min.setValue(self.feature.range_sat[0])
         self.spin_sat_max.setValue(self.feature.range_sat[1])
-        
         self.spin_val_min.setValue(self.feature.range_val[0])
         self.spin_val_max.setValue(self.feature.range_val[1])
         
+        # Connect checkboxes        
         self.ckb_track.setChecked(self.feature.detection_active)
         self.ckb_fixed_pos.setChecked(self.feature.fixed_pos)
         self.ckb_marker.setChecked(self.feature.marker_visible)
         
+        # Connect spin boxes        
         self.connect(self.spin_hue_min, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
         self.connect(self.spin_hue_max, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
         self.connect(self.spin_sat_min, QtCore.SIGNAL('valueChanged(int)'), self.update_led)

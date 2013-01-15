@@ -2,12 +2,19 @@
 
 TO DO:
 
-Writer Process:
-===============
+Interface:
+==========
+    - No features/objects at start, except if a standard template is selected
+    in the settings and marked as auto-track
 
-    - Requires periodic "Stay Alive" signal or commits suicide after timeout to
-    prevent suicides processes accumulating.
-        --> Seems to work for now. Not sure why though...
+    - no tabs if no spotter. Allow to simply kill and reinstantiate a spotter
+    (i.e. check in main update if spotter = None, if so, disable all, if not
+    enable all if not already so and trigger ALL updates)
+
+    - central frame can have cute mouse (MY PRECIOUS!) as center image
+
+    - double clicking the feature/ROI list creates a new one, adds it to the
+    list as new linked one and takes user to the tab of the newly created
 
 General behavior:
 =================

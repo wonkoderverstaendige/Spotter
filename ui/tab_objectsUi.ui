@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>304</width>
-    <height>326</height>
+    <width>240</width>
+    <height>324</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -47,8 +47,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>302</width>
-          <height>261</height>
+          <width>238</width>
+          <height>247</height>
          </rect>
         </property>
         <attribute name="label">
@@ -56,177 +56,172 @@
         </attribute>
         <layout class="QGridLayout" name="gridLayout_6">
          <property name="margin">
-          <number>2</number>
+          <number>0</number>
          </property>
          <property name="spacing">
-          <number>2</number>
+          <number>0</number>
          </property>
-         <item row="1" column="0">
-          <layout class="QGridLayout" name="gridLayout_3">
-           <item row="4" column="5">
-            <layout class="QVBoxLayout" name="verticalLayout">
-             <property name="spacing">
-              <number>0</number>
+         <item row="0" column="1">
+          <layout class="QGridLayout" name="gridLayout_5">
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="spacing">
+            <number>1</number>
+           </property>
+           <item row="1" column="2">
+            <widget class="QLabel" name="lbl_y">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
              </property>
-             <item>
-              <spacer name="horizontalSpacer">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
+             <property name="minimumSize">
+              <size>
+               <width>32</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>32</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>---</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
            </item>
-           <item row="1" column="5">
-            <layout class="QGridLayout" name="gridLayout_5" columnminimumwidth="20,20">
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="horizontalSpacing">
-              <number>6</number>
-             </property>
-             <item row="1" column="0">
-              <widget class="QLabel" name="lbl_y_lbl">
-               <property name="text">
-                <string>y:</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="0">
-              <widget class="QLabel" name="lbl_xlbl">
-               <property name="text">
-                <string>x:</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QLabel" name="lbl_x">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>32</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>32</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>---</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QLabel" name="lbl_y">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>32</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>32</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>---</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-              </widget>
-             </item>
-            </layout>
+           <item row="3" column="1" colspan="2">
+            <widget class="QTreeWidget" name="treeWidget">
+             <column>
+              <property name="text">
+               <string>ROIs</string>
+              </property>
+             </column>
+            </widget>
            </item>
-           <item row="4" column="0">
-            <widget class="QListWidget" name="list_leds">
+           <item row="3" column="0">
+            <widget class="QTreeWidget" name="tree_link_features">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="editTriggers">
+              <set>QAbstractItemView::NoEditTriggers</set>
+             </property>
+             <property name="showDropIndicator" stdset="0">
+              <bool>false</bool>
+             </property>
              <property name="alternatingRowColors">
               <bool>true</bool>
              </property>
-             <property name="selectionMode">
-              <enum>QAbstractItemView::SingleSelection</enum>
+             <property name="indentation">
+              <number>0</number>
+             </property>
+             <property name="rootIsDecorated">
+              <bool>false</bool>
+             </property>
+             <property name="itemsExpandable">
+              <bool>false</bool>
+             </property>
+             <property name="headerHidden">
+              <bool>false</bool>
+             </property>
+             <property name="expandsOnDoubleClick">
+              <bool>false</bool>
+             </property>
+             <attribute name="headerVisible">
+              <bool>true</bool>
+             </attribute>
+             <column>
+              <property name="text">
+               <string>Features</string>
+              </property>
+             </column>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QLabel" name="lbl_x">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>32</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>32</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>---</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLabel" name="lbl_y_lbl">
+             <property name="text">
+              <string>y:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QCheckBox" name="ckb_track">
+             <property name="text">
+              <string>Track</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="lbl_xlbl">
+             <property name="text">
+              <string>x:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
            <item row="1" column="0">
-            <layout class="QHBoxLayout" name="horizontalLayout">
-             <property name="spacing">
-              <number>0</number>
+            <widget class="QCheckBox" name="ckb_trace">
+             <property name="text">
+              <string>Show Trace</string>
              </property>
-             <item>
-              <widget class="QComboBox" name="combo_features">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                 <horstretch>19</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="editable">
-                <bool>true</bool>
-               </property>
-               <property name="insertPolicy">
-                <enum>QComboBox::NoInsert</enum>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_link_feature">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>+</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_unlink_feature">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>-</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0" colspan="3">
+            <widget class="QComboBox" name="combo_Object">
+             <property name="editable">
+              <bool>false</bool>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
@@ -237,21 +232,20 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>302</width>
-          <height>261</height>
+          <width>238</width>
+          <height>247</height>
          </rect>
         </property>
         <attribute name="label">
-         <string>Restrictions and Triggers</string>
+         <string>Interactions</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_8">
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="checkBox">
-           <property name="text">
-            <string>Tracking Active</string>
-           </property>
-          </widget>
-         </item>
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <property name="spacing">
+          <number>0</number>
+         </property>
         </layout>
        </widget>
        <widget class="QWidget" name="page_objects_IO">
@@ -259,14 +253,20 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>302</width>
-          <height>261</height>
+          <width>238</width>
+          <height>247</height>
          </rect>
         </property>
         <attribute name="label">
          <string>In/Out</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_7">
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <property name="spacing">
+          <number>0</number>
+         </property>
          <item row="2" column="3">
           <widget class="QPushButton" name="pushButton_8">
            <property name="text">
