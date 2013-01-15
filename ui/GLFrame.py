@@ -12,7 +12,7 @@ import math
 import numpy as np
 
 class GLFrame(QtOpenGL.QGLWidget):
-    
+
     frame = None
     width = None
     height = None
@@ -25,11 +25,13 @@ class GLFrame(QtOpenGL.QGLWidget):
     aratio = None       # aspect ratio float = width/height
     jobs = None
 
+    sig_select = QtCore.pyqtSignal(tuple, bool)
+
     def __init__(self, *args):
         QtOpenGL.QGLWidget.__init__(self, *args)
         self.setMouseTracking(True)
         self.setCursor(QtGui.QCursor(QtCore.Qt.BlankCursor))
-        
+
         self.jobs = []
 
     def updateWorld(self):
@@ -37,11 +39,11 @@ class GLFrame(QtOpenGL.QGLWidget):
 
 
     def initializeGL(self, width = 20, height = 20):
-        """ Initialization of the GL frame. 
+        """ Initialization of the GL frame.
         TODO: glOrtho should set to size of the frame which would allow
         using absolute coordinates in range/domain of original frame
         """
-        glClearColor(0.0, 0.0, 0.0, 1.0)        
+        glClearColor(0.0, 0.0, 0.0, 1.0)
         glClearDepth(1.0)
         glOrtho(0, 1, 1, 0, -1, 1)
         glMatrixMode(GL_PROJECTION)
@@ -50,19 +52,12 @@ class GLFrame(QtOpenGL.QGLWidget):
     def paintGL(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
-        
+
         # Draw the numpy array onto the GL frame, stringify first
         # NB: Currently flips the frame.
         if self.frame != None:
             shape = self.frame.shape
             glDrawPixels(shape[1], shape[0] , GL_RGB, GL_UNSIGNED_BYTE, np.fliplr(self.frame).tostring()[::-1])
-
-
-        # Paint jobs from objects
-        # That looks really un-pythonic!
-        while self.jobs:
-            j = self.jobs.pop()
-            j[0](*j[1:])
 
         color = (0.5, 0.5, 0.5, 0.5)
         if self.dragging:
@@ -70,40 +65,53 @@ class GLFrame(QtOpenGL.QGLWidget):
             y1 = self.m_y1/float(self.height)
             x2 = self.m_x2/float(self.width)
             y2 = self.m_y2/float(self.height)
-            
+
             modifiers = QtGui.QApplication.keyboardModifiers()
             if modifiers == QtCore.Qt.ShiftModifier:
                 dx = x2-x1
                 dy = y2-y1
                 r = dx if abs(dx)>abs(dy) else dy
-                
+
                 self.drawCircle(x1, y1, r, color, 16)
+                self.sig_select.emit(('cirlce', x1, y1, r), False)
             elif modifiers == QtCore.Qt.ControlModifier:
-                print('Control+Click')
+                pass
             else:
                 self.drawRect(x1, y1, x2, y2, color)
+                self.sig_select.emit(('rect', x1, y1, x2, y2))
         else:
             self.drawCross(self.m_x1, self.m_y1, 20, color)
 
+        # Process job queue
+        self.process_paint_jobs()
+
+
+    def process_paint_jobs(self):
+        """ This puny piece of code is IMPORTANT! It handles all external
+        drawing jobs! That looks really un-pythonic, by the way!
+        """
+        while self.jobs:
+            j = self.jobs.pop()
+            j[0](*j[1:])
 
     def resizeGL(self, width, height):
         """ Resize frame when widget resized """
         self.width = width
         self.height = height
         self.aratio = width*1.0/height
-        
+
         # scale coordinate system of viewport to frame size, or similarly
         # important sounding task I do not understand...
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
-        
+
         # DOESN't WORK!!
 #        glOrtho(0, width, height, 0, -1, 1)
-        
+
         # Enable rational alpha blending
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        
+
         # Load identity matrix
         glLoadIdentity()
 
@@ -124,7 +132,7 @@ class GLFrame(QtOpenGL.QGLWidget):
             glVertex( x-dx, y-dy, 0.0)
             glVertex( x+dx, y+dy, 0.0)
             glEnd()
-    
+
             # diagonal line 2
             glBegin(GL_LINES)
             glVertex( x-dx, y+dy, 0.0)
@@ -137,7 +145,7 @@ class GLFrame(QtOpenGL.QGLWidget):
             glVertex( x-dx, y, 0.0)
             glVertex( x+dx, y, 0.0)
             glEnd()
-    
+
             # horizontal line
             glBegin(GL_LINES)
             glVertex( x, y+dy, 0.0)
@@ -151,8 +159,8 @@ class GLFrame(QtOpenGL.QGLWidget):
 #        glBegin(GL_LINES)
 #        glVertex3f(0, 0, 0)
 #        glVertex3f(20, 20, 0)
-#        glEnd()        
-        
+#        glEnd()
+
 #        glColor(0.0, 1.0, 0.0)
 #        glBegin(GL_LINES)
 #        glVertex( 0, 0, 0)
@@ -174,15 +182,15 @@ class GLFrame(QtOpenGL.QGLWidget):
 
     def drawCircle(self, cx, cy, r, color, num_segments):
         """ Quickly draw approximate circle. Algorithm from:
-            http://slabode.exofire.net/circle_draw.shtml    
+            http://slabode.exofire.net/circle_draw.shtml
         """
         theta = 2 * math.pi / float(num_segments)
         c = math.cos(theta) # pre-calculate cosine
         s = math.sin(theta) # and sine
         t = 0
-        x = r # we start at angle = 0 
+        x = r # we start at angle = 0
         y = 0
-        
+
         glColor(*color)
         glBegin(GL_LINE_LOOP)
         for ii in range(num_segments):
@@ -191,9 +199,9 @@ class GLFrame(QtOpenGL.QGLWidget):
             t = x
             x = c * x - s * y
             y = s * t + c * y
-        glEnd()            
+        glEnd()
 
-        
+
     def drawTrace(self, x, y, size, color, gap = 7, angled = False): #array
         """ Draw trace of position given in array.
         TODO: Draw trace in immediate mode via vertex and color arrays
@@ -223,7 +231,7 @@ class GLFrame(QtOpenGL.QGLWidget):
         if self.frame != None:
             self.framesize = self.frame.shape
             self.setMinimumSize(self.frame.shape[1], self.frame.shape[0])
-            self.setMaximumSize(self.frame.shape[1], self.frame.shape[0])  
+            self.setMaximumSize(self.frame.shape[1], self.frame.shape[0])
 
 
     def mouseMoveEvent(self, e):
@@ -233,14 +241,14 @@ class GLFrame(QtOpenGL.QGLWidget):
 #            delta_y = self.oldy - mouseEvent.y()
 #            if int(mouseEvent.buttons()) & QtCore.Qt.LeftButton :
 #                if int(mouseEvent.buttons()) & QtCore.Qt.MidButton :
-#                    pass                    
+#                    pass
 ##                    print delta_x
 #                else:
 #                    pass
 ##                    print delta_y
 #            elif int(mouseEvent.buttons()) & QtCore.Qt.MidButton :
 #            self.update()
-        if self.pressed:        
+        if self.pressed:
             if (abs(e.x() - self.m_x1) + abs(e.y() - self.m_y1)) > 2:
                 self.dragging = True
                 self.m_x2 = e.x()
@@ -248,12 +256,12 @@ class GLFrame(QtOpenGL.QGLWidget):
         else:
             self.m_x1 = e.x()
             self.m_y1 = e.y()
-            
+
 
     def mouseDoubleClickEvent(self, mouseEvent):
         print "double click"
 
-        
+
     def mousePressEvent(self, e):
         self.pressed = True
         self.m_x1 = e.x()
@@ -263,5 +271,8 @@ class GLFrame(QtOpenGL.QGLWidget):
     def mouseReleaseEvent(self, e):
         self.pressed = False
         self.dragging = False
+        if self.selection:
+            pass
+        self.selection = None
         self.m_x1 = e.x()
         self.m_y1 = e.y()

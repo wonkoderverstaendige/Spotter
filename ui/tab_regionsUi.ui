@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>241</width>
+    <width>292</width>
     <height>325</height>
    </rect>
   </property>
@@ -47,8 +47,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>239</width>
-          <height>248</height>
+          <width>290</width>
+          <height>260</height>
          </rect>
         </property>
         <attribute name="label">
@@ -87,10 +87,10 @@
             </widget>
            </item>
            <item row="2" column="0" colspan="3">
-            <widget class="QTreeWidget" name="treeWidget">
+            <widget class="QTreeWidget" name="tree_regions">
              <column>
               <property name="text">
-               <string>ROIs</string>
+               <string>Shapes</string>
               </property>
              </column>
             </widget>
@@ -114,8 +114,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>239</width>
-          <height>248</height>
+          <width>290</width>
+          <height>260</height>
          </rect>
         </property>
         <attribute name="label">
@@ -135,8 +135,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>239</width>
-          <height>248</height>
+          <width>290</width>
+          <height>260</height>
          </rect>
         </property>
         <attribute name="label">

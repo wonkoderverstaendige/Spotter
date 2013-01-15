@@ -17,6 +17,7 @@ tab_type = "object"
 class Tab(QtGui.QWidget, Ui_tab_objects):
 
     name = None
+    accept_region = False
 
     def __init__(self, parent, object_handle, label = None):
         self.object = object_handle
@@ -79,7 +80,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         else:
             self.lbl_x.setText('---')
             self.lbl_y.setText('---')
-            
+
 
     def link_feature(self, feature):
         """ Link the object to the feature. """

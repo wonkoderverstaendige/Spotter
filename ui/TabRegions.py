@@ -17,6 +17,7 @@ tab_type = "region"
 class Tab(QtGui.QWidget, Ui_tab_regions):
 
     name = None
+    accept_region = False
 
     def __init__(self, parent, region_handle, label = None):
         self.region = region_handle
@@ -30,7 +31,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
 
         self.connect(self.btn_select_region, QtCore.SIGNAL('toggled(bool)'), self.select_region)
 
-        self.select_signal = QtCore.pyqtSignal(object) 
+        self.select_signal = QtCore.pyqtSignal(object)
 
         self.update()
 
@@ -39,14 +40,17 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         if self.name == None:
             print "empty tab"
             return
-            
+
     def select_region(self, state):
-        if state:
-            print "Select!"
-            # toggled from off to on, means I have to set something to collect
-        else:
-            # cancelled the action, or allow to draw till finished?
-            pass
+        self.accept_region = state
+
+
+    def process_region(self, region):
+        pass
+        print region
+
+    def add_region(self, region):
+        self.tree_regions.addTopLevelItem(region)
 
     def update_region(self):
         if self.name == None:

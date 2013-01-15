@@ -15,20 +15,21 @@ from tab_featuresUi import Ui_tab_features
 tab_type = "newLED"
 
 class Tab(QtGui.QWidget, Ui_tab_features):
-    
+
     name = None
     feature = None
-    
+    accept_region = False
+
     def __init__(self, parent, feature, label = None):
         self.feature = feature
         if label == None:
             self.name = self.feature.label
         else:
             self.name = label
-            
+
         super(QtGui.QWidget, self).__init__(parent)
         self.setupUi(self)
-        
+
         self.combo_label.setEditText(self.name)
 
         # Set spin boxes to the value of the represented feature
@@ -38,23 +39,25 @@ class Tab(QtGui.QWidget, Ui_tab_features):
         self.spin_sat_max.setValue(self.feature.range_sat[1])
         self.spin_val_min.setValue(self.feature.range_val[0])
         self.spin_val_max.setValue(self.feature.range_val[1])
-        
-        # Connect checkboxes        
+
+        # Connect checkboxes
         self.ckb_track.setChecked(self.feature.detection_active)
         self.ckb_fixed_pos.setChecked(self.feature.fixed_pos)
         self.ckb_marker.setChecked(self.feature.marker_visible)
-        
-        # Connect spin boxes        
+
+        # Connect spin boxes
         self.connect(self.spin_hue_min, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
         self.connect(self.spin_hue_max, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
         self.connect(self.spin_sat_min, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
         self.connect(self.spin_sat_max, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
         self.connect(self.spin_val_min, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
         self.connect(self.spin_val_max, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
-        
+
         self.connect(self.ckb_track, QtCore.SIGNAL('stateChanged(int)'), self.update_led)
         self.connect(self.ckb_fixed_pos, QtCore.SIGNAL('stateChanged(int)'), self.update_led)
         self.connect(self.ckb_marker, QtCore.SIGNAL('stateChanged(int)'), self.update_led)
+
+        self.connect(self.btn_pick_color, QtCore.SIGNAL('toggled()'), self.pick_color)
 
         self.update()
 
@@ -62,7 +65,7 @@ class Tab(QtGui.QWidget, Ui_tab_features):
         if self.name == None:
             print "Empty tab! This should not have happened!"
             return
-        
+
         if self.feature.pos_hist and self.feature.pos_hist[-1]:
             self.lbl_x.setText(str(self.feature.pos_hist[-1][0]))
             self.lbl_y.setText(str(self.feature.pos_hist[-1][1]))
@@ -77,3 +80,10 @@ class Tab(QtGui.QWidget, Ui_tab_features):
         self.feature.detection_active = self.ckb_track.isChecked()
         self.feature.fixed_pos = self.ckb_fixed_pos.isChecked()
         self.feature.marker_visible = self.ckb_marker.isChecked()
+
+    def pick_color(self, state):
+        self.accept_region = state
+
+    def process_region(self, region):
+        pass
+#        print region
