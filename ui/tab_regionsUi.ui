@@ -69,39 +69,55 @@
            <property name="spacing">
             <number>1</number>
            </property>
-           <item row="10" column="1" colspan="2">
-            <layout class="QGridLayout" name="gridLayout_3">
-             <item row="0" column="1">
-              <widget class="QSpinBox" name="spin_shape_x">
-               <property name="buttonSymbols">
-                <enum>QAbstractSpinBox::PlusMinus</enum>
+           <item row="12" column="1" colspan="2">
+            <layout class="QGridLayout" name="gridLayout_3"/>
+           </item>
+           <item row="8" column="0" colspan="3">
+            <widget class="QComboBox" name="combo_Object">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="editable">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0" colspan="3">
+            <layout class="QHBoxLayout" name="horizontalLayout_2">
+             <item>
+              <widget class="QPushButton" name="btn_remove_shape">
+               <property name="minimumSize">
+                <size>
+                 <width>30</width>
+                 <height>0</height>
+                </size>
                </property>
-               <property name="accelerated">
-                <bool>true</bool>
-               </property>
-               <property name="minimum">
-                <number>-2048</number>
-               </property>
-               <property name="maximum">
-                <number>2048</number>
+               <property name="text">
+                <string>&amp;Remove</string>
                </property>
               </widget>
              </item>
-             <item row="1" column="0">
+             <item>
+              <spacer name="horizontalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
               <widget class="QLabel" name="lbl_y">
                <property name="text">
                 <string>y:</string>
                </property>
               </widget>
              </item>
-             <item row="0" column="0">
-              <widget class="QLabel" name="lbl_x">
-               <property name="text">
-                <string>x:</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
+             <item>
               <widget class="QSpinBox" name="spin_shape_y">
                <property name="buttonSymbols">
                 <enum>QAbstractSpinBox::PlusMinus</enum>
@@ -117,58 +133,7 @@
                </property>
               </widget>
              </item>
-             <item row="2" column="1">
-              <spacer name="verticalSpacer">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>40</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
             </layout>
-           </item>
-           <item row="10" column="0">
-            <layout class="QVBoxLayout" name="verticalLayout_2">
-             <item>
-              <widget class="QTreeWidget" name="tree_region_shapes">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="alternatingRowColors">
-                <bool>true</bool>
-               </property>
-               <property name="indentation">
-                <number>0</number>
-               </property>
-               <property name="headerHidden">
-                <bool>true</bool>
-               </property>
-               <column>
-                <property name="text">
-                 <string>Shapes</string>
-                </property>
-               </column>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item row="7" column="0" colspan="3">
-            <widget class="QComboBox" name="combo_Object">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="editable">
-              <bool>false</bool>
-             </property>
-            </widget>
            </item>
            <item row="3" column="0" colspan="3">
             <layout class="QHBoxLayout" name="horizontalLayout">
@@ -192,19 +157,6 @@
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="btn_remove_shape">
-               <property name="minimumSize">
-                <size>
-                 <width>30</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>&amp;Remove</string>
-               </property>
-              </widget>
-             </item>
-             <item>
               <widget class="QCheckBox" name="ckb_trigger">
                <property name="text">
                 <string>Trigger</string>
@@ -212,6 +164,94 @@
                <property name="checked">
                 <bool>true</bool>
                </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QLabel" name="lbl_x">
+               <property name="text">
+                <string>x:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="spin_shape_x">
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::PlusMinus</enum>
+               </property>
+               <property name="accelerated">
+                <bool>true</bool>
+               </property>
+               <property name="minimum">
+                <number>-2048</number>
+               </property>
+               <property name="maximum">
+                <number>2048</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="9" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QTreeWidget" name="tree_region_shapes">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="alternatingRowColors">
+                <bool>true</bool>
+               </property>
+               <property name="indentation">
+                <number>0</number>
+               </property>
+               <property name="headerHidden">
+                <bool>false</bool>
+               </property>
+               <attribute name="headerVisible">
+                <bool>true</bool>
+               </attribute>
+               <column>
+                <property name="text">
+                 <string>Shapes</string>
+                </property>
+               </column>
+              </widget>
+             </item>
+             <item>
+              <widget class="QTableWidget" name="tableWidget">
+               <attribute name="horizontalHeaderStretchLastSection">
+                <bool>true</bool>
+               </attribute>
+               <column>
+                <property name="text">
+                 <string>Ports</string>
+                </property>
+               </column>
               </widget>
              </item>
             </layout>

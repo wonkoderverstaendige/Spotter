@@ -64,7 +64,7 @@ class Main(QtGui.QMainWindow):
     feature_templates = [['redLED', ( 160, 5 ), False],
                      ['blueLED', ( 105, 135 ), False],
                      ['greenLED', ( 15, 90 ), True]]
-    object_templates = [[[0, 1], 'Subject'], [[2], 'SyncLED']]
+    object_templates = [[[0, 1], 'Subject', True], [[2], 'SyncLED', False]]
     region_templates = []
     linear_track_example = [feature_templates, object_templates, region_templates]
 
@@ -230,13 +230,13 @@ class Main(QtGui.QMainWindow):
         by randomizing offsets.
         """
         if not template:
-            _object = self.spotter.tracker.addOOI(self.spotter.tracker.leds[0:2], "Subject")
+            _object = self.spotter.tracker.addOOI(self.spotter.tracker.leds[0:2], "Subject", True)
         else:
             # list of features, if enough in list of features so far
             features = []
             for n in xrange(min(len(self.spotter.tracker.leds), len(template[0]))):
                 features.append(self.spotter.tracker.leds[template[0][n]])
-            _object = self.spotter.tracker.addOOI(features, template[1])
+                _object = self.spotter.tracker.addOOI(features, template[1], template[2])
             
         new_tab = self.add_tab(self.ui.tab_objects, TabObjects, _object)
         self.object_tabs.append(new_tab)
@@ -355,6 +355,12 @@ class Main(QtGui.QMainWindow):
         for o in self.spotter.tracker.oois:
             if not o.guessed_pos == None:
                 self.glframe.jobs.append([self.glframe.drawCross, o.guessed_pos, 8, (1.0, 1.0, 1.0, 1.0), 7, True])
+                if o.traced:                
+                    points = []                
+                    for n in xrange(min(len(o.pos_hist), 100)):
+                        if not o.pos_hist[-n-1] == None:
+                            points.append([o.pos_hist[-n-1][0]*1.0/self.glframe.width, o.pos_hist[-n-1][1]*1.0/self.glframe.height])
+                    self.glframe.jobs.append([self.glframe.drawTrace, points])
 
         for r in self.spotter.tracker.rois:
             color = (r.color_normal[0], r.color_normal[1], r.color_normal[2], .5)

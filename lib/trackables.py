@@ -97,11 +97,13 @@ class OOI:
     label = None
     
     tracked = True
-
-    def __init__( self, leds, label = 'trackme' ):
+    traced = False
+    
+    def __init__( self, leds, label = 'trackme', traced = False ):
         self.linked_leds = leds
         self.label = label
         self.pos_hist = []
+        self.traced = traced
 
     def updatePosition( self ):
         if self.tracked:

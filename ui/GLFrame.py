@@ -255,26 +255,15 @@ class GLFrame(QtOpenGL.QGLWidget):
         glEnd()
 
 
-    def drawTrace(self, points, color): #array
+    def drawTrace(self, points, color = (1.0, 1.0, 1.0, 1.0)): #array
         """ Draw trace of position given in array.
         TODO: Draw trace in immediate mode via vertex and color arrays
         """
-        pass
-#         # Second Spiral using "array immediate mode" (i.e. Vertex Arrays)
-#        glEnableClientState(GL_VERTEX_ARRAY)
-#        spiral_array = []
-#        radius = 0.8
-#        x = radius*math.sin(0)
-#        y = radius*math.cos(0)
-#        glColor(1.0, 0.0, 0.0)
-#        for deg in xrange(820):
-#            spiral_array.append([x, y])
-#            rad = math.radians(deg)
-#            radius -= 0.001
-#            x = radius*math.sin(rad)
-#            y = radius*math.cos(rad)
-#        glVertexPointerf(spiral_array)
-#        glDrawArrays(GL_LINE_STRIP, 0, len(spiral_array))
+        glEnableClientState(GL_VERTEX_ARRAY)
+        glColor(*color)
+        glVertexPointerf(points)
+        glDrawArrays(GL_LINE_STRIP, 0, len(points))
+
 
 
     def resizeFrame(self):

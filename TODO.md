@@ -27,6 +27,9 @@ GL Frame:
     - direct mode (glBegin, glEnd) is much slower in python, so it may be
     better to use immediate mode via arrays with all drawing functions
 
+    - array based trace drawing does not need to rebuild the whole array,
+    just pop() oldest item and append newest. Make it a queue, not a list.
+
 Mouse handling:
 ===============
     - handling mouse events by the tabs themselves seemmed like a neat idea,

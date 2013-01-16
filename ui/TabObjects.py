@@ -41,7 +41,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
             else:
                 feature_item.setCheckState(0,QtCore.Qt.Unchecked)
             self.tree_link_features.addTopLevelItem(feature_item)
-
+            
         # I could not get the signal to work in the old connection syntax,
         # so I had to use the new one here. The new one is of course nice, but
         # I'd rather stick to the old for consistency. :(
@@ -74,6 +74,8 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
             print "empty tab"
             return
 
+        self.ckb_trace.setChecked(self.object.traced)
+
         if self.object.guessed_pos:
             self.lbl_x.setText(str(self.object.guessed_pos[0]))
             self.lbl_y.setText(str(self.object.guessed_pos[1]))
@@ -95,7 +97,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
             print "Empty object tab! This should not have happened!"
             return
         self.object.tracked = self.ckb_track.isChecked()
-        self.object.trace = self.ckb_trace.isChecked()
+        self.object.traced = self.ckb_trace.isChecked()
         
     def process_event(self, event):
         pass

@@ -69,8 +69,8 @@ class Tracker:
         return roi
 
 
-    def addOOI( self, led_list, label = 'trackme' ):
-        ooi = trkbl.OOI( led_list, label )
+    def addOOI( self, led_list, label = 'trackme', traced = False ):
+        ooi = trkbl.OOI( led_list, label, traced )
         self.oois.append( ooi )
         return ooi
 
