@@ -61,10 +61,12 @@ __version__ = 0.01
 
 class Main(QtGui.QMainWindow):
 
-    led_templates = [['redLED', ( 160, 5 ), False],
+    feature_templates = [['redLED', ( 160, 5 ), False],
                      ['blueLED', ( 105, 135 ), False],
                      ['greenLED', ( 15, 90 ), True]]
-
+    object_templates = [[[0, 1], 'Subject'], [[2], 'SyncLED']]
+    region_templates = []
+    linear_track_example = [feature_templates, object_templates, region_templates]
 
     def __init__(self, source, destination, fps, size, gui, serial):
         QtGui.QMainWindow.__init__(self)
@@ -97,8 +99,11 @@ class Main(QtGui.QMainWindow):
         self.glframe.sig_event.connect(self.mouse_event_to_tab)
 
 
-        # For debugging, later as standard use loader
-        self.connect(self.ui.btn_load_templates, QtCore.SIGNAL('clicked()'), self.load_templates)
+        # Loading debugging/example templates
+        self.connect(self.ui.btn_LTexample_template, QtCore.SIGNAL('clicked()'), self.load_templates)
+        self.connect(self.ui.btn_feature_template, QtCore.SIGNAL('clicked()'), self.load_templates)
+        self.connect(self.ui.btn_object_template, QtCore.SIGNAL('clicked()'), self.load_templates)
+        self.connect(self.ui.btn_region_template, QtCore.SIGNAL('clicked()'), self.load_templates)
 
         # Features tab widget
         self.feature_tabs = []
@@ -126,7 +131,7 @@ class Main(QtGui.QMainWindow):
 
     def mouse_event_to_tab(self, event_type, event):
 #        print event_type
-        current_tab = self.get_current_tab()
+        current_tab = self.get_child_tab()
         if current_tab and current_tab.accept_events:
             current_tab.process_event(event_type, event)
             
@@ -154,10 +159,32 @@ class Main(QtGui.QMainWindow):
         etc. will be handled on startup.
         TODO: Add Object templates
         """
-        for led in self.led_templates:
-            self.add_feature(led)
+        active_top_tab_label = self.get_top_tab_label()
+        if active_top_tab_label == "Settings":
+            for f in self.feature_templates:
+                self.add_feature(f)
+            for o in self.object_templates:
+                self.add_object(o)
+            for r in self.region_templates:
+                self.add_region(r)
+
+        elif active_top_tab_label == "Features":
+            for f in self.feature_templates:
+                self.add_feature(f)
+
+        elif active_top_tab_label == "Objects" and (self.ui.tab_objects.count() > 1):
+            for o in self.object_templates:
+                self.add_object(o)
+
+        elif active_top_tab_label == "ROIs" and (self.ui.tab_regions.count() > 1):
+            for r in self.region_templates:
+                self.add_region(r)
+
+        elif active_top_tab_label == "SerialOut":
+            return "Serial"
 
 
+                
     #Feature Tab List Updates
     def tab_features_switch(self, idx_tab = 0):
         """ Switch to selected tab or create a new tab if the selected tab is
@@ -178,7 +205,7 @@ class Main(QtGui.QMainWindow):
         the colorspace somehow.
         """
         if not template:
-            template = self.led_templates[self.ui.tab_features.count()-2]
+            template = self.feature_templates[self.ui.tab_features.count()-2]
         feature = self.spotter.tracker.addLED(*template)
         new_tab = self.add_tab(self.ui.tab_features, TabFeatures, feature)
         self.feature_tabs.append(new_tab)
@@ -202,9 +229,17 @@ class Main(QtGui.QMainWindow):
         TODO: Create new objects even when running out of templates for example
         by randomizing offsets.
         """
-        new_object = self.spotter.tracker.addOOI(self.spotter.tracker.leds[0:2], "Subject")
-        self.add_tab(self.ui.tab_objects, TabObjects, new_object)
-        self.object_tabs.append(new_object)
+        if not template:
+            _object = self.spotter.tracker.addOOI(self.spotter.tracker.leds[0:2], "Subject")
+        else:
+            # list of features, if enough in list of features so far
+            features = []
+            for n in xrange(min(len(self.spotter.tracker.leds), len(template[0]))):
+                features.append(self.spotter.tracker.leds[template[0][n]])
+            _object = self.spotter.tracker.addOOI(features, template[1])
+            
+        new_tab = self.add_tab(self.ui.tab_objects, TabObjects, _object)
+        self.object_tabs.append(new_tab)
 
 
     # Regions Tab List Updates
@@ -246,19 +281,23 @@ class Main(QtGui.QMainWindow):
         """
         pass
 
-    def get_current_tab(self):
-        curr_parent_tab = self.ui.tab_parameters.tabText(self.ui.tab_parameters.currentIndex())
+    def get_top_tab_label(self):
+        """ Return label of the top level tab. """
+        return self.ui.tab_parameters.tabText(self.ui.tab_parameters.currentIndex())
 
-        if curr_parent_tab == "Features" and (self.ui.tab_features.count() > 1):
+
+    def get_child_tab(self):
+        active_top_tab_label = self.get_top_tab_label()
+        if active_top_tab_label == "Features" and (self.ui.tab_features.count() > 1):
             return self.ui.tab_features.widget(self.ui.tab_features.currentIndex())
 
-        elif curr_parent_tab == "Objects" and (self.ui.tab_objects.count() > 1):
+        elif active_top_tab_label == "Objects" and (self.ui.tab_objects.count() > 1):
             return self.ui.tab_objects.widget(self.ui.tab_objects.currentIndex())
 
-        elif curr_parent_tab == "ROIs" and (self.ui.tab_regions.count() > 1):
+        elif active_top_tab_label == "ROIs" and (self.ui.tab_regions.count() > 1):
             return self.ui.tab_regions.widget(self.ui.tab_regions.currentIndex())
 
-        elif curr_parent_tab == "SerialOut":
+        elif active_top_tab_label == "SerialOut":
             return "Serial"
 
         else:
@@ -270,7 +309,7 @@ class Main(QtGui.QMainWindow):
         of tracked objects or LEDs. The rest should happen behind the scenes
         in the spotter sub-classes.
         """
-        current_tab = self.get_current_tab()
+        current_tab = self.get_child_tab()
         if current_tab:
             current_tab.update()
 
@@ -325,9 +364,10 @@ class Main(QtGui.QMainWindow):
                         color[3] += .3
                     if s.shape == "Rectangle":
                         self.glframe.jobs.append([self.glframe.drawRect, s.points, color]) #(1.0, 1.0, 1.0, 1.0)
-                    if s.shape == "Circle":
+                    elif s.shape == "Circle":
                         self.glframe.jobs.append([self.glframe.drawCircle, s.points, color])
-
+                    elif s.shape == "Line":
+                        self.glframe.jobs.append([self.glframe.drawLine, s.points, color])
         self.glframe.updateWorld()
 
         self.update_current_tab()

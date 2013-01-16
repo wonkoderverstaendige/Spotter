@@ -19,6 +19,7 @@ class Tab(QtGui.QWidget, Ui_tab_features):
     name = None
     feature = None
     accept_events = False
+    tab_type = "feature"
     
     
 
@@ -76,7 +77,7 @@ class Tab(QtGui.QWidget, Ui_tab_features):
             self.lbl_x.setText('---')
             self.lbl_y.setText('---')
 
-    def update_led(self):
+    def update_led(self, value):
         self.feature.range_hue = (self.spin_hue_min.value(), self.spin_hue_max.value())
         self.feature.range_sat = (self.spin_sat_min.value(), self.spin_sat_max.value())
         self.feature.range_val = (self.spin_val_min.value(), self.spin_val_max.value())

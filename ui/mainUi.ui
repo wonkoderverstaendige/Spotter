@@ -81,7 +81,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>3</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="widget_settings">
          <attribute name="title">
@@ -94,52 +94,16 @@
           <property name="spacing">
            <number>1</number>
           </property>
-          <item row="2" column="1">
-           <widget class="QDialogButtonBox" name="buttonBox">
-            <property name="standardButtons">
-             <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <spacer name="horizontalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="1" column="1">
-           <widget class="QCheckBox" name="checkBox">
-            <property name="text">
-             <string>CheckBox</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <spacer name="verticalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
           <item row="0" column="0">
-           <widget class="QToolButton" name="toolButton">
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
+           <layout class="QGridLayout" name="gridLayout">
+            <item row="0" column="0">
+             <widget class="QPushButton" name="btn_LTexample_template">
+              <property name="text">
+               <string>Quickload Linear Track Template</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </widget>
@@ -184,9 +148,9 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="btn_load_templates">
+               <widget class="QPushButton" name="btn_feature_template">
                 <property name="text">
-                 <string>Quickload Templates</string>
+                 <string>Quickload Feature template</string>
                 </property>
                </widget>
               </item>
@@ -242,6 +206,13 @@
                 </property>
                </widget>
               </item>
+              <item>
+               <widget class="QPushButton" name="btn_object_template">
+                <property name="text">
+                 <string>Quickload object template</string>
+                </property>
+               </widget>
+              </item>
              </layout>
             </widget>
            </widget>
@@ -276,6 +247,13 @@
                <widget class="QPushButton" name="btn_new_region_tab">
                 <property name="text">
                  <string>New Region</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="btn_region_template">
+                <property name="text">
+                 <string>Quickload region template</string>
                 </property>
                </widget>
               </item>

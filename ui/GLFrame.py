@@ -68,7 +68,7 @@ class GLFrame(QtOpenGL.QGLWidget):
             if modifiers == QtCore.Qt.ShiftModifier:
                 self.drawCircle((p1, p2), color, 16)
             elif modifiers == QtCore.Qt.ControlModifier:
-                pass
+                self.drawLine((p1, p2), color)
             else:
                 self.drawRect((p1, p2), color)
 #        else:
@@ -149,6 +149,17 @@ class GLFrame(QtOpenGL.QGLWidget):
         self.m_x1 = mouseEvent.x()
         self.m_y1 = mouseEvent.y()
 
+    def drawLine(self, points, color):
+        x1 = points[0][0]*1.0/self.width
+        y1 = points[0][1]*1.0/self.height
+        x2 = points[1][0]*1.0/self.width
+        y2 = points[1][1]*1.0/self.height
+        
+        glColor(*color)
+        glBegin(GL_LINES)
+        glVertex( x1, y1, 0.0)
+        glVertex( x2, y2, 0.0)
+        glEnd()
 
     def drawCross(self, point, size, color, gap = 7, angled = False):
         """ Draw colored cross to mark tracked features """

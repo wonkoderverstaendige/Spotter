@@ -58,3 +58,6 @@ General behavior:
 
     - if from disk, allow freezing and moving frame by frame/jumping inside
     the file for fast access of specific time points
+
+    - proper setting/template loading and saving, possibly using pythons
+    Config-Parser module

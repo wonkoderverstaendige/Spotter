@@ -21,6 +21,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
     name = None
     region = None
     accept_events = False
+    tab_type = "region"
 
     # mouse event handling    
     start_coords = None
@@ -48,16 +49,29 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         self.connect(self.btn_add_shape, QtCore.SIGNAL('toggled(bool)'), self.accept_selection)
         self.connect(self.btn_remove_shape, QtCore.SIGNAL('clicked()'), self.remove_shape)
         
+        self.connect(self.spin_shape_x, QtCore.SIGNAL('valueChanged(int)'), self.update_shape)
+        self.connect(self.spin_shape_y, QtCore.SIGNAL('valueChanged(int)'), self.update_shape)
+
         # if a checkbox on a shape in the list is changed
         self.connect(self.tree_region_shapes, QtCore.SIGNAL('itemChanged(QTreeWidgetItem *, int)'), self.itemChanged)
+        self.connect(self.tree_region_shapes, QtCore.SIGNAL('itemSelectionChanged()'), self.update_spin_boxes)
 
         self.update()
 
 
     def update(self):
-        if self.name == None:
-            print "empty tab"
-            return
+        pass
+
+
+    def update_spin_boxes(self):
+        tree_item = self.tree_region_shapes.selectedItems()
+        if tree_item:
+            tree_item = tree_item[0]
+            if not self.spin_shape_x.value() == tree_item.shape.points[0][0]:
+                self.spin_shape_x.setValue(tree_item.shape.points[0][0])
+            if not self.spin_shape_y.value() == tree_item.shape.points[0][1]:
+                self.spin_shape_y.setValue(tree_item.shape.points[0][1])
+
 
     def accept_selection(self, state):
         self.accept_events = state
@@ -90,8 +104,8 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
                     shape_type = 'Rectangle'
                 elif modifiers == QtCore.Qt.ShiftModifier:
                     shape_type = 'Circle'
-                else:
-                    shape_type = 'fluffybunny'
+                elif modifiers == QtCore.Qt.ControlModifier:
+                    shape_type = 'Line'
 
                 shape_points = (self.coords_start, self.coords_end)              
                 if shape_type and shape_points:
@@ -120,6 +134,15 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         if selected_item:
             self.region.shapes.pop(self.region.shapes.index(selected_item.shape))
             self.tree_region_shapes.takeTopLevelItem(index)
+            
+    def update_shape(self):
+        idx = self.region.shapes.index(self.tree_region_shapes.currentItem().shape)
+        dx = self.spin_shape_x.value() - self.region.shapes[idx].points[0][0]
+        dy = self.spin_shape_x.value() - self.region.shapes[idx].points[0][1]
+#        print dx
+#        p_old = self.region.shapes[idx].points
+#        self.update_spin_boxes
+#        self.region.shapes[idx].points[0] = (self.spin_shape_x.value(), self.spin_shape_y.value())
 
     def itemChanged(self, item, column):
         """ Activate/deactive shapes. If not active, will not be included in
@@ -128,7 +151,8 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         """
         item.active = item.checkState(column)
         item.shape.label = item.text(0)
-
+       
+        
     def update_region(self):
         if self.name == None:
             print "Empty object tab! This should not have happened!"

@@ -18,6 +18,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
 
     name = None
     accept_events = False
+    tab_type = "object"
 
     def __init__(self, parent, object_handle, label = None):
         self.object = object_handle
