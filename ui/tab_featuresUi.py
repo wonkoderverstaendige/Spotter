@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'tab_featuresUi.ui'
 #
-# Created: Wed Jan 16 00:22:28 2013
+# Created: Wed Jan 16 02:03:43 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -255,8 +255,8 @@ class Ui_tab_features(object):
         self.lbl_val.setText(QtGui.QApplication.translate("tab_features", "Val", None, QtGui.QApplication.UnicodeUTF8))
         self.lbl_sat.setText(QtGui.QApplication.translate("tab_features", "Sat", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_pick_color.setToolTip(QtGui.QApplication.translate("tab_features", "Pick thresholds from image by dragging frame around the spot of interest", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_pick_color.setStatusTip(QtGui.QApplication.translate("tab_features", "Pick rage from image", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_pick_color.setText(QtGui.QApplication.translate("tab_features", "Pick", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_pick_color.setStatusTip(QtGui.QApplication.translate("tab_features", "Pick range from image", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_pick_color.setText(QtGui.QApplication.translate("tab_features", "&Pick", None, QtGui.QApplication.UnicodeUTF8))
         self.lbl_min.setText(QtGui.QApplication.translate("tab_features", "Min", None, QtGui.QApplication.UnicodeUTF8))
         self.lbl_max.setText(QtGui.QApplication.translate("tab_features", "Max", None, QtGui.QApplication.UnicodeUTF8))
         self.combo_label.setItemText(0, QtGui.QApplication.translate("tab_features", "redLED", None, QtGui.QApplication.UnicodeUTF8))

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'tab_regionsUi.ui'
 #
-# Created: Wed Jan 16 00:22:28 2013
+# Created: Wed Jan 16 02:03:43 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -51,6 +51,7 @@ class Ui_tab_regions(object):
         self.ckb_trigger.setObjectName(_fromUtf8("ckb_trigger"))
         self.gridLayout_5.addWidget(self.ckb_trigger, 0, 0, 1, 1)
         self.tree_region_shapes = QtGui.QTreeWidget(self.page_regions_overview)
+        self.tree_region_shapes.setAlternatingRowColors(True)
         self.tree_region_shapes.setIndentation(0)
         self.tree_region_shapes.setObjectName(_fromUtf8("tree_region_shapes"))
         self.gridLayout_5.addWidget(self.tree_region_shapes, 2, 0, 1, 3)
@@ -107,8 +108,8 @@ class Ui_tab_regions(object):
         tab_regions.setWindowTitle(QtGui.QApplication.translate("tab_regions", "Form", None, QtGui.QApplication.UnicodeUTF8))
         self.ckb_trigger.setText(QtGui.QApplication.translate("tab_regions", "Trigger", None, QtGui.QApplication.UnicodeUTF8))
         self.tree_region_shapes.headerItem().setText(0, QtGui.QApplication.translate("tab_regions", "Shapes", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_add_shape.setText(QtGui.QApplication.translate("tab_regions", "Add", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_remove_shape.setText(QtGui.QApplication.translate("tab_regions", "remove", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_add_shape.setText(QtGui.QApplication.translate("tab_regions", "&Add", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_remove_shape.setText(QtGui.QApplication.translate("tab_regions", "&Remove", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_regions_overview), QtGui.QApplication.translate("tab_regions", "Tracking", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_regions_conditions), QtGui.QApplication.translate("tab_regions", "Conditions/Triggers", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_8.setText(QtGui.QApplication.translate("tab_regions", "Save", None, QtGui.QApplication.UnicodeUTF8))

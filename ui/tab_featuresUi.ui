@@ -243,10 +243,10 @@
               <string>Pick thresholds from image by dragging frame around the spot of interest</string>
              </property>
              <property name="statusTip">
-              <string>Pick rage from image</string>
+              <string>Pick range from image</string>
              </property>
              <property name="text">
-              <string>Pick</string>
+              <string>&amp;Pick</string>
              </property>
              <property name="checkable">
               <bool>true</bool>

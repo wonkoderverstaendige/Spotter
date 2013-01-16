@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Wed Jan 16 00:22:28 2013
+# Created: Wed Jan 16 02:03:42 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -23,6 +23,9 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
         MainWindow.setSizePolicy(sizePolicy)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/icon64.svg")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        MainWindow.setWindowIcon(icon)
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.horizontalLayout_2 = QtGui.QHBoxLayout(self.centralwidget)
@@ -232,3 +235,4 @@ class Ui_MainWindow(object):
         self.actionParameters.setText(QtGui.QApplication.translate("MainWindow", "Parameters", None, QtGui.QApplication.UnicodeUTF8))
         self.actionAbout.setText(QtGui.QApplication.translate("MainWindow", "&About", None, QtGui.QApplication.UnicodeUTF8))
 
+import icons_rc

@@ -10,6 +10,33 @@ import geometry as geom
 import cv2
 import utils
 
+class Shape:
+    """ Geometrical shape that comprise ROIs. ROIs can be made of several
+    independent shapes like two rectangles on either end of the track etc.
+    Not sure about the color parameter, I think it better if all shapes in a
+    ROI have the same color, to keep them together as one ROI.
+    points: list of points defining the shape. Three for triangle, two for
+    rectangle, circle has only point plus radius, etc.
+    """
+    active = True    
+    selected = False
+    
+    def __init__(self, shape, points, color = None, label = 'shape'):
+        self.shape = shape
+        self.points = points
+        self.label = label
+        self.color = color
+        self.draw_instruction = self.build_draw_instruction()
+        
+    def build_draw_instruction(self, color = None):
+        pass
+        
+    def shape_to_array(self):
+        """ Return shape as numpy array for overlaying into the total
+        collision detection array. """
+        pass
+
+
 class LED:
     """ Each instance is a spot to track in the image. Holds histogram to do
     camshift with plus ROI/Mask"""
@@ -95,27 +122,6 @@ class OOI:
         pass
 
 
-class Shape:
-    """ Geometrical shape that comprise ROIs. ROIs can be made of several
-    independent shapes like two rectangles on either end of the track etc.
-    Not sure about the color parameter, I think it better if all shapes in a
-    ROI have the same color, to keep them together as one ROI.
-    points: list of points defining the shape. Three for triangle, two for
-    rectangle, circle has only point plus radius, etc.
-    """
-    active = True    
-    
-    def __init__(self, shape, points, color = None, label = 'shape'):
-        self.shape = shape
-        self.points = points
-        self.label = label
-        
-    def shape_to_array(self):
-        """ Return shape as numpy array for overlaying into the total
-        collision detection array. """
-        pass
-
-
 class ROI:
     """ Region in image registered objects are tested against.
     If trackables are occupying or intersecting, trigger their specific
@@ -146,6 +152,12 @@ class ROI:
         self.shapes.append(shape)
         return shape
     
+    def update_draw_jobs(self):
+        jobs = []
+        for s in self.shapes:
+            jobs.append(s.draw_instruction)
+        return []
+
     def remove_shape(self, shape):
         print 'not really removing shape'
         
@@ -159,6 +171,3 @@ class ROI:
         array on the line.
         """
         return
-
-    def pointTest( self, point ):
-        cv2.pointPolygonTest( self.points, point, measureDist = False)

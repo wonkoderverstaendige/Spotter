@@ -91,6 +91,9 @@
            </item>
            <item row="2" column="0" colspan="3">
             <widget class="QTreeWidget" name="tree_region_shapes">
+             <property name="alternatingRowColors">
+              <bool>true</bool>
+             </property>
              <property name="indentation">
               <number>0</number>
              </property>
@@ -110,7 +113,7 @@
               </size>
              </property>
              <property name="text">
-              <string>Add</string>
+              <string>&amp;Add</string>
              </property>
              <property name="checkable">
               <bool>true</bool>
@@ -126,7 +129,7 @@
               </size>
              </property>
              <property name="text">
-              <string>remove</string>
+              <string>&amp;Remove</string>
              </property>
             </widget>
            </item>

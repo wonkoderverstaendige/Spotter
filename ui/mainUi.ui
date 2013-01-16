@@ -19,6 +19,10 @@
   <property name="windowTitle">
    <string>Spotter</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="icons.qrc">
+    <normaloff>:/icon64.svg</normaloff>:/icon64.svg</iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_2">
     <property name="spacing">
@@ -385,6 +389,8 @@
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Created on Sat Dec 15 21:14:43 2012
@@ -328,6 +329,7 @@ def main(source, destination, fps, size, gui, serial):
     app = QtGui.QApplication([])
     window = Main(source, destination, fps, size, gui, serial)
     window.show()
+    window.raise_() # needed on OSX?
 
     sys.exit(app.exec_())
 
@@ -353,7 +355,6 @@ if __name__ == "__main__":                                  #
     # Frame size parameter string 'WIDTHxHEIGHT' to size tupple (WIDTH, HEIGHT)
     size = (0, 0) if not ARGDICT['--dims'] else tuple( ARGDICT['--dims'].split('x') )
 
-    # no GUI, may later select GUI backend, i.e., Qt or cv2.highgui etc.
     gui = 'Qt' if not ARGDICT['--Headless'] else ARGDICT['--Headless']
 
     # Qt main window which instantiates spotter class with all parameters

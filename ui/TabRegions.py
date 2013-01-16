@@ -111,6 +111,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         shape_item.setCheckState(0,QtCore.Qt.Checked)
         self.tree_region_shapes.addTopLevelItem(shape_item)
         self.tree_region_shapes.setCurrentItem(shape_item)
+        shape_item.setFlags(shape_item.flags() | QtCore.Qt.ItemIsEditable)
         self.btn_add_shape.setChecked(False)
 
     def remove_shape(self):
@@ -126,6 +127,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         way (i.e. only outline or greyed out?)
         """
         item.active = item.checkState(column)
+        item.shape.label = item.text(0)
 
     def update_region(self):
         if self.name == None:
