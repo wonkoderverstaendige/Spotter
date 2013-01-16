@@ -64,7 +64,7 @@ class Tracker:
 
 
     def addROI( self, points = None ):
-        roi = trkbl.ROI((255, 0, 100), 'newROI' )
+        roi = trkbl.ROI(label = 'ROI_'+str(len(self.rois)) )
         self.rois.append( roi )
         return roi
 
@@ -133,7 +133,7 @@ class Tracker:
             M = cv2.moments( contour )
             cx = int( M['m10']/M['m00'] )
             cy = int( M['m01']/M['m00'] )
-            l.pos_hist.append( tuple( [cx, cy] ) )
+            l.pos_hist.append( (cx, cy) )
         else:
             # Couldn't find a good enough spot
             l.pos_hist.append(None)

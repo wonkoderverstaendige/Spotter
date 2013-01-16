@@ -311,12 +311,22 @@ class Main(QtGui.QMainWindow):
         # to be drawn onto the GL frame
         for l in self.spotter.tracker.leds:
             if not l.pos_hist[-1] == None and l.marker_visible:
-                self.glframe.jobs.append([self.glframe.drawCross, l.pos_hist[-1][0], l.pos_hist[-1][1], 14, l.lblcolor])
+                self.glframe.jobs.append([self.glframe.drawCross, l.pos_hist[-1], 14, l.lblcolor])
 
         for o in self.spotter.tracker.oois:
             if not o.guessed_pos == None:
-                self.glframe.jobs.append([self.glframe.drawCross, o.guessed_pos[0], o.guessed_pos[1], 8, (1.0, 1.0, 1.0, 1.0), 7, True])
-                self.glframe.jobs.append([self.glframe.drawTrace, o.guessed_pos[0], o.guessed_pos[1], 8, (1.0, 1.0, 1.0, 1.0), 7, True])
+                self.glframe.jobs.append([self.glframe.drawCross, o.guessed_pos, 8, (1.0, 1.0, 1.0, 1.0), 7, True])
+
+        for r in self.spotter.tracker.rois:
+            color = (r.color_normal[0], r.color_normal[1], r.color_normal[2], .5)
+            for s in r.shapes:
+                if s.active:
+                    if s.selected:
+                        color[3] += .3
+                    if s.shape == "Rectangle":
+                        self.glframe.jobs.append([self.glframe.drawRect, s.points, color]) #(1.0, 1.0, 1.0, 1.0)
+                    if s.shape == "Circle":
+                        self.glframe.jobs.append([self.glframe.drawCircle, s.points, color])
 
         self.glframe.updateWorld()
 

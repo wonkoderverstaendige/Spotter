@@ -16,10 +16,10 @@ class GLFrame(QtOpenGL.QGLWidget):
     frame = None
     width = None
     height = None
-    m_x1 = -1
-    m_x2 = -1
-    m_y1 = -1
-    m_y2 = -1
+    m_x1 = -50
+    m_x2 = -50
+    m_y1 = -50
+    m_y2 = -50
     pressed = False
     dragging = False
     aratio = None       # aspect ratio float = width/height
@@ -61,24 +61,18 @@ class GLFrame(QtOpenGL.QGLWidget):
 
         color = (0.5, 0.5, 0.5, 0.5)
         if self.dragging:
-            x1 = self.m_x1/float(self.width)
-            y1 = self.m_y1/float(self.height)
-            x2 = self.m_x2/float(self.width)
-            y2 = self.m_y2/float(self.height)
+            p1 = (self.m_x1, self.m_y1)
+            p2 = (self.m_x2, self.m_y2)
 
             modifiers = QtGui.QApplication.keyboardModifiers()
             if modifiers == QtCore.Qt.ShiftModifier:
-                dx = x2-x1
-                dy = y2-y1
-                r = dx if abs(dx)>abs(dy) else dy
-
-                self.drawCircle(x1, y1, r, color, 16)
+                self.drawCircle((p1, p2), color, 16)
             elif modifiers == QtCore.Qt.ControlModifier:
                 pass
             else:
-                self.drawRect(x1, y1, x2, y2, color)
-        else:
-            self.drawCross(self.m_x1, self.m_y1, 20, color)
+                self.drawRect((p1, p2), color)
+#        else:
+        self.drawCross((self.m_x1, self.m_y1), 20, color)
 
         # Process job queue
         self.process_paint_jobs()
@@ -156,10 +150,10 @@ class GLFrame(QtOpenGL.QGLWidget):
         self.m_y1 = mouseEvent.y()
 
 
-    def drawCross(self, x, y, size, color, gap = 7, angled = False):
+    def drawCross(self, point, size, color, gap = 7, angled = False):
         """ Draw colored cross to mark tracked features """
-        x = x*1.0/self.width
-        y = y*1.0/self.height
+        x = point[0]*1.0/self.width
+        y = point[1]*1.0/self.height
 
         dx = size*.5/self.width
         dy = size*.5/self.height
@@ -215,15 +209,23 @@ class GLFrame(QtOpenGL.QGLWidget):
         glFlush()
 
 
-    def drawRect(self, x1, y1, x2, y2, color):
+    def drawRect(self, points, color): #x1, y1, x2, y2
+        """ Draws a filled rectangle. """
         glColor(*color)
-        glRectf(x1, y1, x2, y2)
+        glRectf(points[0][0]*1.0/self.width, points[0][1]*1.0/self.height, points[1][0]*1.0/self.width, points[1][1]*1.0/self.height)
 
 
-    def drawCircle(self, cx, cy, r, color, num_segments):
+    def drawCircle(self, points, color, num_segments = 16):
         """ Quickly draw approximate circle. Algorithm from:
             http://slabode.exofire.net/circle_draw.shtml
         """
+        cx1 = points[0][0]*1.0/self.width
+        cy1 = points[0][1]*1.0/self.height
+        cx2 = points[1][0]*1.0/self.width
+        cy2 = points[1][1]*1.0/self.height
+        dx = abs(cx1 - cx2)
+        dy = abs(cy1 - cy2)
+        r = dx if dx>dy else dy
         theta = 2 * math.pi / float(num_segments)
         c = math.cos(theta) # pre-calculate cosine
         s = math.sin(theta) # and sine
@@ -235,14 +237,14 @@ class GLFrame(QtOpenGL.QGLWidget):
         glBegin(GL_LINE_LOOP)
         for ii in range(num_segments):
             # Circle requires correction for aspect ratio
-            glVertex2f((x/self.aratio + cx), (y + cy))    # output vertex
+            glVertex2f((x/self.aratio + cx1), (y + cy1))    # output vertex
             t = x
             x = c * x - s * y
             y = s * t + c * y
         glEnd()
 
 
-    def drawTrace(self, x, y, size, color, gap = 7, angled = False): #array
+    def drawTrace(self, points, color): #array
         """ Draw trace of position given in array.
         TODO: Draw trace in immediate mode via vertex and color arrays
         """

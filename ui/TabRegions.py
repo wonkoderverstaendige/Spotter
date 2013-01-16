@@ -7,6 +7,8 @@ Created on Sun Jan 13 14:19:24 2013
 """
 
 import sys
+import math
+import random
 from PyQt4 import QtGui, QtCore
 
 sys.path.append('./ui')
@@ -83,17 +85,15 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
                 # Everything seems to work out, now we just finalize the new
                 # selected region! Hooray!!!
                 shape_type = shape_points = None
-                coords_end = (event.x(), event.y())
+                self.coords_end = (event.x(), event.y())
                 if modifiers == QtCore.Qt.NoModifier:
                     shape_type = 'Rectangle'
-                    shape_points = (self.coords_start, coords_end)                    
                 elif modifiers == QtCore.Qt.ShiftModifier:
                     shape_type = 'Circle'
-                    shape_points = (self.coords_start, coords_end)
                 else:
                     shape_type = 'fluffybunny'
-                    shape_points = (self.coords_start, coords_end)
-                    
+
+                shape_points = (self.coords_start, self.coords_end)              
                 if shape_type and shape_points:
                     self.add_shape(shape_type, shape_points)
         else:

@@ -7,6 +7,7 @@ Trackable object class.
 """
 
 import geometry as geom
+import random
 import cv2
 import utils
 
@@ -25,11 +26,11 @@ class Shape:
         self.shape = shape
         self.points = points
         self.label = label
-        self.color = color
-        self.draw_instruction = self.build_draw_instruction()
-        
-    def build_draw_instruction(self, color = None):
-        pass
+#        self.color = color
+#        self.draw_instruction = self.build_draw_instruction()
+#        
+#    def build_draw_instruction(self, color = None):
+#        pass
         
     def shape_to_array(self):
         """ Return shape as numpy array for overlaying into the total
@@ -130,7 +131,11 @@ class ROI:
     visible = True
     
     def __init__(self, color = None, label = 'ROI', shapes = None ):
-        self.color = color
+        if not color:
+            self.color = self.random_color()
+        else:
+            self.color = color
+        self.color_normal = self.normalize_color(self.color)
         self.label = label
         self.shapes = []
         # if the ROI is initialized with a set of shapes to begin with:
@@ -138,25 +143,24 @@ class ROI:
             for s in shapes:
                 self.add_shape(s)
 
-    def draw( self, frame ):
-        if any(self.points):
-            if self.visible:
-                cv2.FillPoly(frame, self.points, self.color )
+#    def draw( self, frame ):
+#        if any(self.points):
+#            if self.visible:
+#                cv2.FillPoly(frame, self.points, self.color )
 
     def move( self, x, y ):
         print "Moving whole ROI to new position"
         
     def add_shape(self, shape_type, points, *args):
-#        print(shape, points)
         shape = Shape(shape_type, points)
         self.shapes.append(shape)
         return shape
     
-    def update_draw_jobs(self):
-        jobs = []
-        for s in self.shapes:
-            jobs.append(s.draw_instruction)
-        return []
+#    def update_draw_jobs(self):
+#        jobs = []
+#        for s in self.shapes:
+#            jobs.append(s.draw_instruction)
+#        return []
 
     def remove_shape(self, shape):
         print 'not really removing shape'
@@ -171,3 +175,12 @@ class ROI:
         array on the line.
         """
         return
+
+    def random_color(self):
+        c1 = random.randrange(200)
+        c2 = random.randrange(200-c1)
+        c3 = 200-c1-c2
+        return random.sample([c1, c2, c3], 3)
+        
+    def normalize_color(self, color):
+        return (color[0]/255., color[1]/255., color[2]/255.)
