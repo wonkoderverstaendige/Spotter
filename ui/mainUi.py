@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Wed Jan 16 13:47:06 2013
+# Created: Wed Jan 16 16:34:09 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -52,6 +52,7 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.tab_parameters.sizePolicy().hasHeightForWidth())
         self.tab_parameters.setSizePolicy(sizePolicy)
         self.tab_parameters.setMinimumSize(QtCore.QSize(320, 300))
+        self.tab_parameters.setTabPosition(QtGui.QTabWidget.East)
         self.tab_parameters.setObjectName(_fromUtf8("tab_parameters"))
         self.widget_settings = QtGui.QWidget()
         self.widget_settings.setObjectName(_fromUtf8("widget_settings"))
@@ -142,14 +143,25 @@ class Ui_MainWindow(object):
         self.tab_regions.addTab(self.tab_regions_newTab, _fromUtf8(""))
         self.horizontalLayout.addWidget(self.tab_regions)
         self.tab_parameters.addTab(self.widget_regions, _fromUtf8(""))
-        self.tab = QtGui.QWidget()
-        self.tab.setObjectName(_fromUtf8("tab"))
-        self.tab_parameters.addTab(self.tab, _fromUtf8(""))
+        self.widget_serial = QtGui.QWidget()
+        self.widget_serial.setObjectName(_fromUtf8("widget_serial"))
+        self.verticalLayout_4 = QtGui.QVBoxLayout(self.widget_serial)
+        self.verticalLayout_4.setMargin(0)
+        self.verticalLayout_4.setObjectName(_fromUtf8("verticalLayout_4"))
+        self.tab_serial_2 = QtGui.QTabWidget(self.widget_serial)
+        self.tab_serial_2.setObjectName(_fromUtf8("tab_serial_2"))
+        self.tab_serial_arduino = QtGui.QWidget()
+        self.tab_serial_arduino.setObjectName(_fromUtf8("tab_serial_arduino"))
+        self.gridLayout_3 = QtGui.QGridLayout(self.tab_serial_arduino)
+        self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
+        self.tab_serial_2.addTab(self.tab_serial_arduino, _fromUtf8(""))
+        self.verticalLayout_4.addWidget(self.tab_serial_2)
+        self.tab_parameters.addTab(self.widget_serial, _fromUtf8(""))
         self.frame_parameters.addWidget(self.tab_parameters)
         self.horizontalLayout_2.addLayout(self.frame_parameters)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 681, 25))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 681, 21))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menu_File = QtGui.QMenu(self.menubar)
         self.menu_File.setObjectName(_fromUtf8("menu_File"))
@@ -197,7 +209,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuHelp.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.tab_parameters.setCurrentIndex(0)
+        self.tab_parameters.setCurrentIndex(4)
         self.tab_features.setCurrentIndex(0)
         self.tab_objects.setCurrentIndex(0)
         self.tab_regions.setCurrentIndex(0)
@@ -219,7 +231,8 @@ class Ui_MainWindow(object):
         self.btn_region_template.setText(QtGui.QApplication.translate("MainWindow", "Quickload region template", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_regions.setTabText(self.tab_regions.indexOf(self.tab_regions_newTab), QtGui.QApplication.translate("MainWindow", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_parameters.setTabText(self.tab_parameters.indexOf(self.widget_regions), QtGui.QApplication.translate("MainWindow", "ROIs", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_parameters.setTabText(self.tab_parameters.indexOf(self.tab), QtGui.QApplication.translate("MainWindow", "SerialOut", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_serial_2.setTabText(self.tab_serial_2.indexOf(self.tab_serial_arduino), QtGui.QApplication.translate("MainWindow", "Arduino", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab_parameters.setTabText(self.tab_parameters.indexOf(self.widget_serial), QtGui.QApplication.translate("MainWindow", "SerialOut", None, QtGui.QApplication.UnicodeUTF8))
         self.menu_File.setTitle(QtGui.QApplication.translate("MainWindow", "&File", None, QtGui.QApplication.UnicodeUTF8))
         self.menu_Open.setTitle(QtGui.QApplication.translate("MainWindow", "&Open", None, QtGui.QApplication.UnicodeUTF8))
         self.menu_Save.setTitle(QtGui.QApplication.translate("MainWindow", "&Save", None, QtGui.QApplication.UnicodeUTF8))
