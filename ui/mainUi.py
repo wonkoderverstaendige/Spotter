@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Mon Jan 14 23:57:57 2013
+# Created: Wed Jan 16 00:22:28 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -196,7 +196,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuHelp.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.tab_parameters.setCurrentIndex(1)
+        self.tab_parameters.setCurrentIndex(3)
         self.tab_features.setCurrentIndex(0)
         self.tab_objects.setCurrentIndex(0)
         self.tab_regions.setCurrentIndex(0)

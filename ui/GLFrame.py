@@ -25,7 +25,7 @@ class GLFrame(QtOpenGL.QGLWidget):
     aratio = None       # aspect ratio float = width/height
     jobs = None
 
-    sig_select = QtCore.pyqtSignal(tuple, bool)
+    sig_event = QtCore.pyqtSignal(str, object)
 
     def __init__(self, *args):
         QtOpenGL.QGLWidget.__init__(self, *args)
@@ -73,12 +73,10 @@ class GLFrame(QtOpenGL.QGLWidget):
                 r = dx if abs(dx)>abs(dy) else dy
 
                 self.drawCircle(x1, y1, r, color, 16)
-                self.sig_select.emit(('cirlce', x1, y1, r), False)
             elif modifiers == QtCore.Qt.ControlModifier:
                 pass
             else:
                 self.drawRect(x1, y1, x2, y2, color)
-                self.sig_select.emit(('rect', x1, y1, x2, y2))
         else:
             self.drawCross(self.m_x1, self.m_y1, 20, color)
 
@@ -89,6 +87,8 @@ class GLFrame(QtOpenGL.QGLWidget):
     def process_paint_jobs(self):
         """ This puny piece of code is IMPORTANT! It handles all external
         drawing jobs! That looks really un-pythonic, by the way!
+        j[0] is the reference to the drawing function
+        (*j[1:]) expands the parameters for the drawing function to be called
         """
         while self.jobs:
             j = self.jobs.pop()
@@ -114,6 +114,46 @@ class GLFrame(QtOpenGL.QGLWidget):
 
         # Load identity matrix
         glLoadIdentity()
+
+
+    def mouseMoveEvent(self, mouseEvent):
+        if int(mouseEvent.buttons()) != QtCore.Qt.NoButton:
+            # user is dragging        
+            self.sig_event.emit('mouseDrag', mouseEvent)
+            self.dragging = True
+            self.m_x2 = mouseEvent.x()
+            self.m_y2 = mouseEvent.y()
+        else:
+            self.m_x1 = mouseEvent.x()
+            self.m_y1 = mouseEvent.y()
+            
+#        if self.pressed:
+#            self.sig_event.emit('mouseMove', mouseEvent)
+#            if (abs(mouseEvent.x() - self.m_x1) + abs(mouseEvent.y() - self.m_y1)) > 2:
+#                self.dragging = True
+#                self.m_x2 = mouseEvent.x()
+#                self.m_y2 = mouseEvent.y()
+#        else:
+#            self.m_x1 = mouseEvent.x()
+#            self.m_y1 = mouseEvent.y()
+
+
+    def mouseDoubleClickEvent(self, mouseEvent):
+        self.sig_event.emit('mouseDoubleClick', mouseEvent)
+
+
+    def mousePressEvent(self, mouseEvent):
+        self.sig_event.emit('mousePress', mouseEvent)
+        self.pressed = True
+        self.m_x1 = mouseEvent.x()
+        self.m_y1 = mouseEvent.y()
+
+    def mouseReleaseEvent(self, mouseEvent):
+        self.sig_event.emit('mouseRelease', mouseEvent)
+        self.pressed = False
+        self.dragging = False
+        self.m_x1 = mouseEvent.x()
+        self.m_y1 = mouseEvent.y()
 
 
     def drawCross(self, x, y, size, color, gap = 7, angled = False):
@@ -232,47 +272,3 @@ class GLFrame(QtOpenGL.QGLWidget):
             self.framesize = self.frame.shape
             self.setMinimumSize(self.frame.shape[1], self.frame.shape[0])
             self.setMaximumSize(self.frame.shape[1], self.frame.shape[0])
-
-
-    def mouseMoveEvent(self, e):
-#        if int(mouseEvent.buttons()) != QtCore.Qt.NoButton :
-#            # user is dragging
-#            delta_x = mouseEvent.x() - self.oldx
-#            delta_y = self.oldy - mouseEvent.y()
-#            if int(mouseEvent.buttons()) & QtCore.Qt.LeftButton :
-#                if int(mouseEvent.buttons()) & QtCore.Qt.MidButton :
-#                    pass
-##                    print delta_x
-#                else:
-#                    pass
-##                    print delta_y
-#            elif int(mouseEvent.buttons()) & QtCore.Qt.MidButton :
-#            self.update()
-        if self.pressed:
-            if (abs(e.x() - self.m_x1) + abs(e.y() - self.m_y1)) > 2:
-                self.dragging = True
-                self.m_x2 = e.x()
-                self.m_y2 = e.y()
-        else:
-            self.m_x1 = e.x()
-            self.m_y1 = e.y()
-
-
-    def mouseDoubleClickEvent(self, mouseEvent):
-        print "double click"
-
-
-    def mousePressEvent(self, e):
-        self.pressed = True
-        self.m_x1 = e.x()
-        self.m_y1 = e.y()
-
-
-    def mouseReleaseEvent(self, e):
-        self.pressed = False
-        self.dragging = False
-        if self.selection:
-            pass
-        self.selection = None
-        self.m_x1 = e.x()
-        self.m_y1 = e.y()

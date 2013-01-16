@@ -17,7 +17,7 @@ tab_type = "object"
 class Tab(QtGui.QWidget, Ui_tab_objects):
 
     name = None
-    accept_region = False
+    accept_events = False
 
     def __init__(self, parent, object_handle, label = None):
         self.object = object_handle
@@ -29,7 +29,6 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
             self.object.label  = label
         super(QtGui.QWidget, self).__init__(parent)
         self.setupUi(self)
-
 
 
         # Fill tree/list with all available LEDs and mark linked as checked
@@ -96,3 +95,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
             return
         self.object.tracked = self.ckb_track.isChecked()
         self.object.trace = self.ckb_trace.isChecked()
+        
+    def process_event(self, event):
+        pass
+    

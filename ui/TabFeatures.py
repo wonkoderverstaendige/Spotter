@@ -18,7 +18,9 @@ class Tab(QtGui.QWidget, Ui_tab_features):
 
     name = None
     feature = None
-    accept_region = False
+    accept_events = False
+    
+    
 
     def __init__(self, parent, feature, label = None):
         self.feature = feature
@@ -57,9 +59,10 @@ class Tab(QtGui.QWidget, Ui_tab_features):
         self.connect(self.ckb_fixed_pos, QtCore.SIGNAL('stateChanged(int)'), self.update_led)
         self.connect(self.ckb_marker, QtCore.SIGNAL('stateChanged(int)'), self.update_led)
 
-        self.connect(self.btn_pick_color, QtCore.SIGNAL('toggled()'), self.pick_color)
+        self.connect(self.btn_pick_color, QtCore.SIGNAL('toggled(bool)'), self.pick_color)
 
         self.update()
+
 
     def update(self):
         if self.name == None:
@@ -82,8 +85,7 @@ class Tab(QtGui.QWidget, Ui_tab_features):
         self.feature.marker_visible = self.ckb_marker.isChecked()
 
     def pick_color(self, state):
-        self.accept_region = state
+        self.accept_events = state
 
-    def process_region(self, region):
-        pass
-#        print region
+    def process_event(self, event_type, event):
+        print event_type

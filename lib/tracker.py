@@ -63,7 +63,7 @@ class Tracker:
 
 
     def addROI( self, points = None ):
-        roi = trkbl.ROI(points, (100, 0, 100) )
+        roi = trkbl.ROI((255, 0, 100), 'newROI' )
         self.rois.append( roi )
         return roi
 

@@ -312,6 +312,9 @@
          </item>
          <item row="8" column="0">
           <widget class="QComboBox" name="combo_label">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="editable">
             <bool>false</bool>
            </property>

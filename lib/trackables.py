@@ -95,16 +95,42 @@ class OOI:
         pass
 
 
+class Shape:
+    """ Geometrical shape that comprise ROIs. ROIs can be made of several
+    independent shapes like two rectangles on either end of the track etc.
+    Not sure about the color parameter, I think it better if all shapes in a
+    ROI have the same color, to keep them together as one ROI.
+    points: list of points defining the shape. Three for triangle, two for
+    rectangle, circle has only point plus radius, etc.
+    """
+    active = True    
+    
+    def __init__(self, shape, points, color = None, label = 'shape'):
+        self.shape = shape
+        self.points = points
+        self.label = label
+        
+    def shape_to_array(self):
+        """ Return shape as numpy array for overlaying into the total
+        collision detection array. """
+        pass
+
+
 class ROI:
     """ Region in image registered objects are tested against.
     If trackables are occupying or intersecting, trigger their specific
     callbacks.
     """
-    def __init__(self, points = None, color = None, label = 'ROI' ):
-        self.points = points
+    visible = True
+    
+    def __init__(self, color = None, label = 'ROI', shapes = None ):
         self.color = color
-        self.visible = True
         self.label = label
+        self.shapes = []
+        # if the ROI is initialized with a set of shapes to begin with:
+        if shapes:
+            for s in shapes:
+                self.add_shape(s)
 
     def draw( self, frame ):
         if any(self.points):
@@ -112,7 +138,27 @@ class ROI:
                 cv2.FillPoly(frame, self.points, self.color )
 
     def move( self, x, y ):
-        print "Moving to new position"
+        print "Moving whole ROI to new position"
+        
+    def add_shape(self, shape_type, points, *args):
+#        print(shape, points)
+        shape = Shape(shape_type, points)
+        self.shapes.append(shape)
+        return shape
+    
+    def remove_shape(self, shape):
+        print 'not really removing shape'
+        
+    def assemble_collision_array(self):
+        for s in self.shapes:
+            pass
+
+    def test_collision(self, start, end):
+        """ Test if a line between start and end would somewhere collide with
+        any shapes of this ROI. Simple AND values in the collision detection
+        array on the line.
+        """
+        return
 
     def pointTest( self, point ):
         cv2.pointPolygonTest( self.points, point, measureDist = False)

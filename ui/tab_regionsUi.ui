@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>292</width>
+    <width>241</width>
     <height>325</height>
    </rect>
   </property>
@@ -47,8 +47,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>290</width>
-          <height>260</height>
+          <width>239</width>
+          <height>248</height>
          </rect>
         </property>
         <attribute name="label">
@@ -71,6 +71,9 @@
            </property>
            <item row="1" column="0" colspan="3">
             <widget class="QComboBox" name="combo_Object">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="editable">
               <bool>false</bool>
              </property>
@@ -87,7 +90,10 @@
             </widget>
            </item>
            <item row="2" column="0" colspan="3">
-            <widget class="QTreeWidget" name="tree_regions">
+            <widget class="QTreeWidget" name="tree_region_shapes">
+             <property name="indentation">
+              <number>0</number>
+             </property>
              <column>
               <property name="text">
                <string>Shapes</string>
@@ -96,12 +102,31 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QPushButton" name="btn_select_region">
+            <widget class="QPushButton" name="btn_add_shape">
+             <property name="minimumSize">
+              <size>
+               <width>30</width>
+               <height>0</height>
+              </size>
+             </property>
              <property name="text">
-              <string>Select Region</string>
+              <string>Add</string>
              </property>
              <property name="checkable">
               <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QPushButton" name="btn_remove_shape">
+             <property name="minimumSize">
+              <size>
+               <width>30</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>remove</string>
              </property>
             </widget>
            </item>
@@ -114,8 +139,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>290</width>
-          <height>260</height>
+          <width>239</width>
+          <height>248</height>
          </rect>
         </property>
         <attribute name="label">
@@ -135,8 +160,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>290</width>
-          <height>260</height>
+          <width>239</width>
+          <height>248</height>
          </rect>
         </property>
         <attribute name="label">

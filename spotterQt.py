@@ -88,11 +88,13 @@ class Main(QtGui.QMainWindow):
         self.spotter = Spotter(source, destination, fps, size, gui, serial)
 
         # OpenGL frame
-        self.frame = GLFrame()
-        self.ui.frame_video.addWidget(self.frame)
-        self.frame.setSizePolicy( QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding )
+        self.glframe = GLFrame()
+        self.ui.frame_video.addWidget(self.glframe)
+        self.glframe.setSizePolicy( QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding )
+        
+        # handling mouse events by the tabs for selection of regions etc.
+        self.glframe.sig_event.connect(self.mouse_event_to_tab)
 
-        self.frame.sig_select.connect(self.region_to_tab)
 
         # For debugging, later as standard use loader
         self.connect(self.ui.btn_load_templates, QtCore.SIGNAL('clicked()'), self.load_templates)
@@ -117,14 +119,16 @@ class Main(QtGui.QMainWindow):
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.refresh)
         self.refresh()
-        self.frame.resizeFrame()
+        self.glframe.resizeFrame()
         self.timer.start(30)
 
 
-    def region_to_tab(self, region, final = False):
+    def mouse_event_to_tab(self, event_type, event):
+#        print event_type
         current_tab = self.get_current_tab()
-        if current_tab.accept_region:
-            current_tab.process_region(region, final)
+        if current_tab and current_tab.accept_events:
+            current_tab.process_event(event_type, event)
+            
 
     def about(self):
         """ About message box. Credits. Links. Jokes. """
@@ -243,16 +247,21 @@ class Main(QtGui.QMainWindow):
 
     def get_current_tab(self):
         curr_parent_tab = self.ui.tab_parameters.tabText(self.ui.tab_parameters.currentIndex())
-        if curr_parent_tab == "Features":
+
+        if curr_parent_tab == "Features" and (self.ui.tab_features.count() > 1):
             return self.ui.tab_features.widget(self.ui.tab_features.currentIndex())
-        elif curr_parent_tab == "Objects":
+
+        elif curr_parent_tab == "Objects" and (self.ui.tab_objects.count() > 1):
             return self.ui.tab_objects.widget(self.ui.tab_objects.currentIndex())
-        elif curr_parent_tab == "ROIs":
+
+        elif curr_parent_tab == "ROIs" and (self.ui.tab_regions.count() > 1):
             return self.ui.tab_regions.widget(self.ui.tab_regions.currentIndex())
+
         elif curr_parent_tab == "SerialOut":
             return "Serial"
+
         else:
-            pass
+            return None
 
     def update_current_tab(self):
         """ Currently visible tab is the only one that requires to be updated
@@ -260,7 +269,9 @@ class Main(QtGui.QMainWindow):
         of tracked objects or LEDs. The rest should happen behind the scenes
         in the spotter sub-classes.
         """
-        self.get_current_tab().update()
+        current_tab = self.get_current_tab()
+        if current_tab:
+            current_tab.update()
 
     def openFile(self):
         """ Open a video file. Should finish current spotter if any by closing
@@ -293,20 +304,20 @@ class Main(QtGui.QMainWindow):
 
     def refresh(self):
         self.spotter.update()
-        self.frame.frame = self.spotter.newest_frame
+        self.glframe.frame = self.spotter.newest_frame
 
         # Append Object tracking markers to the list of things that have
         # to be drawn onto the GL frame
         for l in self.spotter.tracker.leds:
             if not l.pos_hist[-1] == None and l.marker_visible:
-                self.frame.jobs.append([self.frame.drawCross, l.pos_hist[-1][0], l.pos_hist[-1][1], 14, l.lblcolor])
+                self.glframe.jobs.append([self.glframe.drawCross, l.pos_hist[-1][0], l.pos_hist[-1][1], 14, l.lblcolor])
 
         for o in self.spotter.tracker.oois:
             if not o.guessed_pos == None:
-                self.frame.jobs.append([self.frame.drawCross, o.guessed_pos[0], o.guessed_pos[1], 8, (1.0, 1.0, 1.0, 1.0), 7, True])
-                self.frame.jobs.append([self.frame.drawTrace, o.guessed_pos[0], o.guessed_pos[1], 8, (1.0, 1.0, 1.0, 1.0), 7, True])
+                self.glframe.jobs.append([self.glframe.drawCross, o.guessed_pos[0], o.guessed_pos[1], 8, (1.0, 1.0, 1.0, 1.0), 7, True])
+                self.glframe.jobs.append([self.glframe.drawTrace, o.guessed_pos[0], o.guessed_pos[1], 8, (1.0, 1.0, 1.0, 1.0), 7, True])
 
-        self.frame.updateWorld()
+        self.glframe.updateWorld()
 
         self.update_current_tab()
 

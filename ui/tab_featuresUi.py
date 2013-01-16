@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'tab_featuresUi.ui'
 #
-# Created: Mon Jan 14 23:57:57 2013
+# Created: Wed Jan 16 00:22:28 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -141,6 +141,7 @@ class Ui_tab_features(object):
         self.layout_feature_parameters.addWidget(self.line_2, 0, 3, 5, 1)
         self.gridLayout_6.addLayout(self.layout_feature_parameters, 10, 0, 1, 1)
         self.combo_label = QtGui.QComboBox(self.page_feature_detection)
+        self.combo_label.setEnabled(False)
         self.combo_label.setEditable(False)
         self.combo_label.setInsertPolicy(QtGui.QComboBox.NoInsert)
         self.combo_label.setObjectName(_fromUtf8("combo_label"))

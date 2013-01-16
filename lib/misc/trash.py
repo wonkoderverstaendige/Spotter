@@ -212,4 +212,21 @@ Created on Fri Nov 02 21:23:19 2012
 #        glEnd()
 
 
+
+############################################    from GLFrame.py
+# mouse event handling differentiting types of buttons used
+#        if int(mouseEvent.buttons()) != QtCore.Qt.NoButton :
+#            # user is dragging
+#            delta_x = mouseEvent.x() - self.oldx
+#            delta_y = self.oldy - mouseEvent.y()
+#            if int(mouseEvent.buttons()) & QtCore.Qt.LeftButton :
+#                if int(mouseEvent.buttons()) & QtCore.Qt.MidButton :
+#                    pass
+##                    print delta_x
+#                else:
+#                    pass
+##                    print delta_y
+#            elif int(mouseEvent.buttons()) & QtCore.Qt.MidButton :
+#            self.update()
+
         

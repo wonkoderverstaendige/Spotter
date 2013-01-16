@@ -99,6 +99,9 @@
            </item>
            <item row="3" column="1" colspan="2">
             <widget class="QTreeWidget" name="treeWidget">
+             <property name="indentation">
+              <number>0</number>
+             </property>
              <column>
               <property name="text">
                <string>ROIs</string>
@@ -218,6 +221,9 @@
            </item>
            <item row="2" column="0" colspan="3">
             <widget class="QComboBox" name="combo_Object">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="editable">
               <bool>false</bool>
              </property>
