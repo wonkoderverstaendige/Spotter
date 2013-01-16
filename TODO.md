@@ -64,3 +64,15 @@ General behavior:
 
     - proper setting/template loading and saving, possibly using pythons
     Config-Parser module
+
+Physical Out:
+============
+
+    - non-editable combo box with all objects being tracked. Choose one whose
+    position will be sent to the analog out via Arduino/Funker
+
+    - the collision check should be as close as possible to the detection to
+    reduce further delays
+
+    - maybe use priority queue for objects to track, i.e. position first, then
+    sync?

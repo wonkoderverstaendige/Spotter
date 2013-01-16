@@ -99,6 +99,8 @@ class OOI:
     tracked = True
     traced = False
     
+    analog_pos_out = False
+    
     def __init__( self, leds, label = 'trackme', traced = False ):
         self.linked_leds = leds
         self.label = label
@@ -171,12 +173,26 @@ class ROI:
         for s in self.shapes:
             pass
 
-    def test_collision(self, start, end):
+    def test_bb_collision(self, point1, point2 = None):
         """ Test if a line between start and end would somewhere collide with
         any shapes of this ROI. Simple AND values in the collision detection
         array on the line.
+        TODO: Right now the test only checks of the point is within the bounding
+        box of the shapes!!!
         """
-        return
+        for s in self.shapes:
+            if not point1 == None:
+                x_in_interval = (point1[0] > min(s.points[0][0], s.points[1][0])) and\
+                                (point1[0] < max(s.points[0][0], s.points[1][0]))
+                                
+                y_in_interval = (point1[1] > min(s.points[0][1], s.points[1][1])) and\
+                                (point1[1] < max(s.points[0][1], s.points[1][1]))
+                if x_in_interval and y_in_interval:
+                    print "Collision!"
+                    # it will be enough for now to stop looking for collisions
+                    # if one of the shapes is a hit!
+                    return True
+        return False
 
     def random_color(self):
         c1 = random.randrange(200)

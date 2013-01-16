@@ -58,6 +58,7 @@ class Spotter:
     grabber = None
     writer_process = None
     tracker = None
+    funker = None
 
     # state variables
     record_to_file = True
@@ -94,13 +95,6 @@ class Spotter:
 
         # tracker object finds LEDs in frames
         self.tracker = Tracker( serial )
-#        self.tracker.addLED( 'red', ( 160, 5 ) )
-#        self.tracker.addLED( 'green', ( 15, 90 ), fixed_pos = True )
-#        self.tracker.addLED( 'blue', ( 105, 135 ) )
-#
-#        self.tracker.addOOI( [self.tracker.leds[0],
-#                              self.tracker.leds[2]],
-#                              'Subject' )
 
 #        self.gui = GUI( self, gui, "Spotter", size )
 
@@ -126,8 +120,15 @@ class Spotter:
             self.tracker.trackLeds( self.hsv_frame, method = 'hsv_thresh' )
 
             # Calculate positions for all Objects of Interest
-            for i in range(len(self.tracker.oois)):
-                self.tracker.oois[i].updatePosition()
+            for o in self.tracker.oois:
+                o.updatePosition()
+                if o.analog_pos_out and self.funker:
+                    self.funker.send_analog_position(o.guessed_pos)
+                
+            # run collision detections
+            for o in self.tracker.oois:
+                for r in self.tracker.rois:
+                    r.test_bb_collision(o.guessed_pos)
 
             # send position of tracked object to serial port
 #            if not self.Object.guessed_pos is None:
