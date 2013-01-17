@@ -70,7 +70,7 @@ class Spotter:
     hsv_frame = None     # converted into HSV colorspace for tracking
 
     ts_start = None
-    
+
     paused = False
 
 
@@ -124,11 +124,11 @@ class Spotter:
                 o.updatePosition()
                 if o.analog_pos_out and self.funker:
                     self.funker.send_analog_position(o.guessed_pos)
-                
+
             # run collision detections
             for o in self.tracker.oois:
                 for r in self.tracker.rois:
-                    r.test_bb_collision(o.guessed_pos)
+                    r.collision_check(o.guessed_pos)
 
             # send position of tracked object to serial port
 #            if not self.Object.guessed_pos is None:
@@ -204,7 +204,7 @@ if __name__ == "__main__":                                  #
 
     # no GUI, may later select GUI backend, i.e., Qt or cv2.highgui etc.
     guistring = 'cv2.highgui' if not ARGDICT['--Headless'] else ARGDICT['--Headless']
-    
+
     # Frame size parameter string 'WIDTHxHEIGHT' to size tupple (WIDTH, HEIGHT)
     size = (0, 0) if not ARGDICT['--dims'] else tuple( ARGDICT['--dims'].split('x') )
 
@@ -261,4 +261,4 @@ if __name__ == "__main__":                                  #
 #        main.update()
         main.gui.onKey( cv2.waitKey(t) )
 
-#    sys.exit(app.exec_())    
+#    sys.exit(app.exec_())

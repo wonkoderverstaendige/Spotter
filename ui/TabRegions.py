@@ -23,7 +23,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
     accept_events = False
     tab_type = "region"
 
-    # mouse event handling    
+    # mouse event handling
     start_coords = None
     coords_start = None
     coords_end = None
@@ -35,20 +35,20 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         else:
             self.name = label
             self.region.label = label
-            
+
         super(QtGui.QWidget, self).__init__(parent)
         self.setupUi(self)
-        
+
         # Fill tree/list with all available LEDs and mark linked as checked
         for s in self.region.shapes:
             shape_item = QtGui.QTreeWidgetItem([s.label])
             shape_item.shape = s
             shape_item.setCheckState(0,QtCore.Qt.Checked)
-            self.tree_region_shapes.addTopLevelItem(shape_item)        
+            self.tree_region_shapes.addTopLevelItem(shape_item)
 
         self.connect(self.btn_add_shape, QtCore.SIGNAL('toggled(bool)'), self.accept_selection)
         self.connect(self.btn_remove_shape, QtCore.SIGNAL('clicked()'), self.remove_shape)
-        
+
         self.connect(self.spin_shape_x, QtCore.SIGNAL('valueChanged(int)'), self.update_shape)
         self.connect(self.spin_shape_y, QtCore.SIGNAL('valueChanged(int)'), self.update_shape)
 
@@ -82,19 +82,19 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         if event_type == "mousePress":
             self.button_start = event.button()
             self.coords_start = (event.x(), event.y())
-            
+
         elif event_type == "mouseDrag":
             if not event.button() == QtCore.Qt.NoButton:
-                # Queue draw job for the selection                
+                # Queue draw job for the selection
                 pass
-            
+
         elif event_type == "mouseRelease":
             if not event.button() == self.button_start:
                 # user clicked different button than intially, to cancel
                 # selection I presume
                 self.coords_end = None
                 self.coords_start = None
-                self.button_start = None                
+                self.button_start = None
             else:
                 # Everything seems to work out, now we just finalize the new
                 # selected region! Hooray!!!
@@ -107,15 +107,15 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
                 elif modifiers == QtCore.Qt.ControlModifier:
                     shape_type = 'Line'
 
-                shape_points = (self.coords_start, self.coords_end)              
+                shape_points = (self.coords_start, self.coords_end)
                 if shape_type and shape_points:
                     self.add_shape(shape_type, shape_points)
         else:
             print 'Event not understood. Hulk sad and confused.'
-    
-   
+
+
     def add_shape(self, shape_type, shape_points):
-        """ Add a new geometric shape to the region. First, create a new 
+        """ Add a new geometric shape to the region. First, create a new
         item widget. Add it to the region object via its add_shape function
         which will take care of adding it to the list etc. Then add the item
         to the tree widget. Last uncheck the "Add" button.
@@ -134,7 +134,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         if selected_item:
             self.region.shapes.pop(self.region.shapes.index(selected_item.shape))
             self.tree_region_shapes.takeTopLevelItem(index)
-            
+
     def update_shape(self):
         idx = self.region.shapes.index(self.tree_region_shapes.currentItem().shape)
         dx = self.spin_shape_x.value() - self.region.shapes[idx].points[0][0]
@@ -149,10 +149,13 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         collision detection and will not be drawn/will be drawn in a distinct
         way (i.e. only outline or greyed out?)
         """
-        item.active = item.checkState(column)
+        if item.checkState(column):
+            item.shape.active = True
+        else:
+            item.shape.active = False
         item.shape.label = item.text(0)
-       
-        
+
+
     def update_region(self):
         if self.name == None:
             print "Empty object tab! This should not have happened!"

@@ -16,22 +16,56 @@ class Shape:
     independent shapes like two rectangles on either end of the track etc.
     Not sure about the color parameter, I think it better if all shapes in a
     ROI have the same color, to keep them together as one ROI.
-    points: list of points defining the shape. Three for triangle, two for
-    rectangle, circle has only point plus radius, etc.
+    points: list of points defining the shape. Two for rectangle and circle,
+    TODO: n-poly
     """
-    active = True    
+    active = True
     selected = False
-    
+
+    collision_check = None
+
     def __init__(self, shape, points, color = None, label = 'shape'):
         self.shape = shape
         self.points = points
         self.label = label
-#        self.color = color
-#        self.draw_instruction = self.build_draw_instruction()
-#        
+
+        if shape == 'Circle':
+            dx = abs(points[0][0] - points[1][0])
+            dy = abs(points[0][1] - points[1][1])
+            self.radius = max(dx, dy)
+            self.collision_check = self.collision_check_circle
+        elif shape == 'Rectangle':
+            self.collision_check = self.collision_check_rectangle
+#
 #    def build_draw_instruction(self, color = None):
 #        pass
-        
+
+    def collision_check_circle(self, point):
+        """ Circle points: center point, one point on the circle. Test for
+        collision by comparing distance between center and point of object with
+        radius.
+        """
+        if self.active and (geom.distance(self.points[0], point) <= self.radius):
+#            print(self.radius, geom.distance(self.points[0], point))
+            return True
+        else:
+            return False
+
+    def collision_check_rectangle(self, point):
+        """ Circle points: center point, one point on the circle. Test for
+        collision by comparing distance between center and point of object with
+        radius.
+        """
+        x_in_interval = (point[0] > min(self.points[0][0], self.points[1][0])) and\
+                        (point[0] < max(self.points[0][0], self.points[1][0]))
+
+        y_in_interval = (point[1] > min(self.points[0][1], self.points[1][1])) and\
+                        (point[1] < max(self.points[0][1], self.points[1][1]))
+        if self.active and x_in_interval and y_in_interval:
+            return True
+        else:
+            return False
+
     def shape_to_array(self):
         """ Return shape as numpy array for overlaying into the total
         collision detection array. """
@@ -95,12 +129,12 @@ class OOI:
                        # or estimation
     linked_leds = None
     label = None
-    
+
     tracked = True
     traced = False
-    
+
     analog_pos_out = False
-    
+
     def __init__( self, leds, label = 'trackme', traced = False ):
         self.linked_leds = leds
         self.label = label
@@ -113,7 +147,7 @@ class OOI:
             for linked_led in self.linked_leds:
                 if not linked_led.pos_hist[-1] == None:
                     feature_coords.append( linked_led.pos_hist[-1] )
-    
+
             # find !mean! coordinates
             self.pos_hist.append( geom.middle_point( feature_coords ) )
             self.guessed_pos = geom.guessedPosition( self.pos_hist )
@@ -133,13 +167,20 @@ class ROI:
     callbacks.
     """
     visible = True
-    
+    color = None
+    alpha = .7
+
     def __init__(self, color = None, label = 'ROI', shapes = None ):
         if not color:
-            self.color = self.random_color()
+            self.normal_color = self.get_normal_color()
         else:
-            self.color = color
-        self.color_normal = self.normalize_color(self.color)
+            self.normal_color = self.normalize_color(color)
+
+        self.passive_color = self.scale_color(self.normal_color, 200)
+        self.active_color = self.scale_color(self.normal_color, 255)
+
+        self.set_passive_color()
+
         self.label = label
         self.shapes = []
         # if the ROI is initialized with a set of shapes to begin with:
@@ -147,58 +188,89 @@ class ROI:
             for s in shapes:
                 self.add_shape(s)
 
-#    def draw( self, frame ):
-#        if any(self.points):
-#            if self.visible:
-#                cv2.FillPoly(frame, self.points, self.color )
-
     def move( self, x, y ):
         print "Moving whole ROI to new position"
-        
+
     def add_shape(self, shape_type, points, *args):
         shape = Shape(shape_type, points)
         self.shapes.append(shape)
         return shape
-    
+
 #    def update_draw_jobs(self):
 #        jobs = []
 #        for s in self.shapes:
 #            jobs.append(s.draw_instruction)
 #        return []
+#    def draw( self, frame ):
+#        if any(self.points):
+#            if self.visible:
+#                cv2.FillPoly(frame, self.points, self.color )
 
     def remove_shape(self, shape):
         print 'not really removing shape'
-        
+
     def assemble_collision_array(self):
         for s in self.shapes:
             pass
 
-    def test_bb_collision(self, point1, point2 = None):
+    def collision_check(self, point1, point2 = None):
         """ Test if a line between start and end would somewhere collide with
         any shapes of this ROI. Simple AND values in the collision detection
         array on the line.
         TODO: Right now the test only checks of the point is within the bounding
         box of the shapes!!!
+        TODO: I think there is the corner case missing in which no shape
+        receives a valid signal in a while after just triggering, leaving the
+        shape in it's active color
         """
+
+#        self.set_passive_color()
+        if point1 == None:
+            return None
+
         for s in self.shapes:
-            if not point1 == None:
-                x_in_interval = (point1[0] > min(s.points[0][0], s.points[1][0])) and\
-                                (point1[0] < max(s.points[0][0], s.points[1][0]))
-                                
-                y_in_interval = (point1[1] > min(s.points[0][1], s.points[1][1])) and\
-                                (point1[1] < max(s.points[0][1], s.points[1][1]))
-                if x_in_interval and y_in_interval:
-                    print "Collision!"
-                    # it will be enough for now to stop looking for collisions
-                    # if one of the shapes is a hit!
-                    return True
+            if s.active and s.collision_check(point1):
+                self.set_active_color()
+                return True
+
+        # no collisions detected for this region
+        if self.normal_color != self.passive_color:
+            self.set_passive_color()
         return False
 
-    def random_color(self):
-        c1 = random.randrange(200)
-        c2 = random.randrange(200-c1)
-        c3 = 200-c1-c2
-        return random.sample([c1, c2, c3], 3)
-        
+
+    def set_active_color(self):
+        self.color = self.active_color
+        self.alpha = 0.8
+        self.normal_color = self.normalize_color(self.color)
+
+    def set_passive_color(self):
+        self.color = self.passive_color
+        self.alpha = 0.6
+        self.normal_color = self.normalize_color(self.color)
+
+
+    def get_normal_color(self):
+        c1 = random.random()
+        c2 = random.uniform(0, 1.0-c1)
+        c3 = 1.0-c1-c2
+        vals = random.sample([c1, c2, c3], 3)
+        return (vals[0], vals[1], vals[2], self.alpha)
+
+    def scale_color(self, color, max_val):
+        if len(color) == 3:
+            return (int(color[0]*max_val), int(color[1]*max_val), int(color[2]*max_val))
+        elif len(color) == 4:
+            return (int(color[0]*max_val), int(color[1]*max_val), int(color[2]*max_val), int(color[3]*max_val))
+
     def normalize_color(self, color):
-        return (color[0]/255., color[1]/255., color[2]/255.)
+        if len(color) == 3:
+            return (color[0]/255., color[1]/255., color[2]/255.)
+        elif len(color) == 4:
+            return (color[0]/255., color[1]/255., color[2]/255., color[3]/255.)
+
+#    def random_color(self, max_val = 200):
+#        c1 = random.randrange(max_val)
+#        c2 = random.randrange(max_val-c1)
+#        c3 = max_val-c1-c2
+#        return random.sample([c1, c2, c3], 3)

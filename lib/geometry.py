@@ -7,6 +7,7 @@ Geometry functions.
 """
 
 import numpy as np
+import math
 
 class Point:
 	def __init__(self,x,y):
@@ -58,6 +59,11 @@ def guessedPosition( pos_hist ):
             return None
     else:
         return None
+
+def distance(p1, p2):
+    return math.sqrt((p2[0]-p1[0])**2 + (p2[1]-p1[1])**2)
+
+
 
 # line segment intersection using vectors
 # modified and taken from:

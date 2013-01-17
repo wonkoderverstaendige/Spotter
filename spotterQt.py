@@ -94,7 +94,7 @@ class Main(QtGui.QMainWindow):
         self.glframe = GLFrame()
         self.ui.frame_video.addWidget(self.glframe)
         self.glframe.setSizePolicy( QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding )
-        
+
         # handling mouse events by the tabs for selection of regions etc.
         self.glframe.sig_event.connect(self.mouse_event_to_tab)
 
@@ -134,7 +134,7 @@ class Main(QtGui.QMainWindow):
         current_tab = self.get_child_tab()
         if current_tab and current_tab.accept_events:
             current_tab.process_event(event_type, event)
-            
+
 
     def about(self):
         """ About message box. Credits. Links. Jokes. """
@@ -184,7 +184,7 @@ class Main(QtGui.QMainWindow):
             return "Serial"
 
 
-                
+
     #Feature Tab List Updates
     def tab_features_switch(self, idx_tab = 0):
         """ Switch to selected tab or create a new tab if the selected tab is
@@ -237,7 +237,7 @@ class Main(QtGui.QMainWindow):
             for n in xrange(min(len(self.spotter.tracker.leds), len(template[0]))):
                 features.append(self.spotter.tracker.leds[template[0][n]])
                 _object = self.spotter.tracker.addOOI(features, template[1], template[2])
-            
+
         new_tab = self.add_tab(self.ui.tab_objects, TabObjects, _object)
         self.object_tabs.append(new_tab)
 
@@ -310,8 +310,11 @@ class Main(QtGui.QMainWindow):
         in the spotter sub-classes.
         """
         current_tab = self.get_child_tab()
-        if current_tab:
+        try:
             current_tab.update()
+        except AttributeError:
+            pass
+
 
     def openFile(self):
         """ Open a video file. Should finish current spotter if any by closing
@@ -355,21 +358,19 @@ class Main(QtGui.QMainWindow):
         for o in self.spotter.tracker.oois:
             if not o.guessed_pos == None:
                 self.glframe.jobs.append([self.glframe.drawCross, o.guessed_pos, 8, (1.0, 1.0, 1.0, 1.0), 7, True])
-                if o.traced:                
-                    points = []                
+                if o.traced:
+                    points = []
                     for n in xrange(min(len(o.pos_hist), 100)):
                         if not o.pos_hist[-n-1] == None:
                             points.append([o.pos_hist[-n-1][0]*1.0/self.glframe.width, o.pos_hist[-n-1][1]*1.0/self.glframe.height])
                     self.glframe.jobs.append([self.glframe.drawTrace, points])
 
         for r in self.spotter.tracker.rois:
-            color = (r.color_normal[0], r.color_normal[1], r.color_normal[2], .5)
+            color = (r.normal_color[0], r.normal_color[1], r.normal_color[2], r.alpha)
             for s in r.shapes:
                 if s.active:
-                    if s.selected:
-                        color[3] += .3
                     if s.shape == "Rectangle":
-                        self.glframe.jobs.append([self.glframe.drawRect, s.points, color]) #(1.0, 1.0, 1.0, 1.0)
+                        self.glframe.jobs.append([self.glframe.drawRect, s.points, color])
                     elif s.shape == "Circle":
                         self.glframe.jobs.append([self.glframe.drawCircle, s.points, color])
                     elif s.shape == "Line":

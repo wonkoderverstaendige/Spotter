@@ -81,7 +81,7 @@
          </size>
         </property>
         <property name="tabPosition">
-         <enum>QTabWidget::East</enum>
+         <enum>QTabWidget::North</enum>
         </property>
         <property name="currentIndex">
          <number>4</number>
@@ -276,6 +276,9 @@
           </property>
           <item>
            <widget class="QTabWidget" name="tab_serial_2">
+            <property name="tabPosition">
+             <enum>QTabWidget::East</enum>
+            </property>
             <widget class="QWidget" name="tab_serial_arduino">
              <attribute name="title">
               <string>Arduino</string>
