@@ -58,7 +58,7 @@ class Spotter:
     grabber = None
     writer_process = None
     tracker = None
-    funker = None
+    chatter = None
 
     # state variables
     record_to_file = True
@@ -122,8 +122,8 @@ class Spotter:
             # Calculate positions for all Objects of Interest
             for o in self.tracker.oois:
                 o.updatePosition()
-                if o.analog_pos_out and self.funker:
-                    self.funker.send_analog_position(o.guessed_pos)
+                if o.analog_pos_out and self.chatter:
+                    self.chatter.send_analog_position(o.guessed_pos)
 
             # run collision detections
             for r in self.tracker.rois:
@@ -132,7 +132,7 @@ class Spotter:
 
             # send position of tracked object to serial port
 #            if not self.Object.guessed_pos is None:
-#                self.tracker.funker.send( self.Object.guessed_pos )
+#                self.tracker.chatter.send( self.Object.guessed_pos )
 
             # freezes frame being shown, but not frame being processed/written
 #            self.gui.update( self.newest_frame )
@@ -163,7 +163,7 @@ class Spotter:
         if self.grabber:
             self.grabber.close()
 
-        # tracker has to close serial connection in funker module, of open
+        # tracker has to close serial connection in chatter module, of open
         if self.tracker:
             self.tracker.close()
 
@@ -245,7 +245,7 @@ if __name__ == "__main__":                                  #
 
             # send position of tracked object to serial port
 #            if not main.Object.guessed_pos is None:
-#                main.tracker.funker.send( main.Object.guessed_pos )
+#                main.tracker.chatter.send( main.Object.guessed_pos )
 
             # freezes frame being shown, but not frame being processed/written
             main.gui.update( main.newest_frame )

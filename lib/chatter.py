@@ -6,8 +6,8 @@ Created on Tue Nov 06 03:42:47 2012
 Send signals to Serial Port based on events like line crossing or ROI occupancy.
 
 Usage:
-    funker.py --port PORT [options]
-    funker.py -h | --help
+    chatter.py --port PORT [options]
+    chatter.py -h | --help
 
 Options:
     -h --help           Show this screen
@@ -40,6 +40,8 @@ import utilities as utils
 sys.path.append('./lib/docopt')
 from docopt import docopt
 
+sys.path.append('./lib')
+import arduino
 
 #TODO:
 #    - Find proper port by trying to connect to all ports on list till
@@ -125,11 +127,11 @@ class Funker:
 
 
 if __name__ == '__main__':
-    funker = Funker()
-    funker.send(300)
-    funker.send(300)
+    chatter = Funker()
+    chatter.send(300)
+    chatter.send(300)
 #    for n in range(10):
-#        funker.serialTest()
+#        chatter.serialTest()
     print 'Done'
     time.sleep(5)
-    funker.close()
+    chatter.close()

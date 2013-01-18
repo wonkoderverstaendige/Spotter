@@ -27,7 +27,7 @@ import numpy as np
 
 #project libraries
 sys.path.append('./lib')
-import funker
+import chatter
 import utilities as utils
 import geometry as geom
 import trackables as trkbl
@@ -53,7 +53,7 @@ class Tracker:
 
 
     def __init__( self, serial = None ):
-        self.funker = funker.Funker( serial )
+        self.chatter = chatter.Chatter( serial )
 
 
     def addLED( self, label, range_hue, fixed_pos = False, linked_to = None ):
@@ -168,8 +168,8 @@ class Tracker:
         """ Free up serial connection on exit.
         TODO: __del__
         """
-        if self.funker:
-            self.funker.close()
+        if self.chatter:
+            self.chatter.close()
 
 
 #############################################################
@@ -214,7 +214,7 @@ if __name__ == '__main__':                                  #
         tracker.ooi.updatePosition()
 
         if not tracker.ooi.pos_hist[-1] == None:
-            tracker.funker.send(tracker.ooi.guessed_pos)
+            tracker.chatter.send(tracker.ooi.guessed_pos)
 
         for idx, led in enumerate( tracker.leds ):
             if not led.pos_hist[-1] == None:
