@@ -31,6 +31,29 @@ def middle_point( coord_list ):
         return None
 
 
+def scale_points(pts, framesize):
+    """ Scale points in list of given nromalized (0.0-1.0) points to the size
+    of frame. i.e. 1.0 --> 640 etc.
+    """
+    outpts = []
+    if type(framesize[0]) == int and type(framesize[1]) == int:
+        for p in pts:
+            outpts.append( (int(p[0] * framesize[0]), int(p[1] * framesize[1]) ) )
+    else:
+        for p in pts:
+            outpts.append( (p[0] * framesize[0], p[1] * framesize[1] ) )
+    return outpts
+
+def norm_points(pts, framesize):
+    """ Normalize points in a list of points by dividing by the size of the
+    frame in the respective axis.
+    """
+    outpts = []
+    for p in pts:
+        outpts.append( (p[0]*1.0/framesize[0], p[1]*1.0/framesize[1]) )
+    return outpts
+
+
 def scale(val, range1, range2):
     """
     Maps val of numerical range 1 to numerical range 2.

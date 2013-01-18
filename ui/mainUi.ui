@@ -84,7 +84,7 @@
          <enum>QTabWidget::North</enum>
         </property>
         <property name="currentIndex">
-         <number>4</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="widget_settings">
          <attribute name="title">
@@ -99,12 +99,19 @@
           </property>
           <item row="0" column="0">
            <layout class="QGridLayout" name="gridLayout">
-            <item row="0" column="0">
-             <widget class="QPushButton" name="btn_LTexample_template">
-              <property name="text">
-               <string>Quickload Linear Track Template</string>
-              </property>
-             </widget>
+            <item row="0" column="1">
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <item>
+               <widget class="QComboBox" name="combo_templates"/>
+              </item>
+              <item>
+               <widget class="QPushButton" name="btn_load_template">
+                <property name="text">
+                 <string>Load Template</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </item>
@@ -301,7 +308,7 @@
      <x>0</x>
      <y>0</y>
      <width>681</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">

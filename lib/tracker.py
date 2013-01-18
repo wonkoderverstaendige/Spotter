@@ -28,7 +28,7 @@ import numpy as np
 #project libraries
 sys.path.append('./lib')
 import funker
-import utils
+import utilities as utils
 import geometry as geom
 import trackables as trkbl
 
@@ -57,23 +57,19 @@ class Tracker:
 
 
     def addLED( self, label, range_hue, fixed_pos = False, linked_to = None ):
-        # TODO: More comprehensive LED types, including val/sat ranges etc.
         led = trkbl.LED( label, range_hue, fixed_pos, linked_to )
         self.leds.append( led )
         return led
 
-
-    def addROI( self, points = None ):
-        roi = trkbl.ROI(label = 'ROI_'+str(len(self.rois)) )
-        self.rois.append( roi )
-        return roi
-
-
-    def addOOI( self, led_list, label = 'trackme', traced = False ):
+    def addOOI( self, led_list, label, traced = False ):
         ooi = trkbl.OOI( led_list, label, traced )
         self.oois.append( ooi )
         return ooi
 
+    def addROI( self, shape_list, label ):
+        roi = trkbl.ROI( shape_list, label )
+        self.rois.append( roi )
+        return roi
 
     def trackLeds( self, frame, method = 'hsv_thresh' ):
         """ Intermediate method selecting tracking method and seperating those
@@ -84,7 +80,6 @@ class Tracker:
 #        kernel = np.ones( (3,3), 'uint8' )
 #        # conversion to HSV before dilation causes artifacts
 #        dilatedframe = cv2.cvtColor( self.frame, cv2.COLOR_BGR2HSV )
-
         if method == 'hsv_thresh':
             self.frame = frame
 #            comp_coord_list = self.threshTrack( self.frame, self.leds )

@@ -16,24 +16,29 @@ tab_type = "object"
 
 class Tab(QtGui.QWidget, Ui_tab_objects):
 
-    name = None
+    label = None
     accept_events = False
     tab_type = "object"
 
     def __init__(self, parent, object_handle, label = None):
         self.object = object_handle
-        self.all_feature = parent.spotter.tracker.leds
+        self.parent = parent
+        
+        self.all_features = self.parent.spotter.tracker.leds
+        self.all_regions = self.parent.spotter.tracker.oois        
+        
+        self.refresh_lists()
         if label == None:
-            self.name = self.object.label
+            self.label = self.object.label
         else:
-            self.name = label
+            self.label = label
             self.object.label  = label
         super(QtGui.QWidget, self).__init__(parent)
         self.setupUi(self)
 
 
         # Fill tree/list with all available LEDs and mark linked as checked
-        for l in self.all_feature:
+        for l in self.all_features:
             feature_item = QtGui.QTreeWidgetItem([l.label])
             feature_item.feature = l
             if feature_item.feature in self.object.linked_leds:
@@ -41,7 +46,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
             else:
                 feature_item.setCheckState(0,QtCore.Qt.Unchecked)
             self.tree_link_features.addTopLevelItem(feature_item)
-            
+
         # I could not get the signal to work in the old connection syntax,
         # so I had to use the new one here. The new one is of course nice, but
         # I'd rather stick to the old for consistency. :(
@@ -68,9 +73,11 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
             else:
                 self.unlink_feature(item.feature)
 
+    def refresh_lists(self):
+        pass
 
     def update(self):
-        if self.name == None:
+        if self.label == None:
             print "empty tab"
             return
 
@@ -93,7 +100,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         self.object.linked_leds.pop(self.object.linked_leds.index(feature))
 
     def update_object(self):
-        if self.name == None:
+        if self.label == None:
             print "Empty object tab! This should not have happened!"
             return
         self.object.tracked = self.ckb_track.isChecked()

@@ -12,7 +12,7 @@ import numpy as np
 
 #project libraries
 sys.path.append('./lib')
-import utils
+import utilities as utils
 
 class GUI:
     gui_frame = None     # still_frame + Menu side bar + overlays

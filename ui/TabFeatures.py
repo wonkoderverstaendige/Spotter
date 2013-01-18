@@ -16,7 +16,7 @@ tab_type = "newLED"
 
 class Tab(QtGui.QWidget, Ui_tab_features):
 
-    name = None
+    label = None
     feature = None
     accept_events = False
     tab_type = "feature"
@@ -26,14 +26,14 @@ class Tab(QtGui.QWidget, Ui_tab_features):
     def __init__(self, parent, feature, label = None):
         self.feature = feature
         if label == None:
-            self.name = self.feature.label
+            self.label = self.feature.label
         else:
-            self.name = label
+            self.label = label
 
         super(QtGui.QWidget, self).__init__(parent)
         self.setupUi(self)
 
-        self.combo_label.setEditText(self.name)
+        self.combo_label.setEditText(self.label)
 
         # Set spin boxes to the value of the represented feature
         self.spin_hue_min.setValue(self.feature.range_hue[0])
@@ -66,7 +66,7 @@ class Tab(QtGui.QWidget, Ui_tab_features):
 
 
     def update(self):
-        if self.name == None:
+        if self.label == None:
             print "Empty tab! This should not have happened!"
             return
 

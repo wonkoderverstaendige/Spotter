@@ -18,7 +18,7 @@ tab_type = "region"
 
 class Tab(QtGui.QWidget, Ui_tab_regions):
 
-    name = None
+    label = None
     region = None
     accept_events = False
     tab_type = "region"
@@ -31,15 +31,15 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
     def __init__(self, parent, region_handle, label = None):
         self.region = region_handle
         if label == None:
-            self.name = self.region.label
+            self.label = self.region.label
         else:
-            self.name = label
+            self.label = label
             self.region.label = label
 
         super(QtGui.QWidget, self).__init__(parent)
         self.setupUi(self)
 
-        # Fill tree/list with all available LEDs and mark linked as checked
+        # Fill tree/list with all available shapes
         for s in self.region.shapes:
             shape_item = QtGui.QTreeWidgetItem([s.label])
             shape_item.shape = s
@@ -114,7 +114,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
             print 'Event not understood. Hulk sad and confused.'
 
 
-    def add_shape(self, shape_type, shape_points):
+    def add_shape(self, shape_type, shape_points, shape_label):
         """ Add a new geometric shape to the region. First, create a new
         item widget. Add it to the region object via its add_shape function
         which will take care of adding it to the list etc. Then add the item
@@ -157,6 +157,6 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
 
 
     def update_region(self):
-        if self.name == None:
+        if self.label == None:
             print "Empty object tab! This should not have happened!"
             return

@@ -33,7 +33,7 @@ import time
 
 #project libraries
 sys.path.append('./lib')
-import utils
+import utilities as utils
 
 #command line handling
 sys.path.append('./lib/docopt')

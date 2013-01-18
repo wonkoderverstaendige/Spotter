@@ -9,7 +9,7 @@ Trackable object class.
 import geometry as geom
 import random
 import cv2
-import utils
+import utilities as utils
 
 class Shape:
     """ Geometrical shape that comprise ROIs. ROIs can be made of several
@@ -24,7 +24,7 @@ class Shape:
 
     collision_check = None
 
-    def __init__(self, shape, points, color = None, label = 'shape'):
+    def __init__(self, shape, points, label):
         self.shape = shape
         self.points = points
         self.label = label
@@ -36,9 +36,7 @@ class Shape:
             self.collision_check = self.collision_check_circle
         elif shape == 'Rectangle':
             self.collision_check = self.collision_check_rectangle
-#
-#    def build_draw_instruction(self, color = None):
-#        pass
+
 
     def collision_check_circle(self, point):
         """ Circle points: center point, one point on the circle. Test for
@@ -46,7 +44,6 @@ class Shape:
         radius.
         """
         if self.active and (geom.distance(self.points[0], point) <= self.radius):
-#            print(self.radius, geom.distance(self.points[0], point))
             return True
         else:
             return False
@@ -124,22 +121,21 @@ class OOI:
 
     # TODO: Use general "features" rather than LEDs specifically
 
-    pos_hist = None # Has the "real" values
+    pos_hist = None    # Has the "real" values
     guessed_pos = None # Holds currently guessed position, either from tracking
                        # or estimation
     linked_leds = None
-    label = None
 
     tracked = True
     traced = False
 
     analog_pos_out = False
 
-    def __init__( self, leds, label = 'trackme', traced = False ):
-        self.linked_leds = leds
+    def __init__( self, led_list, label, traced = False ):
+        self.linked_leds = led_list
         self.label = label
-        self.pos_hist = []
         self.traced = traced
+        self.pos_hist = []
 
     def updatePosition( self ):
         if self.tracked:
@@ -169,8 +165,10 @@ class ROI:
     visible = True
     color = None
     alpha = .7
+    
+    linked_objects = None
 
-    def __init__(self, color = None, label = 'ROI', shapes = None ):
+    def __init__(self, shape_list = None, label = None, color = None ):
         if not color:
             self.normal_color = self.get_normal_color()
         else:
@@ -184,27 +182,17 @@ class ROI:
         self.label = label
         self.shapes = []
         # if the ROI is initialized with a set of shapes to begin with:
-        if shapes:
-            for s in shapes:
-                self.add_shape(s)
+        if shape_list:
+            for shape in shape_list:
+                self.add_shape(*shape[1], label = shape[0])
 
     def move( self, x, y ):
         print "Moving whole ROI to new position"
 
-    def add_shape(self, shape_type, points, *args):
-        shape = Shape(shape_type, points)
+    def add_shape(self, shape_type, points, label):
+        shape = Shape(shape_type, points, label)
         self.shapes.append(shape)
         return shape
-
-#    def update_draw_jobs(self):
-#        jobs = []
-#        for s in self.shapes:
-#            jobs.append(s.draw_instruction)
-#        return []
-#    def draw( self, frame ):
-#        if any(self.points):
-#            if self.visible:
-#                cv2.FillPoly(frame, self.points, self.color )
 
     def remove_shape(self, shape):
         print 'not really removing shape'
@@ -223,7 +211,6 @@ class ROI:
         receives a valid signal in a while after just triggering, leaving the
         shape in it's active color
         """
-
 #        self.set_passive_color()
         if point1 == None:
             return None
@@ -268,9 +255,3 @@ class ROI:
             return (color[0]/255., color[1]/255., color[2]/255.)
         elif len(color) == 4:
             return (color[0]/255., color[1]/255., color[2]/255., color[3]/255.)
-
-#    def random_color(self, max_val = 200):
-#        c1 = random.randrange(max_val)
-#        c2 = random.randrange(max_val-c1)
-#        c3 = max_val-c1-c2
-#        return random.sample([c1, c2, c3], 3)

@@ -44,7 +44,7 @@ from grabber import Grabber
 from writer import Writer
 from tracker import Tracker
 #from GUI import GUI
-import utils
+import utilities as utils
 
 
 #command line handling
@@ -126,8 +126,8 @@ class Spotter:
                     self.funker.send_analog_position(o.guessed_pos)
 
             # run collision detections
-            for o in self.tracker.oois:
-                for r in self.tracker.rois:
+            for r in self.tracker.rois:
+                for o in self.tracker.oois:
                     r.collision_check(o.guessed_pos)
 
             # send position of tracked object to serial port
