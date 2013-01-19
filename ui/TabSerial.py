@@ -18,6 +18,7 @@ class Tab(QtGui.QWidget, Ui_tab_serial):
 
     label = None
     serial = None
+    accept_events = False
     tab_type = "serial"
 
     def __init__(self, parent, serial_handle, label = None):
@@ -49,11 +50,14 @@ class Tab(QtGui.QWidget, Ui_tab_serial):
         provide the proper port. Either via command line or typing it into the
         combobox.
         """
+        candidate = None
         for p in self.serial.list_ports():
+            print p
             if len(p) > 2 and "USB" in p[2]:
                 candidate = p
             self.combo_serialports.addItem(p[0])
-        self.combo_serialports.setCurrentIndex(self.combo_serialports.findText(candidate[0]))
+        if candidate:
+            self.combo_serialports.setCurrentIndex(self.combo_serialports.findText(candidate[0]))
 
 
     def toggle_connection(self):
