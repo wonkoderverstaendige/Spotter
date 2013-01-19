@@ -32,7 +32,7 @@ GL Frame:
 
 Mouse handling:
 ===============
-    - handling mouse events by the tabs themselves seemmed like a neat idea,
+    - handling mouse events by the tabs themselves seemed like a neat idea,
     as it would allow each tab to handle the incoming events as it deems
     fruitful to its purpose, but it creates a lot of duplicate code. Either
     handle the mouse events closer to the source and send out specific types
@@ -76,3 +76,8 @@ Physical Out:
 
     - maybe use priority queue for objects to track, i.e. position first, then
     sync?
+
+Modules:
+========
+
+DONE- rename writer_process to just writer

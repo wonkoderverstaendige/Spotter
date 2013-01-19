@@ -52,6 +52,7 @@ from mainUi import Ui_MainWindow
 import TabFeatures
 import TabObjects
 import TabRegions
+import TabSerial
 
 #command line handling
 sys.path.append('./lib/docopt')
@@ -101,7 +102,7 @@ class Main(QtGui.QMainWindow):
         # Menubar items
         self.connect(self.ui.actionFile, QtCore.SIGNAL('triggered()'), self.openFile)
 
-        # Spotter main class, handles Grabber, Writer, Tracker, Funker
+        # Spotter main class, handles Grabber, Writer, Tracker, Chatter
         self.spotter = Spotter(source, destination, fps, size, gui, serial)
 
         # OpenGL frame
@@ -136,6 +137,10 @@ class Main(QtGui.QMainWindow):
         self.region_tabs = []
         self.connect(self.ui.tab_regions, QtCore.SIGNAL('currentChanged(int)'), self.tab_regions_switch)
         self.connect(self.ui.btn_new_region_tab, QtCore.SIGNAL('clicked()'), self.add_region)
+        
+        # Serial tab widget
+        self.serial_tabs = []
+        self.add_serial(self.spotter.chatter)
 
 
         # Starts main frame grabber loop
@@ -144,7 +149,14 @@ class Main(QtGui.QMainWindow):
         self.refresh()
         self.glframe.resizeFrame()
         self.timer.start(30)
+        
+        self.serial_timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.serial_check)
+        self.serial_timer.start(10)
 
+    def serial_check(self):
+        if self.spotter.chatter.is_open():
+            print ("buffer: ", len(self.spotter.chatter.inst_buffer))
 
     def mouse_event_to_tab(self, event_type, event):
 #        print event_type
@@ -309,6 +321,13 @@ class Main(QtGui.QMainWindow):
         self.region_tabs.append(new_tab)
 
 
+    def add_serial(self, serial_object, label = None):
+        """ Serial object tab. Probably an Arduino Mega 2560.
+        """
+        new_tab = self.add_tab(self.ui.tab_serial, TabSerial, serial_object)
+        self.serial_tabs.append(new_tab)
+
+
     def add_tab(self, tabwidget, newTabClass, tab_equivalent):
         """ Add new tab with Widget newTabClass and switches to it. The
         tab_equivalent is the object that is being represented by the tab,
@@ -343,7 +362,7 @@ class Main(QtGui.QMainWindow):
             return self.ui.tab_regions.widget(self.ui.tab_regions.currentIndex())
 
         elif active_top_tab_label == "SerialOut":
-            return "Serial"
+            return self.ui.tab_serial.widget(self.ui.tab_serial.currentIndex())
 
         else:
             return None
@@ -373,22 +392,6 @@ class Main(QtGui.QMainWindow):
             path = os.getenv('HOMEPATH')
         filename = QtGui.QFileDialog.getOpenFileName(self, 'Open Video', path)
         print filename
-
-
-    def closeEvent(self, event):
-        """ Exiting the interface has to kill the spotter class and subclasses
-        properly, especially the writer and serial handles, otherwise division
-        by zero might be imminent.
-        """
-        if NO_EXIT_CONFIRMATION:
-            event.accept()
-            return
-        reply = QtGui.QMessageBox.question(self, 'Exit confirmation', 'Are you sure?', QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
-        if reply == QtGui.QMessageBox.Yes:
-            event.accept()
-        else:
-            event.ignore()
-
 
     def refresh(self):
         self.spotter.update()
@@ -425,6 +428,24 @@ class Main(QtGui.QMainWindow):
         self.update_current_tab()
 
 
+    def closeEvent(self, event):
+        """ Exiting the interface has to kill the spotter class and subclasses
+        properly, especially the writer and serial handles, otherwise division
+        by zero might be imminent.
+        """
+        if NO_EXIT_CONFIRMATION:
+            reply = QtGui.QMessageBox.Yes
+        else:
+            reply = QtGui.QMessageBox.question(self, 
+                                               'Exit confirmation', 
+                                               'Are you sure?', 
+                                               QtGui.QMessageBox.Yes, 
+                                               QtGui.QMessageBox.No )
+        if reply == QtGui.QMessageBox.Yes:
+            self.spotter.exitMain()
+            event.accept()
+        else:
+            event.ignore()
 
 #############################################################
 def main(source, destination, fps, size, gui, serial):

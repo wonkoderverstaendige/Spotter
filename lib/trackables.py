@@ -128,14 +128,18 @@ class OOI:
 
     tracked = True
     traced = False
-
-    analog_pos_out = False
+    analog_pos = False
+    analog_dir = False
+    analog_spd = False
 
     def __init__( self, led_list, label, traced = False ):
         self.linked_leds = led_list
         self.label = label
         self.traced = traced
         self.pos_hist = []
+        
+        if self.label == 'Subject':
+            self.analog_pos = True
 
     def updatePosition( self ):
         if self.tracked:

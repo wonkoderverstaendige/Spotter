@@ -20,7 +20,7 @@
    <string>Spotter</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="icons.qrc">
+   <iconset>
     <normaloff>:/icon64.svg</normaloff>:/icon64.svg</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -84,7 +84,7 @@
          <enum>QTabWidget::North</enum>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>4</number>
         </property>
         <widget class="QWidget" name="widget_settings">
          <attribute name="title">
@@ -282,16 +282,10 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QTabWidget" name="tab_serial_2">
+           <widget class="QTabWidget" name="tab_serial">
             <property name="tabPosition">
              <enum>QTabWidget::East</enum>
             </property>
-            <widget class="QWidget" name="tab_serial_arduino">
-             <attribute name="title">
-              <string>Arduino</string>
-             </attribute>
-             <layout class="QGridLayout" name="gridLayout_3"/>
-            </widget>
            </widget>
           </item>
          </layout>

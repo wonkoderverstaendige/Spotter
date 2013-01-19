@@ -46,15 +46,11 @@ class Tracker:
     # frame buffer
     frame = None
 
-    # Object handle lists
-    oois = []
-    rois = []
-    leds = []
 
-
-    def __init__( self, serial = None ):
-        self.chatter = chatter.Chatter( serial )
-
+    def __init__( self ):
+        self.oois = []
+        self.rois = []
+        self.leds = []
 
     def addLED( self, label, range_hue, fixed_pos = False, linked_to = None ):
         led = trkbl.LED( label, range_hue, fixed_pos, linked_to )
@@ -165,11 +161,8 @@ class Tracker:
 
 
     def close( self ):
-        """ Free up serial connection on exit.
-        TODO: __del__
-        """
-        if self.chatter:
-            self.chatter.close()
+        """ Nothing to do here as of moving chatter to spotter. """
+        pass
 
 
 #############################################################

@@ -43,6 +43,7 @@ sys.path.append('./lib')
 from grabber import Grabber
 from writer import Writer
 from tracker import Tracker
+from chatter import Chatter
 #from GUI import GUI
 import utilities as utils
 
@@ -56,7 +57,7 @@ class Spotter:
 
     # helper instances
     grabber = None
-    writer_process = None
+    writer = None
     tracker = None
     chatter = None
 
@@ -74,7 +75,7 @@ class Spotter:
     paused = False
 
 
-    def __init__( self, source, destination, fps, size, gui, serial ):
+    def __init__( self, source, destination, fps, size, gui, serial = None ):
 
         # Setup frame grabber object, fills framebuffer
         self.grabber = Grabber( source, fps, size )
@@ -82,24 +83,29 @@ class Spotter:
         # Setup writer if required, writes frames from buffer to video file.
         if destination:
             print str(multiprocessing.cpu_count()) + ' CPUs found'
-            self.writer_process = multiprocessing.Process(
+            self.writer = multiprocessing.Process(
                         target = Writer,
                         args = ( destination,
                                 self.grabber.fps,
                                 self.grabber.size,
                                 self.write_queue, ) )
-            self.writer_process.start()
+            self.writer.start()
             self.check_writer()
         else:
-            self.writer_process = None
+            self.writer = None
 
         # tracker object finds LEDs in frames
-        self.tracker = Tracker( serial )
-
+        self.tracker = Tracker()
+        
+        # chatter handles serial communication
+        self.chatter = Chatter(serial)
+        
+        # GUI other than Qt currently not available. We apologize for any
+        # inconvinience.
 #        self.gui = GUI( self, gui, "Spotter", size )
 
         # histogram instance required to do... what, again?
-        self.hist = utils.HSVHist()
+#        self.hist = utils.HSVHist()
 
 
     def update( self ):
@@ -110,8 +116,7 @@ class Spotter:
             # Check if writer process is still alive
             # Otherwise might lose data without knowing!
             # Copy numpy array, otherwise queue references same object
-            # like frame that will be worked on
-            if not self.writer_process == None and self.check_writer():
+            if not self.writer == None and self.check_writer():
                 self.write_queue.put( self.newest_frame.copy() )
                 time.sleep( 0.001 ) # required, or may crash?
 
@@ -119,20 +124,19 @@ class Spotter:
             self.hsv_frame = cv2.cvtColor( self.newest_frame, cv2.COLOR_BGR2HSV )
             self.tracker.trackLeds( self.hsv_frame, method = 'hsv_thresh' )
 
-            # Calculate positions for all Objects of Interest
+            # Calculate positions send to Serial if wanted
             for o in self.tracker.oois:
                 o.updatePosition()
-                if o.analog_pos_out and self.chatter:
-                    self.chatter.send_analog_position(o.guessed_pos)
+                if o.analog_pos and self.chatter and o.guessed_pos:
+                    self.chatter.inst_buffer.append(o.guessed_pos)
+                    self.chatter.send()
 
             # run collision detections
             for r in self.tracker.rois:
                 for o in self.tracker.oois:
                     r.collision_check(o.guessed_pos)
-
-            # send position of tracked object to serial port
-#            if not self.Object.guessed_pos is None:
-#                self.tracker.chatter.send( self.Object.guessed_pos )
+#                    if o.digital_collision_out and self.chatter:
+#                        self.chatter.send_collision2digital(o.digital_ports)
 
             # freezes frame being shown, but not frame being processed/written
 #            self.gui.update( self.newest_frame )
@@ -148,7 +152,7 @@ class Spotter:
 
     def check_writer( self ):
         """ True if alive, otherwise causes script to terminate. """
-        if not self.writer_process.is_alive():
+        if not self.writer.is_alive():
             print('Writing to disk failed.')
             log.error('Writing to disk failed.')
             self.exitMain()
@@ -157,28 +161,35 @@ class Spotter:
 
 
     def exitMain( self ):
-        """ Graceful exit. """
+        """ Graceful exit. Ha. Ha. Ha. Bottle of root beer anyone? """
 
         # closing grabber is straight forward, will release capture object
         if self.grabber:
             self.grabber.close()
 
-        # tracker has to close serial connection in chatter module, of open
+        # tracker no longer has serial handle to take care of
         if self.tracker:
             self.tracker.close()
+        
+        # chatter HAS to close serial connection or all hell breaks loose!
+        if self.chatter:
+            self.chatter.close()
 
-        # writer is a bit trickier, may have frames left to write away
-        if not self.writer_process == None and self.writer_process.is_alive():
+        # writer is a bit trickier, may have frames left to stow away
+        if not self.writer == None and self.writer.is_alive():
             self.write_queue.put( 'terminate' )
             # gives the child process one second to finish up, will be
             # terminated otherwise
-            self.writer_process.join( 1 )
-            if self.writer_process.is_alive():
-                main.writer_process.terminate()
+            self.writer.join( 1 )
+            if self.writer.is_alive():
+                main.writer.terminate()
 
-        fc = self.grabber.framecount
-        tt = ( time.clock() - self.ts_start )
-        log.info('Done! Grabbed ' + str( fc ) + ' frames in ' + str( tt ) + 's, with ' + str( fc / tt ) + ' fps')
+        try:
+            fc = self.grabber.framecount
+            tt = ( time.clock() - self.ts_start )
+            log.info('Done! Grabbed ' + str( fc ) + ' frames in ' + str( tt ) + 's, with ' + str( fc / tt ) + ' fps')
+        except:
+            pass
         sys.exit( 0 )
 
 
@@ -234,7 +245,7 @@ if __name__ == "__main__":                                  #
             # Otherwise might lose data without knowing!
             # Copy numpy array, otherwise queue references same object
             # like frame that will be worked on
-            if not main.writer_process == None and main.check_writer():
+            if not main.writer == None and main.check_writer():
                 main.write_queue.put( main.newest_frame.copy() )
                 time.sleep( 0.001 ) # required, or may crash?
 

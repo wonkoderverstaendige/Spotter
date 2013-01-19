@@ -28,19 +28,20 @@ To do:
 """
 
 import sys
-import serial
+#import serial
 import time
 from serial.tools import list_ports
 
 #project libraries
 sys.path.append('./lib')
 import utilities as utils
+import geometry as geom
 
 #command line handling
 sys.path.append('./lib/docopt')
 from docopt import docopt
 
-sys.path.append('./lib')
+sys.path.append('./arduino')
 import arduino
 
 #TODO:
@@ -49,85 +50,94 @@ import arduino
 #    - get required data from Arduino (i.e. all hardware specifics)
 #    - define data protocol (i.e. RS232 like?)
 
-class Funker:
-    ser = None
+class Chatter:
+    serial_device = None
     port = None
+    label = 'Arduino'
 
-    def __init__( self, port, X_range = (0, 639), Y_range = (0, 359), DAC_range = (0, 4095) ):
+    def __init__( self, serial_port ):
+        if serial_port:
+            self.serial_port = serial_port
+            self.open_serial(self.serial_port)
+            
+        self.inst_buffer = []
+            
+        self.set_ranges()
 
-        if port and not port=="None":
-            self.X_range = X_range
-            self.Y_range = Y_range
-            self.DAC_range = DAC_range
+    def open_serial(self, serial_port):
+        self.close()
+        print "Opening port "+ serial_port
+        self.serial_device = arduino.Arduino(serial_port)
+        return self.serial_device.connected
 
-            for l in list_ports.comports():
-                print l
+    def send(self):
+        if len(self.inst_buffer):
+            self.send_point2analog(self.inst_buffer.pop())
+#        if not self.serial_device:
+#            return
+#
+#        num1 = utils.scale(coords[0], self.X_range, self.DAC_range)
+#        num2 = utils.scale(coords[1], self.Y_range, self.DAC_range)
+#
+#        sendString = str(int(num1) ) + '\t'
+##        print sendString
+#        rb = self.serial_device.write( sendString )
+#        self.serial_device.flush()
+#
+#        sendString = str(int(num2) ) + '\n'
+##        print sendString
+#        rb = self.serial_device.write( sendString )
+#        self.serial_device.flush()
+        
+    def send_point2analog(self, point):
+        t = time.clock()
+        scaled_point = geom.map_points(point, self.range_xy, self.range_dac)
+        if self.is_open():
+#            print(point, scaled_point)
+            self.serial_device.send_instruction(0, scaled_point[0])
+            self.serial_device.send_instruction(1, scaled_point[1])
+        print ("instruction took: ", (time.clock() - t)*1000)
 
-            self.port = port
-
-            self.ser = serial.Serial( self.port, 9600, 8, 'N', 1, timeout=1 )
-            print 'Opened serial port ' + self.ser.portstr  # check which port was really used
-        else:
-            print "No serial used"
-
-
-    def send( self, coords ):
-        if not self.ser:
-            return
-#        num = max(self.X_range) if num > max(self.X_range) else num
-#        num = min(self.X_range) if num < min(self.X_range) else num
-
-        num1 = utils.scale(coords[0], self.X_range, self.DAC_range)
-        num2 = utils.scale(coords[1], self.Y_range, self.DAC_range)
-
-        sendString = str(int(num1) ) + '\t'
-#        print sendString
-        rb = self.ser.write( sendString )
-        self.ser.flush()
-
-        sendString = str(int(num2) ) + '\n'
-#        print sendString
-        rb = self.ser.write( sendString )
-        self.ser.flush()
-
-
-#        print sendString
-#        print 'Wrote ' + str(rb) + ' Bytes'
-##        print 'start reading:'
-##        rt =  self.ser.read(10)
-##        print 'rt1: ' + rt
+    def set_ranges(self, xy = (639, 359), dac = (4095, 4095)):
+        self.range_xy = xy
+        self.range_dac = dac
 
     def read( self, length ):
-        if not self.ser:
+        if not self.serial_device:
             return
         print 'start reading'
-        rt =  self.ser.read(length)
+        rt =  self.serial_device.read(length)
         print 'rt: ' + rt
 
+    def is_open(self):
+        return (self.serial_device and self.serial_device.is_open())
+        
+    def bytes_tx(self):
+        if self.serial_device:
+            return self.serial_device.bytes_sent
+        else:
+            return None
 
-    def serialTest( self ):
-        if not self.ser:
-            return
-        self.ser.write( '1000\n' )
-        self.ser.flush()
-        time.sleep(5.00)
+    def bytes_rx(self):
+        if self.serial_device:
+            return self.serial_device.bytes_received
+        else:
+            return None
+            
+    def list_ports(self):
+        return list_ports.comports()
 
-        print 'start reading:'
-        rt =  self.ser.read(10)
-        print 'rt1: ' + rt
-        rt =  self.ser.read(10)
-        print 'rt2: ' + rt
-
-
-    def close( self ):
-        if self.ser:
-            self.ser.close()             # close port
+    def close(self):
+        print 'Closing Serial'
+        if self.serial_device:
+            self.serial_device.close()
 
 
 
-
+#############################################################
 if __name__ == '__main__':
-    chatter = Funker()
+#############################################################
+    chatter = Chatter()
     chatter.send(300)
     chatter.send(300)
 #    for n in range(10):

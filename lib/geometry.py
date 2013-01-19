@@ -31,27 +31,56 @@ def middle_point( coord_list ):
         return None
 
 
-def scale_points(pts, framesize):
-    """ Scale points in list of given nromalized (0.0-1.0) points to the size
-    of frame. i.e. 1.0 --> 640 etc.
+def scale_points(pts, rng):
+    """ Scale points in list of given nromalized (0.0-1.0) points to a range
+    i.e. 1.0 --> 640 etc.
     """
+    try:
+        is_list = len(pts[0]) > 1
+    except: # Exception as inst
+        pts = [pts]
+        is_list = False
+        
     outpts = []
-    if type(framesize[0]) == int and type(framesize[1]) == int:
+    if type(rng[0]) == int and type(rng[1]) == int:
         for p in pts:
-            outpts.append( (int(p[0] * framesize[0]), int(p[1] * framesize[1]) ) )
+            outpts.append( [int(p[0]*rng[0]), int(p[1]*rng[1])] )
     else:
         for p in pts:
-            outpts.append( (p[0] * framesize[0], p[1] * framesize[1] ) )
-    return outpts
+            outpts.append( [p[0]*rng[0], p[1]*rng[1]] )
+    
+    if is_list:
+        return outpts
+    else:
+        return outpts[0]
 
-def norm_points(pts, framesize):
-    """ Normalize points in a list of points by dividing by the size of the
-    frame in the respective axis.
+
+def norm_points(pts, rng):
+    """ Normalize points in a list of points by dividing by their range
+    in the respective axis.
     """
+    try:
+        is_list = len(pts[0]) > 1
+    except: # Exception as inst
+        pts = [pts]
+        is_list = False
+        
     outpts = []
     for p in pts:
-        outpts.append( (p[0]*1.0/framesize[0], p[1]*1.0/framesize[1]) )
-    return outpts
+        outpts.append( [p[0]*1.0/rng[0], p[1]*1.0/rng[1]] )
+    
+    if is_list:
+        return outpts
+    else:
+        return outpts[0]
+
+
+def map_points(pt_list, range1, range2):
+    """ Map points from range 1 to range 2. """
+    npt = norm_points(pt_list, range1)
+#    print ('normalized: ', npt)
+    scpt = scale_points(npt, range2)
+    return scpt
 
 
 def scale(val, range1, range2):

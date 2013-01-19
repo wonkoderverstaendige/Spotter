@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Thu Jan 17 21:58:59 2013
+# Created: Sat Jan 19 02:12:41 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -154,15 +154,10 @@ class Ui_MainWindow(object):
         self.verticalLayout_4 = QtGui.QVBoxLayout(self.widget_serial)
         self.verticalLayout_4.setMargin(0)
         self.verticalLayout_4.setObjectName(_fromUtf8("verticalLayout_4"))
-        self.tab_serial_2 = QtGui.QTabWidget(self.widget_serial)
-        self.tab_serial_2.setTabPosition(QtGui.QTabWidget.East)
-        self.tab_serial_2.setObjectName(_fromUtf8("tab_serial_2"))
-        self.tab_serial_arduino = QtGui.QWidget()
-        self.tab_serial_arduino.setObjectName(_fromUtf8("tab_serial_arduino"))
-        self.gridLayout_3 = QtGui.QGridLayout(self.tab_serial_arduino)
-        self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
-        self.tab_serial_2.addTab(self.tab_serial_arduino, _fromUtf8(""))
-        self.verticalLayout_4.addWidget(self.tab_serial_2)
+        self.tab_serial = QtGui.QTabWidget(self.widget_serial)
+        self.tab_serial.setTabPosition(QtGui.QTabWidget.East)
+        self.tab_serial.setObjectName(_fromUtf8("tab_serial"))
+        self.verticalLayout_4.addWidget(self.tab_serial)
         self.tab_parameters.addTab(self.widget_serial, _fromUtf8(""))
         self.frame_parameters.addWidget(self.tab_parameters)
         self.horizontalLayout_2.addLayout(self.frame_parameters)
@@ -216,7 +211,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuHelp.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.tab_parameters.setCurrentIndex(0)
+        self.tab_parameters.setCurrentIndex(4)
         self.tab_features.setCurrentIndex(0)
         self.tab_objects.setCurrentIndex(0)
         self.tab_regions.setCurrentIndex(0)
@@ -238,7 +233,6 @@ class Ui_MainWindow(object):
         self.btn_region_template.setText(QtGui.QApplication.translate("MainWindow", "Quickload region template", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_regions.setTabText(self.tab_regions.indexOf(self.tab_regions_newTab), QtGui.QApplication.translate("MainWindow", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_parameters.setTabText(self.tab_parameters.indexOf(self.widget_regions), QtGui.QApplication.translate("MainWindow", "ROIs", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_serial_2.setTabText(self.tab_serial_2.indexOf(self.tab_serial_arduino), QtGui.QApplication.translate("MainWindow", "Arduino", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_parameters.setTabText(self.tab_parameters.indexOf(self.widget_serial), QtGui.QApplication.translate("MainWindow", "SerialOut", None, QtGui.QApplication.UnicodeUTF8))
         self.menu_File.setTitle(QtGui.QApplication.translate("MainWindow", "&File", None, QtGui.QApplication.UnicodeUTF8))
         self.menu_Open.setTitle(QtGui.QApplication.translate("MainWindow", "&Open", None, QtGui.QApplication.UnicodeUTF8))

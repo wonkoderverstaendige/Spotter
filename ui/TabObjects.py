@@ -56,6 +56,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
 
         self.connect(self.ckb_track, QtCore.SIGNAL('stateChanged(int)'), self.update_object)
         self.connect(self.ckb_trace, QtCore.SIGNAL('stateChanged(int)'), self.update_object)
+        self.connect(self.ckb_analog_pos, QtCore.SIGNAL('stateChanged(int)'), self.update_object)
 
         self.update()
 
@@ -81,7 +82,14 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
             print "empty tab"
             return
 
-        self.ckb_trace.setChecked(self.object.traced)
+        if not self.ckb_trace.isChecked() == self.object.traced:
+            self.ckb_trace.setChecked(self.object.traced)
+            
+        if not self.ckb_track.isChecked() == self.object.tracked:
+            self.ckb_track.setChecked(self.object.tracked)
+
+        if not self.ckb_analog_pos.isChecked() == self.object.analog_pos:
+            self.ckb_analog_pos.setChecked(self.object.analog_pos)
 
         if self.object.guessed_pos:
             self.lbl_x.setText(str(self.object.guessed_pos[0]))
@@ -105,6 +113,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
             return
         self.object.tracked = self.ckb_track.isChecked()
         self.object.traced = self.ckb_trace.isChecked()
+        self.object.analog_pos = self.ckb_analog_pos.isChecked()
         
     def process_event(self, event):
         pass

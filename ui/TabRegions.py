@@ -109,7 +109,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
 
                 shape_points = (self.coords_start, self.coords_end)
                 if shape_type and shape_points:
-                    self.add_shape(shape_type, shape_points)
+                    self.add_shape(shape_type, shape_points, shape_type)
         else:
             print 'Event not understood. Hulk sad and confused.'
 
@@ -121,7 +121,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         to the tree widget. Last uncheck the "Add" button.
         """
         shape_item = QtGui.QTreeWidgetItem([shape_type])
-        shape_item.shape = self.region.add_shape(shape_type, shape_points)
+        shape_item.shape = self.region.add_shape(shape_type, shape_points, shape_type)
         shape_item.setCheckState(0,QtCore.Qt.Checked)
         self.tree_region_shapes.addTopLevelItem(shape_item)
         self.tree_region_shapes.setCurrentItem(shape_item)
