@@ -128,8 +128,9 @@ class Spotter:
             for o in self.tracker.oois:
                 o.updatePosition()
                 if o.analog_pos and self.chatter and o.guessed_pos:
-                    self.chatter.inst_buffer.append(o.guessed_pos)
-                    self.chatter.send()
+#                    self.chatter.inst_buffer.append(o.guessed_pos)
+#                    self.chatter.send()
+                    self.chatter.send_point2analog(o.guessed_pos)
 
             # run collision detections
             for r in self.tracker.rois:

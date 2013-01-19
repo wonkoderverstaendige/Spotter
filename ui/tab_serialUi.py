@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'tab_serialUi.ui'
 #
-# Created: Sat Jan 19 02:12:42 2013
+# Created: Sat Jan 19 04:42:50 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -87,10 +87,12 @@ class Ui_tab_serial(object):
         self.gridLayout_4.addWidget(self.lbl_tx, 0, 1, 1, 1)
         self.lbl_bytes_sent = QtGui.QLabel(self.page_serial_connection)
         self.lbl_bytes_sent.setText(_fromUtf8(""))
+        self.lbl_bytes_sent.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.lbl_bytes_sent.setObjectName(_fromUtf8("lbl_bytes_sent"))
         self.gridLayout_4.addWidget(self.lbl_bytes_sent, 0, 2, 1, 1)
         self.lbl_bytes_received = QtGui.QLabel(self.page_serial_connection)
         self.lbl_bytes_received.setText(_fromUtf8(""))
+        self.lbl_bytes_received.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.lbl_bytes_received.setObjectName(_fromUtf8("lbl_bytes_received"))
         self.gridLayout_4.addWidget(self.lbl_bytes_received, 1, 2, 1, 1)
         spacerItem1 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)

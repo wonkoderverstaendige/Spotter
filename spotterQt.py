@@ -156,7 +156,9 @@ class Main(QtGui.QMainWindow):
 
     def serial_check(self):
         if self.spotter.chatter.is_open():
-            print ("buffer: ", len(self.spotter.chatter.inst_buffer))
+#            print("buffer in: " + str(self.spotter.chatter.bytes_available()) + 
+#                   "; buffer out: " + str(len(self.spotter.chatter.inst_buffer)))
+            self.spotter.chatter.read_all()
 
     def mouse_event_to_tab(self, event_type, event):
 #        print event_type
