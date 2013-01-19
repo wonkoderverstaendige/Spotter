@@ -59,7 +59,7 @@ sys.path.append('./lib/docopt')
 from docopt import docopt
 
 
-__version__ = 0.01
+__version__ = 0.1
 
 class Main(QtGui.QMainWindow):
     

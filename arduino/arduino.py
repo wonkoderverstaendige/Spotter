@@ -73,6 +73,7 @@ class Arduino(object):
         """ Send command byte followed by two data bytes. struct packs short
         unsigned value ('H') as two bytes, big endian.
         """
+#        print data
         msg = str(command) + struct.pack('H', data) + '\n'
         self.sp.write(msg)
         self.bytes_sent += len(msg)

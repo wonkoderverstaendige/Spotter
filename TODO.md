@@ -19,6 +19,8 @@ Interface:
     - adding/removing features, ROIs, objects should trigger updates on all
     linked lists
 
+    - Allow switching between video source and static image
+
 GL Frame:
 =========
     - use double buffering to reduce flickering, esp. when drawing into the 
@@ -76,6 +78,9 @@ Physical Out:
 
     - maybe use priority queue for objects to track, i.e. position first, then
     sync?
+
+    - portlist for windows: 
+    http://eli.thegreenplace.net/2009/07/31/listing-all-serial-ports-on-windows-with-python/
 
 Modules:
 ========

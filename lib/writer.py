@@ -41,7 +41,7 @@ from docopt import docopt
 
 DEBUG = True
 OVERWRITE = False
-TIMEOUT = .5 #seconds till writer process times out
+TIMEOUT = 5 #seconds till writer process times out
 
 class Writer:
     codecs = ( ('XVID'), ('DIVX'), ('IYUV') )
