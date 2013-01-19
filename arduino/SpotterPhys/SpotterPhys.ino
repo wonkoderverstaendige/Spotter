@@ -11,6 +11,14 @@
   by Ronny Eichler
 
 */
+#ifdef DEBUG_FLAG
+#define DEBUGLN(x)  Serial.println(x)
+#define DEBUG(x)  Serial.print(x)
+#else
+#define DEBUGLN(x)
+#define DEBUG(x)
+#endif
+
 #include "SPI.h" // handles SPI communication to MCP4921 DAC
 
 #define pin_SCK 52
@@ -40,7 +48,8 @@ int inData = 0;
 byte outData = 0;
 byte device = 0;
 
-byte inByte[4] = {0, 0, 0, 0};
+int tmp = 0;
+byte inBytes[4] = {0, 0, 0, 0};
 byte data = 0;
 
 byte n = 0;
@@ -78,10 +87,11 @@ void setup(){
 }
 
 void loop() {
-  if (msgComplete) {
-    interpret();
-    msgComplete = false;
-  }
+  delay(5);
+//  if (msgComplete) {
+//    interpret();
+//    msgComplete = false;
+//  }
 }
   
 
@@ -92,27 +102,31 @@ void loop() {
  response.  Multiple bytes of data may be available.
  */
 void serialEvent() {
-  inData = 0;
-  inCommand = 0;
-  n = 0;
-//  while (Serial.available()) {
-//    while (n < 4) {
-//      // get the new byte:
-//      inByte[n] = Serial.read();
-//      if (inByte[n] > -1) {
-//        n++;
-//      }
-//    }
-//  }
+//  inData = 0;
+//  inCommand = 0;
+  while (Serial.available()) {
+    n = 0;
+    while (n < 4) {
+      // get the new byte:
+      tmp = Serial.read();
+      if (tmp > -1) {
+        //Serial.println(tmp);
+        inBytes[n] = tmp;
+        n++;
+      }
+    }
+    interpret();
+//    msgComplete = true;
+  }
 }
 
 void interpret() {
-  Serial.println(inByte[0]);
-  Serial.println(inByte[1]);
-  Serial.println(inByte[2]);
-  if (inByte[3] == '\n') {
-    inCommand = inByte[0];
-    inData = inByte[1] + (inByte[2]<<8);
+//  Serial.println(inBytes[0]);
+//  Serial.println(inBytes[1]);
+//  Serial.println(inBytes[2]);
+  if (inBytes[3] == '\n') {
+    inCommand = inBytes[0];
+    inData = inBytes[1] + (inBytes[2]<<8);
     
     Serial.println(inCommand);
     Serial.println(inData);
@@ -121,9 +135,11 @@ void interpret() {
       setDAC(0, inData);
     } else if (inCommand == 49) {
       setDAC(1, inData);
-    } else if (inCommand == 42) {
-      Serial.println('Hello Spotter!');
-    }
+    } 
+    
+//    else if (inCommand == 42) {
+//      Serial.println('Hello Spotter!');
+//    }
   } 
 //  else {
 //    msgComplete = false;

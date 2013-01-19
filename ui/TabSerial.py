@@ -9,6 +9,9 @@ Created on Sun Jan 18 21:13:54 2013
 import sys
 from PyQt4 import QtGui, QtCore
 
+sys.path.append('./lib')
+import utilities as utils
+
 sys.path.append('./ui')
 from tab_serialUi import Ui_tab_serial
 
@@ -40,8 +43,12 @@ class Tab(QtGui.QWidget, Ui_tab_serial):
 
     def update(self):
         if self.serial.is_open():
-            self.lbl_bytes_sent.setText(str(self.serial.bytes_tx()) + ' B')
-            self.lbl_bytes_received.setText(str(self.serial.bytes_rx()) + ' B')
+            tx = self.serial.bytes_tx()
+            rx = self.serial.bytes_rx()
+            tx_unit = utils.binary_prefix(tx)
+            rx_unit = utils.binary_prefix(rx)
+            self.lbl_bytes_sent.setText(tx_unit)
+            self.lbl_bytes_received.setText(rx_unit)
     
     def refresh_port_list(self):
         """ Populates the list of available serial ports in the machine.

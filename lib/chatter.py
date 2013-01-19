@@ -96,7 +96,7 @@ class Chatter:
 #            print(point, scaled_point)
             self.serial_device.send_instruction(0, scaled_point[0])
             self.serial_device.send_instruction(1, scaled_point[1])
-        print ("instruction took: ", (time.clock() - t)*1000)
+#        print ("instruction took: ", (time.clock() - t)*1000)
 
     def set_ranges(self, xy = (639, 359), dac = (4095, 4095)):
         self.range_xy = xy
@@ -108,6 +108,9 @@ class Chatter:
         print 'start reading'
         rt =  self.serial_device.read(length)
         print 'rt: ' + rt
+        
+    def read_all(self):
+        self.serial_device.read_all_bytes()
 
     def is_open(self):
         return (self.serial_device and self.serial_device.is_open())
@@ -121,6 +124,12 @@ class Chatter:
     def bytes_rx(self):
         if self.serial_device:
             return self.serial_device.bytes_received
+        else:
+            return None
+            
+    def bytes_available(self):
+        if self.serial_device:
+            return self.serial_device.bytes_available()
         else:
             return None
             

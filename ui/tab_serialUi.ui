@@ -166,12 +166,18 @@
                <property name="text">
                 <string/>
                </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
               </widget>
              </item>
              <item row="1" column="2">
               <widget class="QLabel" name="lbl_bytes_received">
                <property name="text">
                 <string/>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
               </widget>
              </item>

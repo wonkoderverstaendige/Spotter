@@ -9,6 +9,7 @@ Helper functions.
 from sys import float_info
 import numpy as np
 import cv2
+import math
 #import time
 
 def BGRpix2HSV( pixel ):
@@ -137,6 +138,27 @@ def dst_file_name( destination ):
     else:
         return destination
 
+def binary_prefix(n_bytes):
+    prefixes = {'0': 'B', '1': 'KiB', '2': 'MiB', '3': 'GiB', '4': 'TiB',
+                '5': 'PiB', '6': 'EiB', '7': 'ZiB', '8': 'YiB'}
+    
+    for n in xrange(10):
+        if (n_bytes/math.pow(2, 10*n) < 1000):
+            num_str = '{0:.2f} ' + prefixes[str(n)]
+            return num_str.format(n_bytes/math.pow(2, 10*n))
+        
+#    if n_bytes > math.pow(2, 60):
+#        return '%d EiB'.format( % n_bytes/math.pow(2, 60)
+#    if n_bytes > math.pow(2, 50):
+#        return str(n_bytes/math.pow(2, 50)) + ' MiB'
+#    if n_bytes > math.pow(2, 40):
+#        return str(n_bytes/math.pow(2, 40)) + ' TiB'    
+#    if n_bytes > math.pow(2, 30):
+#        return str(n_bytes/math.pow(2, 30)) + ' GiB'
+#    if n_bytes > math.pow(2, 20):
+#        return str(n_bytes/math.pow(2, 20)) + ' MiB'
+#    if n_bytes > math.pow(2, 10):
+#        return str(n_bytes/math.pow(2, 10)) + ' KiB'
 
 class HSVHist:
     """ Calculate and show HSV histogram for the current frame shown

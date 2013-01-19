@@ -53,7 +53,8 @@ class Arduino(object):
         return self.sp.isOpen()
 
     def read_all_bytes(self):
-        msg = self.sp.readall()
+        msg = ''
+        msg = self.sp.read(self.bytes_available())
         self.bytes_received += len(msg)
         return msg
         
