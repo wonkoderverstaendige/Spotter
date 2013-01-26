@@ -56,7 +56,7 @@ byte n = 0;
 
 void setup(){
   // initialize serial connection
- Serial.begin(57600);
+  Serial.begin(57600);
  
   // ready SPI to talk to DAC
   pinMode(pin_dev0, OUTPUT);
@@ -88,42 +88,36 @@ void setup(){
 
 void loop() {
   delay(5);
-//  if (msgComplete) {
-//    interpret();
-//    msgComplete = false;
-//  }
+  readSensors();
 }
   
 
 /*
-  SerialEvent occurs whenever a new data comes in the
- hardware serial RX.  This routine is run between each
- time loop() runs, so using delay inside loop can delay
- response.  Multiple bytes of data may be available.
- */
+Called when serial data available after each loop()
+Requires use of non-blocking timings for opening outputs,
+otherwise delayed and buffers might fill up
+*/
 void serialEvent() {
-//  inData = 0;
-//  inCommand = 0;
   while (Serial.available()) {
     n = 0;
     while (n < 4) {
       // get the new byte:
       tmp = Serial.read();
       if (tmp > -1) {
-        //Serial.println(tmp);
         inBytes[n] = tmp;
         n++;
       }
     }
-    interpret();
-//    msgComplete = true;
+    interpretCommand();
   }
 }
 
-void interpret() {
-//  Serial.println(inBytes[0]);
-//  Serial.println(inBytes[1]);
-//  Serial.println(inBytes[2]);
+/*
+Interpret the received byte array by splitting it into a command, followed
+by payload data used in its execution
+*/
+
+void interpretCommand() {
   if (inBytes[3] == '\n') {
     inCommand = inBytes[0];
     inData = inBytes[1] + (inBytes[2]<<8);
@@ -135,9 +129,17 @@ void interpret() {
       setDAC(0, inData);
     } else if (inCommand == 49) {
       setDAC(1, inData);
-    } 
+    } else if (inCommand == 40) {
+      setDigital(0, inData);
+    } else if (inCommand == 41) {
+      setDigital(1, inData);
+    } else if (inCommand == 42) {
+      setDigital(2, inData);
+    } else if (inCommand == 43) {
+      setDigital(3, inData);
+    }
     
-//    else if (inCommand == 42) {
+//    else if (inCommand == 39) {
 //      Serial.println('Hello Spotter!');
 //    }
   } 
@@ -147,7 +149,11 @@ void interpret() {
 }
 
 
-void setDAC(int device, int outputValue) {
+byte readSensors() {
+    return 0x00;
+}
+
+void setDAC(byte device, int outputValue) {
     // should set device!
     if (device == 0 ) {
       digitalWrite(pin_dev0, LOW);
@@ -166,5 +172,13 @@ void setDAC(int device, int outputValue) {
       digitalWrite(pin_dev0, HIGH);
     } else if (device == 1) {
       digitalWrite(pin_dev1, HIGH);
+    }
+}
+
+void setDigital(byte pin, byte data) {
+    if (byte > 0) {
+        digitalWrite(pin, HIGH);
+    } else {
+        digitalWrite(pin, LOW);  
     }
 }

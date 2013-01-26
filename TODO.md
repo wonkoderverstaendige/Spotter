@@ -82,7 +82,28 @@ Physical Out:
     - portlist for windows: 
     http://eli.thegreenplace.net/2009/07/31/listing-all-serial-ports-on-windows-with-python/
 
+    - robust serial communication protocol: Reserved symbol (e.g. 0x00),
+    followed by 24 bit message, consisting of 8 bit command, 16 bit data
+        * extend data to allow nullable symbol?
+        * messages: 0d48/49 DAC + 0x??? 12 bit data each
+
+    - arduino answers with OK/ERROR byte, followed by 8 bit state split into
+    4 bit in, 4 bit out states
+
 Modules:
 ========
 
 DONE- rename writer_process to just writer
+
+Performance/Timings:
+====================
+
+    - time spent on read_all/read/send calls in serial communication. If too
+    long, put chatter into separate thread with buffer (NB: No FIFOs or stuff,
+    otherwise may delay output/send old data)
+
+    - time spent on drawing the numpy array into the OpenGL frame via different
+    methods. For some reason the main loop is extremely slow on the Acer Aspire
+    with Intel snail-graphics
+
+    - time spent on 2x setDAC(), 4x readSensors(), 4x setPin()

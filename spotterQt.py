@@ -47,8 +47,8 @@ import utilities as utils
 
 #Qt user interface files
 sys.path.append('./ui')
-from GLFrame import GLFrame
 from mainUi import Ui_MainWindow
+from GLFrame import GLFrame
 import TabFeatures
 import TabObjects
 import TabRegions
@@ -161,7 +161,10 @@ class Main(QtGui.QMainWindow):
             self.spotter.chatter.read_all()
 
     def mouse_event_to_tab(self, event_type, event):
-#        print event_type
+        """
+        Hand the mouse event to the active tab. Tabs may handle mouse events
+        differently, and depending on internal states (e.g. selections)
+        """
         current_tab = self.get_child_tab()
         if current_tab and current_tab.accept_events:
             current_tab.process_event(event_type, event)
@@ -185,7 +188,8 @@ class Main(QtGui.QMainWindow):
 
 
     def load_templates(self):
-        """ Loads and creates all LEDs and Objects from templates. This will
+        """ 
+        Loads and creates all LEDs and Objects from templates. This will
         probably be the place later the standard set of features/objects/ROIs
         etc. will be handled on startup.
         TODO: Add Object templates
@@ -224,7 +228,8 @@ class Main(QtGui.QMainWindow):
 
     #Feature Tab List Updates
     def tab_features_switch(self, idx_tab = 0):
-        """ Switch to selected tab or create a new tab if the selected tab is
+        """ 
+        Switch to selected tab or create a new tab if the selected tab is
         the last, which should be the "+" tab. Switching through the tabs with
         the mousewheel can cause to create a lot of tabs unfortunately.
         TODO: Mousewheel handling.
@@ -236,7 +241,8 @@ class Main(QtGui.QMainWindow):
 
 
     def add_feature(self, template = None, label = None):
-        """ Create a feature from trackables and add a corresponding tab to
+        """ 
+        Create a feature from trackables and add a corresponding tab to
         the tab widget, which is linked to show and edit feature properties.
         TODO: Create new templates when running out by fitting them into
         the colorspace somehow.
@@ -251,7 +257,8 @@ class Main(QtGui.QMainWindow):
 
     # Object Tab List Updates
     def tab_objects_switch(self, idx_tab = 0):
-        """ Switch to selected tab or create a new tab if the selected tab is
+        """ 
+        Switch to selected tab or create a new tab if the selected tab is
         the last, which should be the "+" tab. Switching through the tabs with
         the mousewheel can cause to create a lot of tabs unfortunately.
         TODO: Mousewheel handling.
@@ -263,7 +270,8 @@ class Main(QtGui.QMainWindow):
 
 
     def add_object(self, template = None, label = None):
-        """ Create a new object that will be linked to LEDs and/r ROIs to
+        """ 
+        Create a new object that will be linked to LEDs and/r ROIs to
         track and trigger events.
         TODO: Create new objects even when running out of templates for example
         by randomizing offsets.
@@ -287,7 +295,8 @@ class Main(QtGui.QMainWindow):
 
     # Regions Tab List Updates
     def tab_regions_switch(self, idx_tab = 0):
-        """ Switch to selected tab or create a new tab if the selected tab is
+        """ 
+        Switch to selected tab or create a new tab if the selected tab is
         the last, which should be the "+" tab. Switching through the tabs with
         the mousewheel can cause to create a lot of tabs unfortunately.
         TODO: Mousewheel handling.
@@ -299,7 +308,8 @@ class Main(QtGui.QMainWindow):
 
 
     def add_region(self, template = None, label = None):
-        """ Create a new region of interest that will be that will be linked
+        """ 
+        Create a new region of interest that will be that will be linked
         to Objects with conditions to trigger events.
         TODO: New regions created empty!
         """
@@ -324,14 +334,16 @@ class Main(QtGui.QMainWindow):
 
 
     def add_serial(self, serial_object, label = None):
-        """ Serial object tab. Probably an Arduino Mega 2560.
+        """ 
+        Serial object tab. Probably an Arduino Mega 2560.
         """
         new_tab = self.add_tab(self.ui.tab_serial, TabSerial, serial_object)
         self.serial_tabs.append(new_tab)
 
 
     def add_tab(self, tabwidget, newTabClass, tab_equivalent):
-        """ Add new tab with Widget newTabClass and switches to it. The
+        """ 
+        Add new tab with Widget newTabClass and switches to it. The
         tab_equivalent is the object that is being represented by the tab,
         for example an LED or Object.
         """
@@ -342,7 +354,8 @@ class Main(QtGui.QMainWindow):
 
 
     def remove_tab(self, tabwidget, tab):
-        """ Removing is trickier, as it has to delete the features/objects
+        """ 
+        Removing is trickier, as it has to delete the features/objects
         from the tracker!
         """
         pass
@@ -370,7 +383,8 @@ class Main(QtGui.QMainWindow):
             return None
 
     def update_current_tab(self):
-        """ Currently visible tab is the only one that requires to be updated
+        """ 
+        Currently visible tab is the only one that requires to be updated
         live when parameters of its associated object change, e.g. coordinates
         of tracked objects or LEDs. The rest should happen behind the scenes
         in the spotter sub-classes.
@@ -383,7 +397,8 @@ class Main(QtGui.QMainWindow):
 
 
     def openFile(self):
-        """ Open a video file. Should finish current spotter if any by closing
+        """ 
+        Open a video file. Should finish current spotter if any by closing
         it to allow all frames/settings to be saved properly. Then instantiate
         a new spotter.
         TODO: Open file dialog in a useful folder. E.g. store the last used one
@@ -394,6 +409,7 @@ class Main(QtGui.QMainWindow):
             path = os.getenv('HOMEPATH')
         filename = QtGui.QFileDialog.getOpenFileName(self, 'Open Video', path)
         print filename
+
 
     def refresh(self):
         self.spotter.update()
@@ -431,7 +447,8 @@ class Main(QtGui.QMainWindow):
 
 
     def closeEvent(self, event):
-        """ Exiting the interface has to kill the spotter class and subclasses
+        """ 
+        Exiting the interface has to kill the spotter class and subclasses
         properly, especially the writer and serial handles, otherwise division
         by zero might be imminent.
         """
@@ -448,6 +465,7 @@ class Main(QtGui.QMainWindow):
             event.accept()
         else:
             event.ignore()
+
 
 #############################################################
 def main(source, destination, fps, size, gui, serial):
