@@ -27,7 +27,6 @@ import numpy as np
 
 #project libraries
 sys.path.append('./lib')
-import chatter
 import utilities as utils
 import geometry as geom
 import trackables as trkbl
@@ -78,7 +77,6 @@ class Tracker:
 #        dilatedframe = cv2.cvtColor( self.frame, cv2.COLOR_BGR2HSV )
         if method == 'hsv_thresh':
             self.frame = frame
-#            comp_coord_list = self.threshTrack( self.frame, self.leds )
             for led in self.leds:
                 if led.detection_active:
                     self.threshTrack( self.frame, led )

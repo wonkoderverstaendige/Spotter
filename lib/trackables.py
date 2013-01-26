@@ -8,7 +8,6 @@ Trackable object class.
 
 import geometry as geom
 import random
-import cv2
 import utilities as utils
 
 class Shape:
@@ -77,6 +76,8 @@ class LED:
     range_hue = None # np.array uint8 of (lowerBound, higherBound), red: 170,10
     range_sat = None
     range_val = None
+    min_area = None    
+    
     label = None
     pos_hist = None
     mean_hue = None    # mean color of range for labels/markers etc.
@@ -91,18 +92,10 @@ class LED:
         self.range_hue = range_hue
         self.range_sat = (150, 255)
         self.range_val = (90, 255)
-        self.linked_to = linked_to  # List of linked LEDs
+        self.min_area = 6
+        self.linked_to = linked_to  # List of linked features, used as constraint
 
-        # overly complicated formula to calculate the center color of HSV range
-        if range_hue[0] <= self.range_hue[1]:
-            self.mean_hue = sum(range_hue)/2
-        else:
-            center = ((180 - range_hue[0]) + range_hue[1])/2
-            if range_hue[0] + center >= 180:
-                self.mean_hue = range_hue[0] + center - 180
-            else:
-                self.mean_hue = range_hue[0] + center
-
+        self.mean_hue = utils.mean_hue(self.hue_range)
         self.lblcolor = utils.HSVpix2RGB((self.mean_hue, 255, 255))
         self.pos_hist = []
 
@@ -114,6 +107,8 @@ class LED:
 
     def updateHistory( self, coords):
         pass
+
+
 
 
 class OOI:

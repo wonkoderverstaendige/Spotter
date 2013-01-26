@@ -76,10 +76,10 @@ void setup(){
   pinMode(pin_dout2, OUTPUT);
   pinMode(pin_dout3, OUTPUT);
   
-  setDAC(0, 0);
+  setDAC(0, 4095);
   setDAC(1, 0);
   delay(200);
-  setDAC(0, 4095);
+  setDAC(0, 0);
   setDAC(1, 4095);
   delay(200);
   setDAC(0, 0);
@@ -149,10 +149,6 @@ void interpretCommand() {
 }
 
 
-byte readSensors() {
-    return 0x00;
-}
-
 void setDAC(byte device, int outputValue) {
     // should set device!
     if (device == 0 ) {
@@ -175,8 +171,18 @@ void setDAC(byte device, int outputValue) {
     }
 }
 
+/* 
+Read digital pins, e.g. sensors
+Loop through digital pins, return
+byte whose LSB bits represent the state of 
+a specific pin.
+*/
+byte readSensors() {
+    return 0x00;
+}
+
 void setDigital(byte pin, byte data) {
-    if (byte > 0) {
+    if (data > 0) {
         digitalWrite(pin, HIGH);
     } else {
         digitalWrite(pin, LOW);  

@@ -76,6 +76,25 @@ def HSVpix2RGB( pixel ):
     return (RGB1[0]+m, RGB1[1]+m, RGB1[2]+m)
 
 
+def mean_hue(range_hue):
+    """ 
+    Overly complicated formula to calculate the center color of the 
+    HSV range, used for coloring of related labels etc.
+    """
+    if range_hue == None:
+        return None
+        
+    if range_hue[0] <= range_hue[1]:
+        mean_hue = sum(range_hue)/2
+    else:
+        center = ((180 - range_hue[0]) + range_hue[1])/2
+        if range_hue[0] + center >= 180:
+            mean_hue = range_hue[0] + center - 180
+        else:
+            mean_hue = range_hue[0] + center
+    return mean_hue
+
+
 def drawPointer( frame, p1, p2, color=(255, 255, 255), length = 50):
     """ draws line prependicular to midpoint of line section between p1 and p2"""
     # TODO: - scale line by length
