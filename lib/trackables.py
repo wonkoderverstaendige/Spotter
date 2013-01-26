@@ -76,14 +76,14 @@ class LED:
     range_hue = None # np.array uint8 of (lowerBound, higherBound), red: 170,10
     range_sat = None
     range_val = None
-    min_area = None    
+    range_area = None    
     
     label = None
     pos_hist = None
     mean_hue = None    # mean color of range for labels/markers etc.
     lblcolor =  None
 
-    def __init__( self, label, range_hue, fixed_pos = False, linked_to = None ):
+    def __init__( self, label, range_hue, range_area, fixed_pos, linked_to ):
         self.label = label
         self.fixed_pos = fixed_pos
         self.detection_active = True
@@ -92,10 +92,10 @@ class LED:
         self.range_hue = range_hue
         self.range_sat = (150, 255)
         self.range_val = (90, 255)
-        self.min_area = 6
+        self.range_area = range_area
         self.linked_to = linked_to  # List of linked features, used as constraint
 
-        self.mean_hue = utils.mean_hue(self.hue_range)
+        self.mean_hue = utils.mean_hue(self.range_hue)
         self.lblcolor = utils.HSVpix2RGB((self.mean_hue, 255, 255))
         self.pos_hist = []
 

@@ -51,8 +51,8 @@ class Tracker:
         self.rois = []
         self.leds = []
 
-    def addLED( self, label, range_hue, fixed_pos = False, linked_to = None ):
-        led = trkbl.LED( label, range_hue, fixed_pos, linked_to )
+    def addLED( self, label, range_hue, min_area = 5, fixed_pos = False, linked_to = None ):
+        led = trkbl.LED( label, range_hue, min_area, fixed_pos, linked_to )
         self.leds.append( led )
         return led
 
@@ -113,9 +113,9 @@ class Tracker:
             # combine both ends for complete mask
             ranged_frame = cv2.bitwise_or( ranged_frame, redrange )
 
-        # find largest contour
+        # find largest contour that is >= than minimum area
         ranged_frame = cv2.dilate( ranged_frame, np.ones( (3,3), 'uint8' ) )
-        contour = self.findContour( ranged_frame, min_area = 5 )
+        contour_area, contour = self.findContour(ranged_frame, l.range_area)
 
         # finding centroids of best_cnt and draw a circle there
         if not contour == None:
@@ -128,9 +128,11 @@ class Tracker:
             l.pos_hist.append(None)
 
 
-    def findContour( self, frame, min_area = 5 ):
-        """ Return contour with largest area. Returns None if no contour
-            larger than min_area """
+    def findContour(self, frame, range_area):
+        """ 
+        Return contour with largest area. Returns None if no contour
+        larger than minimum area (range_area[0])
+        """
         contours, hierarchy = cv2.findContours( frame,
                                                 cv2.RETR_LIST,
                                                 cv2.CHAIN_APPROX_SIMPLE )
@@ -138,11 +140,11 @@ class Tracker:
         best_cnt = None
         for cnt in contours:
             area = cv2.contourArea(cnt)
-            if area > largest_area and area > min_area:
+            if area >= range_area[0] and area > largest_area:
                 largest_area = area
                 best_cnt = cnt
 
-        return best_cnt
+        return largest_area, best_cnt
 
 
     def camshiftTrack( self, hsv_frame, led_list ):

@@ -39,7 +39,7 @@
           <x>0</x>
           <y>0</y>
           <width>217</width>
-          <height>247</height>
+          <height>259</height>
          </rect>
         </property>
         <attribute name="label">
@@ -231,31 +231,6 @@
              </property>
             </widget>
            </item>
-           <item row="4" column="1" colspan="2">
-            <widget class="QPushButton" name="btn_pick_color">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="toolTip">
-              <string>Pick thresholds from image by dragging frame around the spot of interest</string>
-             </property>
-             <property name="statusTip">
-              <string>Pick range from image</string>
-             </property>
-             <property name="text">
-              <string>&amp;Pick</string>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-             <property name="flat">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
            <item row="0" column="1">
             <widget class="QLabel" name="lbl_min">
              <property name="layoutDirection">
@@ -301,10 +276,45 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="3" rowspan="5">
+           <item row="0" column="3" rowspan="7">
             <widget class="Line" name="line_2">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="2">
+            <widget class="QSpinBox" name="spin_area_min"/>
+           </item>
+           <item row="4" column="1" colspan="2">
+            <widget class="QPushButton" name="btn_pick_color">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Pick thresholds from image by dragging frame around the spot of interest</string>
+             </property>
+             <property name="statusTip">
+              <string>Pick range from image</string>
+             </property>
+             <property name="text">
+              <string>&amp;Pick</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="flat">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0" colspan="2">
+            <widget class="QLabel" name="lbl_min_area">
+             <property name="text">
+              <string>area</string>
              </property>
             </widget>
            </item>
@@ -482,7 +492,7 @@
           <x>0</x>
           <y>0</y>
           <width>217</width>
-          <height>247</height>
+          <height>259</height>
          </rect>
         </property>
         <attribute name="label">
@@ -514,7 +524,7 @@
           <x>0</x>
           <y>0</y>
           <width>217</width>
-          <height>247</height>
+          <height>259</height>
          </rect>
         </property>
         <attribute name="label">

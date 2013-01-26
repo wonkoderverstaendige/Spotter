@@ -63,25 +63,32 @@ __version__ = 0.1
 
 class Main(QtGui.QMainWindow):
     
-    feature_templates = dict( default = [(0, 1), True],
-                              redLED = [( 160, 5 ), False],
-                              blueLED = [( 105, 135 ), False],
-                              greenLED = [( 15, 90 ), True] )
-                              
+    # _name_, range_hue, range_area, fixed_pos
+    feature_templates = dict( default = [(0, 1), (6, 0), True],
+                              redLED = [( 160, 5 ), (20, 0), False],
+                              blueLED = [( 105, 135 ), (20, 0), False],
+                              greenLED = [( 15, 90 ), (20, 0), True] )
+
+    # _name_, linked feature name list, from above; analog_out
     object_templates = dict( default = [[], True],
                              Subject = [['redLED', 'blueLED'], True],
                              Sync    = [['greenLED'], False] )
 
+    # _name_, shape primitive type, points to describe shape
     shape_templates = dict( LeftSensor   = ['Rectangle', [(0.20, 0.00), (0.30, 1.00)]],
                             CenterSensor = ['Rectangle', [(0.45, 0.20), (0.55, 0.80)]],
                             RightSensor  = ['Rectangle', [(0.70, 0.00), (0.80, 1.00)]] )
 
+    # _name_, connected shapes
     region_templates = dict( default = [[]],
                              LeftReward  = [['LeftSensor']],
                              Trigger     = [['CenterSensor']],
                              RightReward = [['RightSensor']] )
-                        
+
+    # features, objects, regions
     full_templates = dict( LinearTrack =  [feature_templates, object_templates, region_templates] )
+
+
 
     def __init__(self, source, destination, fps, size, gui, serial):
         QtGui.QMainWindow.__init__(self)
