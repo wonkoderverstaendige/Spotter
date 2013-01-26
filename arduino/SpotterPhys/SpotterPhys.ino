@@ -1,16 +1,16 @@
 /* 
-  Arduino/Python interface for Spotter.
-
-  After reset the Arduino will wait for a handshake command.
-  Once received, it will continually check the sensors and
-  report their values via Serial port. At the same time incoming
-  commands and data will be written to digital ports or via
-  SPI to the DACs for analog out of e.g. coordinates, speed...
-
-  Created 18 January 2013
-  by Ronny Eichler
-
-*/
+ Arduino/Python interface for Spotter.
+ 
+ After reset the Arduino will wait for a handshake command.
+ Once received, it will continually check the sensors and
+ report their values via Serial port. At the same time incoming
+ commands and data will be written to digital ports or via
+ SPI to the DACs for analog out of e.g. coordinates, speed...
+ 
+ Created 18 January 2013
+ by Ronny Eichler
+ 
+ */
 #ifdef DEBUG_FLAG
 #define DEBUGLN(x)  Serial.println(x)
 #define DEBUG(x)  Serial.print(x)
@@ -49,7 +49,8 @@ byte outData = 0;
 byte device = 0;
 
 int tmp = 0;
-byte inBytes[4] = {0, 0, 0, 0};
+byte inBytes[4] = {
+  0, 0, 0, 0};
 byte data = 0;
 
 byte n = 0;
@@ -57,25 +58,27 @@ byte n = 0;
 void setup(){
   // initialize serial connection
   Serial.begin(57600);
- 
+
   // ready SPI to talk to DAC
   pinMode(pin_dev0, OUTPUT);
   pinMode(pin_dev1, OUTPUT);
   SPI.begin();
   SPI.setBitOrder(MSBFIRST);
- 
-   // ready digital input pins
+  digitalWrite(pin_dev0, HIGH);
+  digitalWrite(pin_dev1, HIGH);
+
+  // ready digital input pins
   pinMode(pin_din0, INPUT);
   pinMode(pin_din1, INPUT);
   pinMode(pin_din2, INPUT);
   pinMode(pin_din3, INPUT);
-  
+
   // ready ditital output pins
   pinMode(pin_dout0, OUTPUT);
   pinMode(pin_dout1, OUTPUT);
   pinMode(pin_dout2, OUTPUT);
   pinMode(pin_dout3, OUTPUT);
-  
+
   setDAC(0, 4095);
   setDAC(1, 0);
   delay(200);
@@ -87,16 +90,16 @@ void setup(){
 }
 
 void loop() {
-  delay(5);
+  delay(1);
   readSensors();
 }
-  
+
 
 /*
 Called when serial data available after each loop()
-Requires use of non-blocking timings for opening outputs,
-otherwise delayed and buffers might fill up
-*/
+ Requires use of non-blocking timings for opening outputs,
+ otherwise delayed and buffers might fill up
+ */
 void serialEvent() {
   while (Serial.available()) {
     n = 0;
@@ -114,77 +117,85 @@ void serialEvent() {
 
 /*
 Interpret the received byte array by splitting it into a command, followed
-by payload data used in its execution
-*/
-
+ by payload data used in its execution
+ */
 void interpretCommand() {
   if (inBytes[3] == '\n') {
     inCommand = inBytes[0];
     inData = inBytes[1] + (inBytes[2]<<8);
-    
-    Serial.println(inCommand);
-    Serial.println(inData);
-    
+
+    Serial.println(readSensors());
+//    Serial.println(inCommand);
+//    Serial.println(inData);
+
     if (inCommand == 48) {
       setDAC(0, inData);
-    } else if (inCommand == 49) {
+    } 
+    else if (inCommand == 49) {
       setDAC(1, inData);
-    } else if (inCommand == 40) {
+    } 
+    else if (inCommand == 40) {
       setDigital(0, inData);
-    } else if (inCommand == 41) {
+    } 
+    else if (inCommand == 41) {
       setDigital(1, inData);
-    } else if (inCommand == 42) {
+    } 
+    else if (inCommand == 42) {
       setDigital(2, inData);
-    } else if (inCommand == 43) {
+    } 
+    else if (inCommand == 43) {
       setDigital(3, inData);
     }
-    
-//    else if (inCommand == 39) {
-//      Serial.println('Hello Spotter!');
-//    }
+
+    //    else if (inCommand == 39) {
+    //      Serial.println('Hello Spotter!');
+    //    }
   } 
-//  else {
-//    msgComplete = false;
-//  }
 }
 
 
 void setDAC(byte device, int outputValue) {
-    // should set device!
-    if (device == 0 ) {
-      digitalWrite(pin_dev0, LOW);
-    } else if (device == 1) {
-      digitalWrite(pin_dev1, LOW);
-    }
-    
-    data = highByte(outputValue);
-    data = 0b00001111 & data;
-    data = 0b00110000 | data;
-    SPI.transfer(data);
-    data = lowByte(outputValue);
-    SPI.transfer(data);
-    
-    if (device == 0 ) {
-      digitalWrite(pin_dev0, HIGH);
-    } else if (device == 1) {
-      digitalWrite(pin_dev1, HIGH);
-    }
+  // should set select chip
+  if (device == 0 ) {
+    digitalWrite(pin_dev0, LOW);
+  } 
+  else if (device == 1) {
+    digitalWrite(pin_dev1, LOW);
+  }
+
+  data = highByte(outputValue);
+  data = 0b00001111 & data;
+  data = 0b00110000 | data;
+  SPI.transfer(data);
+  data = lowByte(outputValue);
+  SPI.transfer(data);
+
+  digitalWrite(pin_dev0, HIGH);
+  digitalWrite(pin_dev1, HIGH);
 }
 
 /* 
-Read digital pins, e.g. sensors
-Loop through digital pins, return
-byte whose LSB bits represent the state of 
-a specific pin.
-*/
+ Read digital pins, e.g. sensors
+ Loop through digital pins, return
+ byte whose LSB bits represent the state of 
+ a specific pin.
+ */
 byte readSensors() {
-    return 0x00;
+  return 0x00;
 }
 
+
+/*
+ Set digital pins to the value of their specific bit
+ in the received state byte
+ */
 void setDigital(byte pin, byte data) {
-    if (data > 0) {
-        digitalWrite(pin, HIGH);
-    } else {
-        digitalWrite(pin, LOW);  
-    }
+  if (data > 0) {
+    digitalWrite(pin, HIGH);
+  } 
+  else {
+    digitalWrite(pin, LOW);  
+  }
 }
+
+

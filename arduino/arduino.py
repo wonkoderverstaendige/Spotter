@@ -31,7 +31,7 @@ class Arduino(object):
         self.portString = port
         self.sp.flushInput()
         
-        self.send_instruction(1, 2048)
+#        self.send_instructions([[0, 2048], [1, 1024]])
         for n in xrange(100):
             if self.bytes_available():
                 self.connected = True
@@ -69,12 +69,14 @@ class Arduino(object):
     def send_as_two_bytes(self, val):
         self.sp.write(chr(val % 128) + chr(val >> 7))
 
-    def send_instruction(self, command, data):
+    def send_instructions(self, instruction_list):
         """ Send command byte followed by two data bytes. struct packs short
         unsigned value ('H') as two bytes, big endian.
         """
 #        print data
-        msg = str(command) + struct.pack('H', data) + '\n'
+        msg = ''
+        for i in instruction_list:
+            msg = msg + str(i[0]) + struct.pack('H', i[1]) + '\n'
         self.sp.write(msg)
         self.bytes_sent += len(msg)
 

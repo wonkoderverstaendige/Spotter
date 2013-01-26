@@ -55,14 +55,22 @@ class Chatter:
     port = None
     label = 'Arduino'
 
-    def __init__( self, serial_port ):
+    def __init__( self, serial_port, frame_size = (639, 359), max_dac = 4095 ):
         if serial_port:
             self.serial_port = serial_port
             self.open_serial(self.serial_port)
             
         self.inst_buffer = []
-            
-        self.set_ranges()
+        
+        self.range_xy = frame_size
+        
+        self.factor_dac = (4095 - 256.0) / max(frame_size)
+        self.offset_dac = max_dac - self.factor_dac * max(frame_size)
+        dr = int(self.factor_dac) * max(frame_size)
+        print ('DAC factor: ' + str(self.factor_dac))
+        print ('DAC offset: ' + str(self.offset_dac))
+        self.range_dac = (dr, dr)
+
 
     def open_serial(self, serial_port):
         self.close()
@@ -71,46 +79,51 @@ class Chatter:
         return self.serial_device.connected
 
     def send(self):
+        if not self.serial_device:
+            return
         if len(self.inst_buffer):
             self.send_point2analog(self.inst_buffer.pop())
-#        if not self.serial_device:
-#            return
-#
-#        num1 = utils.scale(coords[0], self.X_range, self.DAC_range)
-#        num2 = utils.scale(coords[1], self.Y_range, self.DAC_range)
-#
-#        sendString = str(int(num1) ) + '\t'
-##        print sendString
-#        rb = self.serial_device.write( sendString )
-#        self.serial_device.flush()
-#
-#        sendString = str(int(num2) ) + '\n'
-##        print sendString
-#        rb = self.serial_device.write( sendString )
 #        self.serial_device.flush()
         
     def send_point2analog(self, point):
-        t = time.clock()
-        scaled_point = geom.map_points(point, self.range_xy, self.range_dac)
+#        t = time.clock()
+#        scaled_point = geom.map_points(point, self.range_xy, self.range_dac)
+        scaled_point = self.map_point(point)
         if self.is_open():
-#            print(point, scaled_point)
-            self.serial_device.send_instruction(0, scaled_point[0])
-            self.serial_device.send_instruction(1, scaled_point[1])
+            self.serial_device.send_instructions([[0, scaled_point[0]], 
+                                                  [1, scaled_point[1]]])
 #        print ("instruction took: ", (time.clock() - t)*1000)
 
-    def set_ranges(self, xy = (639, 359), dac = (4095, 4095)):
-        self.range_xy = xy
-        self.range_dac = dac
 
-    def read( self, length ):
-        if not self.serial_device:
-            return
-        print 'start reading'
-        rt =  self.serial_device.read(length)
-        print 'rt: ' + rt
+    def map_point(self, point):
+        coord_max = max(self.range_xy)
+        
+        # center point coordinates into range
+        xc = point[0] + (coord_max - self.range_xy[0])/2.0
+        # Y coordinate has to be flipped, origin is _upper_ left corner
+        yc = (self.range_xy[1] - point[1]) + (coord_max - self.range_xy[1])/2.0
+        xc = int(xc * self.factor_dac + self.offset_dac)
+        yc = int(yc * self.factor_dac + self.offset_dac)
+        return (xc, yc)
+
+
+
+#    def read( self, length ):
+#        if not self.serial_device:
+#            return
+#        rt =  self.serial_device.read(length)
         
     def read_all(self):
-        self.serial_device.read_all_bytes()
+        if not self.serial_device:
+            return
+        return self.serial_device.read_all_bytes()
+        
+        
+    def read_line(self):
+        if not self.serial_device:
+            return
+        return self.serial_device.read_line()
+
 
     def is_open(self):
         return (self.serial_device and self.serial_device.is_open())
@@ -141,16 +154,35 @@ class Chatter:
         if self.serial_device:
             self.serial_device.close()
 
-
-
+    def test_scan_frame(self, stepsize = 4):
+        """
+        scan through all points in frame size, pause between
+        each point for [delay] milliseconds
+        """
+        for y in xrange(0, self.range_xy[1]+1, stepsize):
+            t = time.clock()
+            for x in xrange(0, self.range_xy[0]+1, stepsize):
+                self.send_point2analog((x, y))
+                self.read_all()
+            print("line: " + str(y) + " t: " + str((time.clock() - t)) + " s")
+        
+        self.send_point2analog((0, 0))
+        self.read_all()
+        time.sleep(0.5)
+          
+        for x in xrange(0, self.range_xy[0]+1, stepsize):
+            t = time.clock()
+            for y in xrange(0, self.range_xy[1]+1, stepsize):
+                self.send_point2analog((x, y))
+                self.read_all()
+            print("column: " + str(x) + " t: " + str((time.clock() - t)) + " s")          
+          
+               
 #############################################################
 if __name__ == '__main__':
 #############################################################
-    chatter = Chatter()
-    chatter.send(300)
-    chatter.send(300)
-#    for n in range(10):
-#        chatter.serialTest()
+    chatter = Chatter('COM4')
+    chatter.test_scan_frame(stepsize = 2)
     print 'Done'
-    time.sleep(5)
+#    time.sleep(2)
     chatter.close()

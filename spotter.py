@@ -101,10 +101,10 @@ class Spotter:
         self.chatter = Chatter(serial)
         
         # GUI other than Qt currently not available. We apologize for any
-        # inconvinience.
+        # inconvinience. << NOT TRUE ANYMORE! HOORAY!
 #        self.gui = GUI( self, gui, "Spotter", size )
 
-        # histogram instance required to do... what, again?
+        # histogram instance required to do... nothing for now?
 #        self.hist = utils.HSVHist()
 
 
