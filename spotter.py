@@ -124,12 +124,12 @@ class Spotter:
             self.hsv_frame = cv2.cvtColor( self.newest_frame, cv2.COLOR_BGR2HSV )
             self.tracker.trackLeds( self.hsv_frame, method = 'hsv_thresh' )
 
-            # Calculate positions send to Serial if wanted
+            # Calculate positions send to Serial if object linked to serial
+            # if no point detected (guessed_pos == None)
+            # output will be zeroed
             for o in self.tracker.oois:
                 o.updatePosition()
-                if o.analog_pos and self.chatter and o.guessed_pos:
-#                    self.chatter.inst_buffer.append(o.guessed_pos)
-#                    self.chatter.send()
+                if o.analog_pos and self.chatter: # and o.guessed_pos
                     self.chatter.send_point2analog(o.guessed_pos)
 
             # run collision detections

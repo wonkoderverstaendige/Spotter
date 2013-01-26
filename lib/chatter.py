@@ -86,13 +86,14 @@ class Chatter:
 #        self.serial_device.flush()
         
     def send_point2analog(self, point):
-#        t = time.clock()
-#        scaled_point = geom.map_points(point, self.range_xy, self.range_dac)
-        scaled_point = self.map_point(point)
+        if point == None:
+            scaled_point = (0, 0)
+        else:
+            scaled_point = self.map_point(point)
+            
         if self.is_open():
             self.serial_device.send_instructions([[0, scaled_point[0]], 
                                                   [1, scaled_point[1]]])
-#        print ("instruction took: ", (time.clock() - t)*1000)
 
 
     def map_point(self, point):
