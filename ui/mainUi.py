@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Sat Jan 19 04:42:49 2013
-#      by: PyQt4 UI code generator 4.9.1
+# Created: Sat Jan 26 09:49:00 2013
+#      by: PyQt4 UI code generator 4.9.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -163,7 +163,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addLayout(self.frame_parameters)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 681, 25))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 681, 21))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menu_File = QtGui.QMenu(self.menubar)
         self.menu_File.setObjectName(_fromUtf8("menu_File"))
@@ -211,7 +211,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuHelp.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.tab_parameters.setCurrentIndex(4)
+        self.tab_parameters.setCurrentIndex(0)
         self.tab_features.setCurrentIndex(0)
         self.tab_objects.setCurrentIndex(0)
         self.tab_regions.setCurrentIndex(0)
