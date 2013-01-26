@@ -77,13 +77,16 @@ class Main(QtGui.QMainWindow):
     # _name_, shape primitive type, points to describe shape
     shape_templates = dict( LeftSensor   = ['Rectangle', [(0.20, 0.00), (0.30, 1.00)]],
                             CenterSensor = ['Rectangle', [(0.45, 0.20), (0.55, 0.80)]],
-                            RightSensor  = ['Rectangle', [(0.70, 0.00), (0.80, 1.00)]] )
+                            RightSensor  = ['Rectangle', [(0.70, 0.00), (0.80, 1.00)]],
+                            Sync_dummy_right  = ['Rectangle', [(0.90, 0.00), (1.00, 1.00)]],
+                            Sync_dummy_bottom  = ['Rectangle', [(0.00, 0.95), (1.00, 1.00)]])
 
     # _name_, connected shapes
     region_templates = dict( default = [[]],
                              LeftReward  = [['LeftSensor']],
                              Trigger     = [['CenterSensor']],
-                             RightReward = [['RightSensor']] )
+                             RightReward = [['RightSensor']],
+                             Sync_trig   = [['Sync_dummy_right', 'Sync_dummy_bottom']] )
 
     # features, objects, regions
     full_templates = dict( LinearTrack =  [feature_templates, object_templates, region_templates] )

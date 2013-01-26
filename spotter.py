@@ -135,7 +135,20 @@ class Spotter:
             # run collision detections
             for r in self.tracker.rois:
                 for o in self.tracker.oois:
-                    r.collision_check(o.guessed_pos)
+                    collision = r.collision_check(o.guessed_pos)
+                    if r.label == 'Trigger' and o.label == 'Subject':
+                        if collision:
+                            self.chatter.send_trigger_state(41, 0x07)
+                        else:
+                            self.chatter.send_trigger_state(41, 0x00)
+                            
+                            
+                    if r.label == 'Sync_trig' and o.label == 'Sync':
+                        if collision:
+                            self.chatter.send_trigger_state(40, 0x07)
+                        else:
+                            self.chatter.send_trigger_state(40, 0x00)
+#                        print collision
 #                    if o.digital_collision_out and self.chatter:
 #                        self.chatter.send_collision2digital(o.digital_ports)
 

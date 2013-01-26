@@ -135,16 +135,16 @@ void interpretCommand() {
       setDAC(1, inData);
     } 
     else if (inCommand == 40) {
-      setDigital(0, inData);
+      setDigital(40, inData);
     } 
     else if (inCommand == 41) {
-      setDigital(1, inData);
+      setDigital(41, inData);
     } 
     else if (inCommand == 42) {
-      setDigital(2, inData);
+      setDigital(42, inData);
     } 
     else if (inCommand == 43) {
-      setDigital(3, inData);
+      setDigital(43, inData);
     }
 
     //    else if (inCommand == 39) {
@@ -189,7 +189,7 @@ byte readSensors() {
  Set digital pins to the value of their specific bit
  in the received state byte
  */
-void setDigital(byte pin, byte data) {
+void setDigital(byte pin, short data) {
   if (data > 0) {
     digitalWrite(pin, HIGH);
   } 

@@ -86,14 +86,22 @@ class Chatter:
 #        self.serial_device.flush()
         
     def send_point2analog(self, point):
+        if not self.serial_device:
+            return
         if point == None:
             scaled_point = (0, 0)
         else:
             scaled_point = self.map_point(point)
             
         if self.is_open():
-            self.serial_device.send_instructions([[0, scaled_point[0]], 
-                                                  [1, scaled_point[1]]])
+            self.serial_device.send_instructions([[chr(48), scaled_point[0]], 
+                                                  [chr(49), scaled_point[1]]])
+
+    def send_trigger_state(self, pin, state_bytes):
+        if not self.serial_device:
+            return
+        if self.is_open():
+            self.serial_device.send_instructions([[chr(pin), state_bytes]])        
 
 
     def map_point(self, point):
@@ -107,8 +115,6 @@ class Chatter:
         yc = int(yc * self.factor_dac + self.offset_dac)
         return (xc, yc)
 
-
-
 #    def read( self, length ):
 #        if not self.serial_device:
 #            return
@@ -119,12 +125,10 @@ class Chatter:
             return
         return self.serial_device.read_all_bytes()
         
-        
     def read_line(self):
         if not self.serial_device:
             return
         return self.serial_device.read_line()
-
 
     def is_open(self):
         return (self.serial_device and self.serial_device.is_open())
