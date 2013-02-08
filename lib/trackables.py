@@ -189,8 +189,9 @@ class ROI:
             for shape in shape_list:
                 self.add_shape(*shape[1], label = shape[0])
 
-    def move( self, x, y ):
-        print "Moving whole ROI to new position"
+    def move( self, dx, dy ):
+        for s in self.shapes:
+            s.move(dx, dy)
 
     def add_shape(self, shape_type, points, label):
         shape = Shape(shape_type, points, label)

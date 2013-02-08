@@ -23,7 +23,7 @@ Interface:
 
 GL Frame:
 =========
-    - use double buffering to reduce flickering, esp. when drawing into the 
+    - use double buffering to reduce flickering, esp. when drawing into the
     frame.
 
     - direct mode (glBegin, glEnd) is much slower in python, so it may be
@@ -43,8 +43,10 @@ Mouse handling:
     - accept mouse events by default. Only refuse events if the current tab
     is locked (to prevent changing settings accidentally!)
 
-    - when dragging with middle mouse button for example, move the currently
+DONE- when dragging with middle mouse button for example, move the currently
     selected ROI around to position it
+        --> Middle mouse dragging moves ROI, holding shift moves only selected
+            shape
 
     - shift as a modifier could serve as precision placement (diving delta
     of dragging motion e.g. by four)
@@ -79,7 +81,7 @@ Physical Out:
     - maybe use priority queue for objects to track, i.e. position first, then
     sync?
 
-    - portlist for windows: 
+    - portlist for windows:
     http://eli.thegreenplace.net/2009/07/31/listing-all-serial-ports-on-windows-with-python/
 
     - robust serial communication protocol: Reserved symbol (e.g. 0x00),

@@ -91,7 +91,10 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
                 dx = event.x() - self.coords_last[0]
                 dy = event.y() - self.coords_last[1]
                 self.coords_last = [event.x(), event.y()]
-                self.move_shape(dx, dy)
+                if modifiers == QtCore.Qt.ShiftModifier:
+                     self.move_shape(dx, dy)
+                else:
+                    self.move_region(dx, dy)
                 self.spin_shape = None
                 self.update_spin_boxes()
 
@@ -199,6 +202,10 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         else:
             self.spin_shape = self.tree_region_shapes.currentItem().shape
             return
+
+
+    def move_region(self, dx, dy):
+        self.region.move(dx, dy)
 
     def itemChanged(self, item, column):
         """

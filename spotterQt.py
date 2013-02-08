@@ -466,7 +466,7 @@ class Main(QtGui.QMainWindow):
             reply = QtGui.QMessageBox.Yes
         else:
             reply = QtGui.QMessageBox.question(self,
-                                               'Exit confirmation',
+                                               'Exiting...',
                                                'Are you sure?',
                                                QtGui.QMessageBox.Yes,
                                                QtGui.QMessageBox.No )
