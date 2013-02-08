@@ -40,7 +40,7 @@ def scale_points(pts, rng):
     except: # Exception as inst
         pts = [pts]
         is_list = False
-        
+
     outpts = []
     if type(rng[0]) == int and type(rng[1]) == int:
         for p in pts:
@@ -48,7 +48,7 @@ def scale_points(pts, rng):
     else:
         for p in pts:
             outpts.append( [p[0]*rng[0], p[1]*rng[1]] )
-    
+
     if is_list:
         return outpts
     else:
@@ -64,11 +64,11 @@ def norm_points(pts, rng):
     except: # Exception as inst
         pts = [pts]
         is_list = False
-        
+
     outpts = []
     for p in pts:
         outpts.append( [p[0]*1.0/rng[0], p[1]*1.0/rng[1]] )
-    
+
     if is_list:
         return outpts
     else:

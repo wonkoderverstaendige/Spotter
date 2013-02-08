@@ -112,29 +112,18 @@ class GLFrame(QtOpenGL.QGLWidget):
 
     def mouseMoveEvent(self, mouseEvent):
         if int(mouseEvent.buttons()) != QtCore.Qt.NoButton:
-            # user is dragging        
+            # user is dragging
             self.sig_event.emit('mouseDrag', mouseEvent)
-            self.dragging = True
-            self.m_x2 = mouseEvent.x()
-            self.m_y2 = mouseEvent.y()
-        else:
-            self.m_x1 = mouseEvent.x()
-            self.m_y1 = mouseEvent.y()
-            
-#        if self.pressed:
-#            self.sig_event.emit('mouseMove', mouseEvent)
-#            if (abs(mouseEvent.x() - self.m_x1) + abs(mouseEvent.y() - self.m_y1)) > 2:
-#                self.dragging = True
-#                self.m_x2 = mouseEvent.x()
-#                self.m_y2 = mouseEvent.y()
-#        else:
-#            self.m_x1 = mouseEvent.x()
-#            self.m_y1 = mouseEvent.y()
-
+            if  int(mouseEvent.buttons()) == QtCore.Qt.LeftButton:
+                self.dragging = True
+                self.m_x2 = mouseEvent.x()
+                self.m_y2 = mouseEvent.y()
+                return
+        self.m_x1 = mouseEvent.x()
+        self.m_y1 = mouseEvent.y()
 
     def mouseDoubleClickEvent(self, mouseEvent):
         self.sig_event.emit('mouseDoubleClick', mouseEvent)
-
 
     def mousePressEvent(self, mouseEvent):
         self.sig_event.emit('mousePress', mouseEvent)
@@ -154,7 +143,7 @@ class GLFrame(QtOpenGL.QGLWidget):
         y1 = points[0][1]*1.0/self.height
         x2 = points[1][0]*1.0/self.width
         y2 = points[1][1]*1.0/self.height
-        
+
         glColor(*color)
         glBegin(GL_LINES)
         glVertex( x1, y1, 0.0)

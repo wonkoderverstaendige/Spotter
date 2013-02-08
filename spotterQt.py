@@ -31,7 +31,7 @@ To do:
 
 """
 
-NO_EXIT_CONFIRMATION = True
+NO_EXIT_CONFIRMATION = False
 
 import sys
 import os
@@ -62,7 +62,7 @@ from docopt import docopt
 __version__ = 0.1
 
 class Main(QtGui.QMainWindow):
-    
+
     # _name_, range_hue, range_area, fixed_pos
     feature_templates = dict( default = [(0, 1), (6, 0), True],
                               redLED = [( 160, 5 ), (20, 0), False],
@@ -79,7 +79,7 @@ class Main(QtGui.QMainWindow):
                             CenterSensor = ['Rectangle', [(0.45, 0.20), (0.55, 0.80)]],
                             RightSensor  = ['Rectangle', [(0.70, 0.00), (0.80, 1.00)]],
                             Sync_dummy_right  = ['Rectangle', [(0.90, 0.00), (1.00, 1.00)]],
-                            Sync_dummy_bottom  = ['Rectangle', [(0.00, 0.95), (1.00, 1.00)]])
+                            Sync_dummy_bottom  = ['Rectangle', [(0.00, 0.85), (1.00, 1.00)]])
 
     # _name_, connected shapes
     region_templates = dict( default = [[]],
@@ -125,9 +125,9 @@ class Main(QtGui.QMainWindow):
 
 
         # Loading debugging/example templates
-        for t in self.full_templates:        
+        for t in self.full_templates:
             self.ui.combo_templates.addItem(t)
-        
+
         self.connect(self.ui.btn_load_template, QtCore.SIGNAL('clicked()'), self.load_templates)
         self.connect(self.ui.btn_feature_template, QtCore.SIGNAL('clicked()'), self.load_templates)
         self.connect(self.ui.btn_object_template, QtCore.SIGNAL('clicked()'), self.load_templates)
@@ -147,7 +147,7 @@ class Main(QtGui.QMainWindow):
         self.region_tabs = []
         self.connect(self.ui.tab_regions, QtCore.SIGNAL('currentChanged(int)'), self.tab_regions_switch)
         self.connect(self.ui.btn_new_region_tab, QtCore.SIGNAL('clicked()'), self.add_region)
-        
+
         # Serial tab widget
         self.serial_tabs = []
         self.add_serial(self.spotter.chatter)
@@ -159,14 +159,14 @@ class Main(QtGui.QMainWindow):
         self.refresh()
         self.glframe.resizeFrame()
         self.timer.start(30)
-        
+
         self.serial_timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.serial_check)
         self.serial_timer.start(10)
 
     def serial_check(self):
         if self.spotter.chatter.is_open():
-#            print("buffer in: " + str(self.spotter.chatter.bytes_available()) + 
+#            print("buffer in: " + str(self.spotter.chatter.bytes_available()) +
 #                   "; buffer out: " + str(len(self.spotter.chatter.inst_buffer)))
             self.spotter.chatter.read_all()
 
@@ -198,7 +198,7 @@ class Main(QtGui.QMainWindow):
 
 
     def load_templates(self):
-        """ 
+        """
         Loads and creates all LEDs and Objects from templates. This will
         probably be the place later the standard set of features/objects/ROIs
         etc. will be handled on startup.
@@ -238,7 +238,7 @@ class Main(QtGui.QMainWindow):
 
     #Feature Tab List Updates
     def tab_features_switch(self, idx_tab = 0):
-        """ 
+        """
         Switch to selected tab or create a new tab if the selected tab is
         the last, which should be the "+" tab. Switching through the tabs with
         the mousewheel can cause to create a lot of tabs unfortunately.
@@ -251,7 +251,7 @@ class Main(QtGui.QMainWindow):
 
 
     def add_feature(self, template = None, label = None):
-        """ 
+        """
         Create a feature from trackables and add a corresponding tab to
         the tab widget, which is linked to show and edit feature properties.
         TODO: Create new templates when running out by fitting them into
@@ -267,7 +267,7 @@ class Main(QtGui.QMainWindow):
 
     # Object Tab List Updates
     def tab_objects_switch(self, idx_tab = 0):
-        """ 
+        """
         Switch to selected tab or create a new tab if the selected tab is
         the last, which should be the "+" tab. Switching through the tabs with
         the mousewheel can cause to create a lot of tabs unfortunately.
@@ -280,7 +280,7 @@ class Main(QtGui.QMainWindow):
 
 
     def add_object(self, template = None, label = None):
-        """ 
+        """
         Create a new object that will be linked to LEDs and/r ROIs to
         track and trigger events.
         TODO: Create new objects even when running out of templates for example
@@ -305,7 +305,7 @@ class Main(QtGui.QMainWindow):
 
     # Regions Tab List Updates
     def tab_regions_switch(self, idx_tab = 0):
-        """ 
+        """
         Switch to selected tab or create a new tab if the selected tab is
         the last, which should be the "+" tab. Switching through the tabs with
         the mousewheel can cause to create a lot of tabs unfortunately.
@@ -318,7 +318,7 @@ class Main(QtGui.QMainWindow):
 
 
     def add_region(self, template = None, label = None):
-        """ 
+        """
         Create a new region of interest that will be that will be linked
         to Objects with conditions to trigger events.
         TODO: New regions created empty!
@@ -327,24 +327,24 @@ class Main(QtGui.QMainWindow):
             template = self.region_templates['default']
         if not label:
             label =  'ROI_' + str(len(self.spotter.tracker.rois))
-        
+
         shape_list = []
         shape_keys = template[0]
         for sk in shape_keys:
             if not sk == "default":
                 shape_template = self.shape_templates[sk]
                 shape_template[1] = geom.scale_points(shape_template[1],
-                                                     (self.glframe.width, 
+                                                     (self.glframe.width,
                                                       self.glframe.height) )
                 shape_list.append([sk, shape_template])
-        
+
         region = self.spotter.tracker.addROI(shape_list, label)
         new_tab = self.add_tab(self.ui.tab_regions, TabRegions, region)
         self.region_tabs.append(new_tab)
 
 
     def add_serial(self, serial_object, label = None):
-        """ 
+        """
         Serial object tab. Probably an Arduino Mega 2560.
         """
         new_tab = self.add_tab(self.ui.tab_serial, TabSerial, serial_object)
@@ -352,7 +352,7 @@ class Main(QtGui.QMainWindow):
 
 
     def add_tab(self, tabwidget, newTabClass, tab_equivalent):
-        """ 
+        """
         Add new tab with Widget newTabClass and switches to it. The
         tab_equivalent is the object that is being represented by the tab,
         for example an LED or Object.
@@ -364,7 +364,7 @@ class Main(QtGui.QMainWindow):
 
 
     def remove_tab(self, tabwidget, tab):
-        """ 
+        """
         Removing is trickier, as it has to delete the features/objects
         from the tracker!
         """
@@ -393,7 +393,7 @@ class Main(QtGui.QMainWindow):
             return None
 
     def update_current_tab(self):
-        """ 
+        """
         Currently visible tab is the only one that requires to be updated
         live when parameters of its associated object change, e.g. coordinates
         of tracked objects or LEDs. The rest should happen behind the scenes
@@ -407,7 +407,7 @@ class Main(QtGui.QMainWindow):
 
 
     def openFile(self):
-        """ 
+        """
         Open a video file. Should finish current spotter if any by closing
         it to allow all frames/settings to be saved properly. Then instantiate
         a new spotter.
@@ -457,7 +457,7 @@ class Main(QtGui.QMainWindow):
 
 
     def closeEvent(self, event):
-        """ 
+        """
         Exiting the interface has to kill the spotter class and subclasses
         properly, especially the writer and serial handles, otherwise division
         by zero might be imminent.
@@ -465,10 +465,10 @@ class Main(QtGui.QMainWindow):
         if NO_EXIT_CONFIRMATION:
             reply = QtGui.QMessageBox.Yes
         else:
-            reply = QtGui.QMessageBox.question(self, 
-                                               'Exit confirmation', 
-                                               'Are you sure?', 
-                                               QtGui.QMessageBox.Yes, 
+            reply = QtGui.QMessageBox.question(self,
+                                               'Exit confirmation',
+                                               'Are you sure?',
+                                               QtGui.QMessageBox.Yes,
                                                QtGui.QMessageBox.No )
         if reply == QtGui.QMessageBox.Yes:
             self.spotter.exitMain()

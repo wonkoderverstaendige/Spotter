@@ -47,6 +47,10 @@ class Shape:
         else:
             return False
 
+    def move(self, dx, dy):
+        for i, p in enumerate(self.points):
+            self.points[i] = (p[0] + dx, p[1] + dy)
+
     def collision_check_rectangle(self, point):
         """ Circle points: center point, one point on the circle. Test for
         collision by comparing distance between center and point of object with
@@ -76,8 +80,8 @@ class LED:
     range_hue = None # np.array uint8 of (lowerBound, higherBound), red: 170,10
     range_sat = None
     range_val = None
-    range_area = None    
-    
+    range_area = None
+
     label = None
     pos_hist = None
     mean_hue = None    # mean color of range for labels/markers etc.
@@ -132,7 +136,7 @@ class OOI:
         self.label = label
         self.traced = traced
         self.pos_hist = []
-        
+
         if self.label == 'Subject':
             self.analog_pos = True
 
@@ -164,7 +168,7 @@ class ROI:
     visible = True
     color = None
     alpha = .7
-    
+
     linked_objects = None
 
     def __init__(self, shape_list = None, label = None, color = None ):

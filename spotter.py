@@ -96,10 +96,10 @@ class Spotter:
 
         # tracker object finds LEDs in frames
         self.tracker = Tracker()
-        
+
         # chatter handles serial communication
         self.chatter = Chatter(serial)
-        
+
         # GUI other than Qt currently not available. We apologize for any
         # inconvinience. << NOT TRUE ANYMORE! HOORAY!
 #        self.gui = GUI( self, gui, "Spotter", size )
@@ -141,8 +141,8 @@ class Spotter:
                             self.chatter.send_trigger_state(41, 0x07)
                         else:
                             self.chatter.send_trigger_state(41, 0x00)
-                            
-                            
+
+
                     if r.label == 'Sync_trig' and o.label == 'Sync':
                         if collision:
                             self.chatter.send_trigger_state(40, 0x07)
@@ -184,7 +184,7 @@ class Spotter:
         # tracker no longer has serial handle to take care of
         if self.tracker:
             self.tracker.close()
-        
+
         # chatter HAS to close serial connection or all hell breaks loose!
         if self.chatter:
             self.chatter.close()
