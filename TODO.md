@@ -48,7 +48,7 @@ DONE- when dragging with middle mouse button for example, move the currently
         --> Middle mouse dragging moves ROI, holding shift moves only selected
             shape
 
-    - shift as a modifier could serve as precision placement (diving delta
+DROP- shift as a modifier could serve as precision placement (diving delta
     of dragging motion e.g. by four)
 
     - control could serve as LINE_STRIP type of selection, normal dragging as

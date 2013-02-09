@@ -32,12 +32,20 @@ To do:
 """
 
 NO_EXIT_CONFIRMATION = False
+DIR_TEMPLATES = './config'
+DEFAULT_TEMPLATE = 'defaults.ini'
 
 import sys
 import os
 import platform
 from PyQt4 import QtGui, QtCore
 import logging
+
+#configuration and templates
+sys.path.append(DIR_TEMPLATES)
+sys.path.append('./lib/configobj')
+from configobj import ConfigObj, flatten_errors
+from validate import Validator
 
 #project libraries
 sys.path.append('./lib')
@@ -63,36 +71,6 @@ __version__ = 0.1
 
 class Main(QtGui.QMainWindow):
 
-    # _name_, range_hue, range_area, fixed_pos
-    feature_templates = dict( default = [(0, 1), (6, 0), True],
-                              redLED = [( 160, 5 ), (20, 0), False],
-                              blueLED = [( 105, 135 ), (20, 0), False],
-                              greenLED = [( 15, 90 ), (20, 0), True] )
-
-    # _name_, linked feature name list, from above; analog_out
-    object_templates = dict( default = [[], True],
-                             Subject = [['redLED', 'blueLED'], True],
-                             Sync    = [['greenLED'], False] )
-
-    # _name_, shape primitive type, points to describe shape
-    shape_templates = dict( LeftSensor   = ['Rectangle', [(0.20, 0.00), (0.30, 1.00)]],
-                            CenterSensor = ['Rectangle', [(0.45, 0.20), (0.55, 0.80)]],
-                            RightSensor  = ['Rectangle', [(0.70, 0.00), (0.80, 1.00)]],
-                            Sync_dummy_right  = ['Rectangle', [(0.90, 0.00), (1.00, 1.00)]],
-                            Sync_dummy_bottom  = ['Rectangle', [(0.00, 0.85), (1.00, 1.00)]])
-
-    # _name_, connected shapes
-    region_templates = dict( default = [[]],
-                             LeftReward  = [['LeftSensor']],
-                             Trigger     = [['CenterSensor']],
-                             RightReward = [['RightSensor']],
-                             Sync_trig   = [['Sync_dummy_right', 'Sync_dummy_bottom']] )
-
-    # features, objects, regions
-    full_templates = dict( LinearTrack =  [feature_templates, object_templates, region_templates] )
-
-
-
     def __init__(self, source, destination, fps, size, gui, serial):
         QtGui.QMainWindow.__init__(self)
 
@@ -110,7 +88,7 @@ class Main(QtGui.QMainWindow):
         self.connect(self.ui.actionAbout, QtCore.SIGNAL('triggered()'), self.about)
 
         # Menubar items
-        self.connect(self.ui.actionFile, QtCore.SIGNAL('triggered()'), self.openFile)
+        self.connect(self.ui.actionFile, QtCore.SIGNAL('triggered()'), self.open_file_video)
 
         # Spotter main class, handles Grabber, Writer, Tracker, Chatter
         self.spotter = Spotter(source, destination, fps, size, gui, serial)
@@ -123,15 +101,20 @@ class Main(QtGui.QMainWindow):
         # handling mouse events by the tabs for selection of regions etc.
         self.glframe.sig_event.connect(self.mouse_event_to_tab)
 
+        # Loading template list in folder
+        list_of_files = [file for file in os.listdir(DIR_TEMPLATES) if file.lower().endswith('ini')]
+        for f in list_of_files:
+            if not f == DEFAULT_TEMPLATE:
+                self.ui.combo_templates.addItem(f)
 
-        # Loading debugging/example templates
-        for t in self.full_templates:
-            self.ui.combo_templates.addItem(t)
+        default_path = os.path.join(os.path.abspath(DIR_TEMPLATES), DEFAULT_TEMPLATE)
+        self.template_default = self.parse_file_template(default_path)
 
-        self.connect(self.ui.btn_load_template, QtCore.SIGNAL('clicked()'), self.load_templates)
-        self.connect(self.ui.btn_feature_template, QtCore.SIGNAL('clicked()'), self.load_templates)
-        self.connect(self.ui.btn_object_template, QtCore.SIGNAL('clicked()'), self.load_templates)
-        self.connect(self.ui.btn_region_template, QtCore.SIGNAL('clicked()'), self.load_templates)
+        self.connect(self.ui.btn_load_template, QtCore.SIGNAL('clicked()'), self.load_template)
+        self.connect(self.ui.btn_template_file, QtCore.SIGNAL('clicked()'), self.open_file_template)
+        self.connect(self.ui.btn_feature_template, QtCore.SIGNAL('clicked()'), self.load_template)
+        self.connect(self.ui.btn_object_template, QtCore.SIGNAL('clicked()'), self.load_template)
+        self.connect(self.ui.btn_region_template, QtCore.SIGNAL('clicked()'), self.load_template)
 
         # Features tab widget
         self.feature_tabs = []
@@ -197,43 +180,80 @@ class Main(QtGui.QMainWindow):
         self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
 
 
-    def load_templates(self):
+    def load_template(self):
         """
         Loads and creates all LEDs and Objects from templates. This will
         probably be the place later the standard set of features/objects/ROIs
         etc. will be handled on startup.
-        TODO: Add Object templates
         """
         active_top_tab_label = self.get_top_tab_label()
         if active_top_tab_label == "Settings":
-            templates_list = self.full_templates[str(self.ui.combo_templates.currentText())]
-            for f_key in templates_list[0]:
-                if not f_key == 'default':
-                    self.add_feature(self.feature_templates[f_key], f_key)
-            for o_key in templates_list[1]:
-                if not o_key == 'default':
-                    self.add_object(self.object_templates[o_key], o_key)
-            for r_key in templates_list[2]:
-                if not r_key == 'default':
-                    self.add_region(self.region_templates[r_key], r_key)
+            path = os.path.join(DIR_TEMPLATES, str(self.ui.combo_templates.currentText()))
+            self.open_file_template(path)
 
-        elif active_top_tab_label == "Features":
-            for f_key in self.feature_templates:
-                if not f_key == 'default':
-                    self.add_feature(self.feature_templates[f_key], f_key)
+#
+#        elif active_top_tab_label == "Features":
+#            for f_key in self.feature_templates:
+#                if not f_key == 'default':
+#                    self.add_feature(self.feature_templates[f_key], f_key)
+#
+#        elif active_top_tab_label == "Objects":
+#            for o_key in self.object_templates:
+#                if not o_key == 'default':
+#                    self.add_object(self.object_templates[o_key], o_key)
+#
+#        elif active_top_tab_label == "ROIs":
+#            for r_key in self.region_templates:
+#                if not r_key == 'default':
+#                    self.add_region(self.region_templates[r_key], r_key)
+#
+#        elif active_top_tab_label == "SerialOut":
+#            return "Serial"
 
-        elif active_top_tab_label == "Objects":
-            for o_key in self.object_templates:
-                if not o_key == 'default':
-                    self.add_object(self.object_templates[o_key], o_key)
+    def open_file_template(self, filename = None, directory = DIR_TEMPLATES):
+        """
+        Opens file dialog to choose template file and starts parsing of it
+        """
+        if filename == None:
+            filename = str(QtGui.QFileDialog.getOpenFileName(self, 'Open Template', directory))
+        template = self.parse_file_template(filename)
+        if not template == None:
+            self.template_to_spotter(template)
 
-        elif active_top_tab_label == "ROIs":
-            for r_key in self.region_templates:
-                if not r_key == 'default':
-                    self.add_region(self.region_templates[r_key], r_key)
 
-        elif active_top_tab_label == "SerialOut":
-            return "Serial"
+    def parse_file_template(self, path, validate=True):
+        template = ConfigObj(path,
+                             file_error=True,
+                             stringify=True,
+                             configspec='./config/template_specification.ini')
+
+        if validate:
+            validator = Validator()
+            print 'Template validation... '
+            results = template.validate(validator)
+            if results == True:
+                print "    --> Template OK!"
+            else:
+                for (section_list, key, _) in flatten_errors(template, results):
+                    if key is not None:
+                        print 'The "%s" key in the section "%s" failed validation' % (key, ', '.join(section_list))
+                    else:
+                        print 'The following section was missing:%s ' % ', '.join(section_list)
+                return None
+        return template
+
+
+    def template_to_spotter(self, tObj):
+        # which tab are we loading a template for?
+        active_top_tab_label = self.get_top_tab_label()
+        if active_top_tab_label == "Settings":
+            for f_key, f_val in tObj['FEATURES'].items():
+                self.add_feature(f_val, f_key)
+            for o_key, o_val in tObj['OBJECTS'].items():
+                self.add_object(o_val, o_key)
+            for r_key, r_val in tObj['REGIONS'].items():
+                shapes = tObj['SHAPES']
+                self.add_region(r_val, r_key, shapes=shapes)
 
 
     #Feature Tab List Updates
@@ -257,10 +277,19 @@ class Main(QtGui.QMainWindow):
         TODO: Create new templates when running out by fitting them into
         the colorspace somehow.
         """
-        if not template:
-            template = self.feature_templates['default']
-            label = 'LED_'+str(len(self.spotter.tracker.leds))
-        feature = self.spotter.tracker.addLED(label, *template)
+#        if not template:
+#            template = self.feature_templates['default']
+#            label = 'LED_'+str(len(self.spotter.tracker.leds))
+        if not template['type'].lower() == 'led':
+            return
+        else:
+            range_hue = map(int, template['range_hue'])
+            range_area = map(int, template['range_area'])
+            fixed_pos = template.as_bool('fixed_pos')
+            feature = self.spotter.tracker.addLED(label,
+                                                  range_hue,
+                                                  range_area,
+                                                  fixed_pos)
         new_tab = self.add_tab(self.ui.tab_features, TabFeatures, feature)
         self.feature_tabs.append(new_tab)
 
@@ -286,25 +315,39 @@ class Main(QtGui.QMainWindow):
         TODO: Create new objects even when running out of templates for example
         by randomizing offsets.
         """
-        if not template:
-            template = self.object_templates['default']
-            # list of features, if enough in list of features so far
-        if not label:
-            label = 'Object_' + str(len(self.spotter.tracker.oois))
-
+#        if not template:
+#            template = self.object_templates['default']
+#        if not label:
+#            label = 'Object_' + str(len(self.spotter.tracker.oois))
         features = []
-        for n in xrange(min(len(self.spotter.tracker.leds), len(template[0]))):
+        for n in xrange(min(len(self.spotter.tracker.leds), len(template['features']))):
             for l in self.spotter.tracker.leds:
-                if template[0][n] == l.label:
+                if template['features'][n] == l.label:
                     features.append(l)
-
-        _object = self.spotter.tracker.addOOI(features, label, template[1])
+        trace = template['trace']
+        track = template['track']
+        _object = self.spotter.tracker.addOOI(features,
+                                              label,
+                                              trace,
+                                              track)
+        analog_out = template['analog_out']
+        if analog_out:
+            if any(template['analog_signal']):
+                analog_signal = template['analog_signal']
+            else:
+                analog_signal = ['position']
+            if 'position' in analog_signal:
+                _object.analog_pos = True
+            if 'speed' in analog_signal:
+                _object.analog_spd = True
+            if 'direction' in analog_signal:
+                _object.analog_dir = True
         new_tab = self.add_tab(self.ui.tab_objects, TabObjects, _object)
         self.object_tabs.append(new_tab)
 
 
     # Regions Tab List Updates
-    def tab_regions_switch(self, idx_tab = 0):
+    def tab_regions_switch(self, idx_tab=0):
         """
         Switch to selected tab or create a new tab if the selected tab is
         the last, which should be the "+" tab. Switching through the tabs with
@@ -317,33 +360,30 @@ class Main(QtGui.QMainWindow):
             self.ui.tab_regions.setCurrentIndex(idx_tab)
 
 
-    def add_region(self, template = None, label = None):
+    def add_region(self, template=None, label=None, shapes=None):
         """
         Create a new region of interest that will be that will be linked
         to Objects with conditions to trigger events.
         TODO: New regions created empty!
         """
-        if not template:
-            template = self.region_templates['default']
-        if not label:
-            label =  'ROI_' + str(len(self.spotter.tracker.rois))
-
+#        if not template:
+#            template = self.region_templates['default']
+#        if not label:
+#            label =  'ROI_' + str(len(self.spotter.tracker.rois))
         shape_list = []
-        shape_keys = template[0]
-        for sk in shape_keys:
-            if not sk == "default":
-                shape_template = self.shape_templates[sk]
-                shape_template[1] = geom.scale_points(shape_template[1],
-                                                     (self.glframe.width,
-                                                      self.glframe.height) )
-                shape_list.append([sk, shape_template])
+        for s_key in template['shapes']:
+            if s_key in shapes:
+                shape_type = shapes[s_key]['type']
+                points = geom.scale_points([shapes[s_key]['p1'], shapes[s_key]['p2']],
+                                           (self.glframe.width, self.glframe.height))
+            shape_list.append([shape_type, points, s_key])
 
         region = self.spotter.tracker.addROI(shape_list, label)
         new_tab = self.add_tab(self.ui.tab_regions, TabRegions, region)
         self.region_tabs.append(new_tab)
 
 
-    def add_serial(self, serial_object, label = None):
+    def add_serial(self, serial_object, label=None):
         """
         Serial object tab. Probably an Arduino Mega 2560.
         """
@@ -406,7 +446,7 @@ class Main(QtGui.QMainWindow):
             pass
 
 
-    def openFile(self):
+    def open_file_video(self):
         """
         Open a video file. Should finish current spotter if any by closing
         it to allow all frames/settings to be saved properly. Then instantiate
@@ -445,11 +485,11 @@ class Main(QtGui.QMainWindow):
             color = (r.normal_color[0], r.normal_color[1], r.normal_color[2], r.alpha)
             for s in r.shapes:
                 if s.active:
-                    if s.shape == "Rectangle":
+                    if s.shape == "rectangle":
                         self.glframe.jobs.append([self.glframe.drawRect, s.points, color])
-                    elif s.shape == "Circle":
+                    elif s.shape == "circle":
                         self.glframe.jobs.append([self.glframe.drawCircle, s.points, color])
-                    elif s.shape == "Line":
+                    elif s.shape == "line":
                         self.glframe.jobs.append([self.glframe.drawLine, s.points, color])
         self.glframe.updateWorld()
 

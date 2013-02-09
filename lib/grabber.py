@@ -75,8 +75,8 @@ class Grabber:
         try:
             self.capture = cv2.VideoCapture( source )
         except:
-            print 'Unable to open VideoCapture!'
-        if DEBUG: print str( self.capture ) + ' returned.'
+            print '!!! Unable to open VideoCapture!'
+        if DEBUG: print '   --> ' + str( self.capture ) + ' returned.'
 
         # Proper fps values only important if lower than what camera can provide,
         # or for video files, which are limited by CPU speed/1ms min of waitKey()

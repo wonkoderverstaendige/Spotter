@@ -23,10 +23,10 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
     def __init__(self, parent, object_handle, label = None):
         self.object = object_handle
         self.parent = parent
-        
+
         self.all_features = self.parent.spotter.tracker.leds
-        self.all_regions = self.parent.spotter.tracker.oois        
-        
+        self.all_regions = self.parent.spotter.tracker.oois
+
         self.refresh_lists()
         if label == None:
             self.label = self.object.label
@@ -84,7 +84,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
 
         if not self.ckb_trace.isChecked() == self.object.traced:
             self.ckb_trace.setChecked(self.object.traced)
-            
+
         if not self.ckb_track.isChecked() == self.object.tracked:
             self.ckb_track.setChecked(self.object.tracked)
 
@@ -114,7 +114,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         self.object.tracked = self.ckb_track.isChecked()
         self.object.traced = self.ckb_trace.isChecked()
         self.object.analog_pos = self.ckb_analog_pos.isChecked()
-        
+        self.combo_analog_signal.setEnabled(self.ckb_analog_pos.isChecked())
+
     def process_event(self, event):
         pass
-    

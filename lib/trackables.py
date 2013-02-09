@@ -24,16 +24,16 @@ class Shape:
     collision_check = None
 
     def __init__(self, shape, points, label):
-        self.shape = shape
+        self.shape = shape.lower()
         self.points = points
         self.label = label
 
-        if shape == 'Circle':
+        if shape == 'circle':
             dx = abs(points[0][0] - points[1][0])
             dy = abs(points[0][1] - points[1][1])
             self.radius = max(dx, dy)
             self.collision_check = self.collision_check_circle
-        elif shape == 'Rectangle':
+        elif shape == 'rectangle':
             self.collision_check = self.collision_check_rectangle
 
 
@@ -127,14 +127,16 @@ class OOI:
 
     tracked = True
     traced = False
+
     analog_pos = False
     analog_dir = False
     analog_spd = False
 
-    def __init__( self, led_list, label, traced = False ):
+    def __init__( self, led_list, label, traced = False, tracked = True ):
         self.linked_leds = led_list
         self.label = label
         self.traced = traced
+        self.tracked = tracked
         self.pos_hist = []
 
         if self.label == 'Subject':
@@ -167,7 +169,7 @@ class ROI:
     """
     visible = True
     color = None
-    alpha = .7
+    alpha = .6
 
     linked_objects = None
 
@@ -187,7 +189,7 @@ class ROI:
         # if the ROI is initialized with a set of shapes to begin with:
         if shape_list:
             for shape in shape_list:
-                self.add_shape(*shape[1], label = shape[0])
+                self.add_shape(*shape)
 
     def move( self, dx, dy ):
         for s in self.shapes:

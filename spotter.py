@@ -161,7 +161,7 @@ class Spotter:
         total_elapsed = ( time.clock() - self.grabber.ts_last_frame ) * 1000
         t = int( 1000/self.grabber.fps - total_elapsed ) - 1
         if t <= 0:
-            log.info('Missed next frame by: ' + str( t * -1. ) + ' ms')
+#            log.info('Missed next frame by: ' + str( t * -1. ) + ' ms')
             t = 1
 
     def check_writer( self ):

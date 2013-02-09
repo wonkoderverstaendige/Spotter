@@ -56,8 +56,8 @@ class Tracker:
         self.leds.append( led )
         return led
 
-    def addOOI( self, led_list, label, traced = False ):
-        ooi = trkbl.OOI( led_list, label, traced )
+    def addOOI( self, led_list, label, traced = False, tracked = True ):
+        ooi = trkbl.OOI( led_list, label, traced, tracked )
         self.oois.append( ooi )
         return ooi
 
@@ -129,7 +129,7 @@ class Tracker:
 
 
     def findContour(self, frame, range_area):
-        """ 
+        """
         Return contour with largest area. Returns None if no contour
         larger than minimum area (range_area[0])
         """
