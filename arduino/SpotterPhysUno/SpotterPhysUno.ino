@@ -62,10 +62,10 @@ void setup(){
   // ready SPI to talk to DAC
   pinMode(pin_dev0, OUTPUT);
   pinMode(pin_dev1, OUTPUT);
-  SPI.begin();
-  SPI.setBitOrder(MSBFIRST);
   digitalWrite(pin_dev0, HIGH);
   digitalWrite(pin_dev1, HIGH);
+  SPI.begin();
+  SPI.setBitOrder(MSBFIRST);
 
   // ready digital input pins
   pinMode(pin_din0, INPUT);

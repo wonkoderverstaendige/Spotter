@@ -19,18 +19,18 @@ VERSION = 0.1
 class Arduino(object):
     firmware_version = None
     connected = False
-    
-    
+
+
     def __init__(self, port, baudrate=57600):
         self.sp = serial.Serial(port, baudrate)
         self.pass_time(3)
- 
+
         self.bytes_sent = 0
         self.bytes_received = 0
-      
+
         self.portString = port
         self.sp.flushInput()
-        
+
 #        self.send_instructions([[0, 2048], [1, 1024]])
         for n in xrange(100):
             if self.bytes_available():
@@ -38,7 +38,7 @@ class Arduino(object):
                 print("Connected after " + str(n) + " tries.")
                 break
             self.pass_time(0.01)
-            
+
     def __str__(self):
         return "Board %s on %s" % (self.name, self.sp.port)
 
@@ -48,7 +48,7 @@ class Arduino(object):
         connection). Therefore also do it here and hope it helps.
         """
         self.close()
-        
+
     def is_open(self):
         return self.sp.isOpen()
 
@@ -57,7 +57,7 @@ class Arduino(object):
         msg = self.sp.read(self.bytes_available())
         self.bytes_received += len(msg)
         return msg
-        
+
     def read_line(self):
         msg = self.sp.readline()
         self.bytes_received += len(msg)
@@ -72,21 +72,34 @@ class Arduino(object):
     def send_instructions(self, instruction_list):
         """ Send command byte followed by two data bytes. struct packs short
         unsigned value ('H') as two bytes, big endian.
+        Type (3LSB bits) + Address (next 3 bits)
+        DAC/SPI         DigitalOut
+        H AO.0          P DO.0
+        I AO.1          Q DO.1
+        J AO.2          R DO.2
+        K AO.3          S DO.3
+        L AO.4          T DO.4
+        M AO.5          U DO.5
+        N AO.6          V DO.6
+        O AO.7          W DO.7
         """
-#        print data
         msg = ''
         for i in instruction_list:
-            msg = msg + str(i[0]) + struct.pack('H', i[1]) + '\n'
+            if i[0] == 'dac':
+                msg = msg + chr(ord('H') + i[1])
+            elif i[0] == 'digital':
+                msg = msg + chr(ord('P') + i[1])
+            msg = msg + struct.pack('H', i[2]) + '\n'
         self.sp.write(msg)
         self.bytes_sent += len(msg)
 
     def close(self):
         """ Call this to exit cleanly. """
         if hasattr(self, 'sp'):
-            self.sp.close()    
+            self.sp.close()
 
     def pass_time(self, t):
-        """ 
+        """
         Non-blocking time-out for ''t'' seconds.
         """
         cont = time.time() + t
@@ -96,7 +109,7 @@ class Arduino(object):
 
 #############################################################
 if __name__ == "__main__":
-#############################################################    
+#############################################################
     testboard = Arduino(sys.argv[1])
 #    while True:
 #        if testboard.bytes_available():
