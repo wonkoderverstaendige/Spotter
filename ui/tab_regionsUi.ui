@@ -48,7 +48,7 @@
           <x>0</x>
           <y>0</y>
           <width>239</width>
-          <height>248</height>
+          <height>260</height>
          </rect>
         </property>
         <attribute name="label">
@@ -223,6 +223,9 @@
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
+               <property name="showDropIndicator" stdset="0">
+                <bool>false</bool>
+               </property>
                <property name="alternatingRowColors">
                 <bool>true</bool>
                </property>
@@ -266,7 +269,7 @@
           <x>0</x>
           <y>0</y>
           <width>239</width>
-          <height>248</height>
+          <height>260</height>
          </rect>
         </property>
         <attribute name="label">
@@ -287,7 +290,7 @@
           <x>0</x>
           <y>0</y>
           <width>239</width>
-          <height>248</height>
+          <height>260</height>
          </rect>
         </property>
         <attribute name="label">

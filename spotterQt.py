@@ -277,9 +277,11 @@ class Main(QtGui.QMainWindow):
         TODO: Create new templates when running out by fitting them into
         the colorspace somehow.
         """
-#        if not template:
-#            template = self.feature_templates['default']
-#            label = 'LED_'+str(len(self.spotter.tracker.leds))
+        if not template:
+            key = self.template_default['FEATURES'].iterkeys().next()
+            template = self.template_default['FEATURES'][key]
+            label = 'LED_'+str(len(self.spotter.tracker.leds))
+
         if not template['type'].lower() == 'led':
             return
         else:
@@ -315,10 +317,11 @@ class Main(QtGui.QMainWindow):
         TODO: Create new objects even when running out of templates for example
         by randomizing offsets.
         """
-#        if not template:
-#            template = self.object_templates['default']
-#        if not label:
-#            label = 'Object_' + str(len(self.spotter.tracker.oois))
+        if not template:
+            key = self.template_default['OBJECTS'].iterkeys().next()
+            template = self.template_default['OBJECTS'][key]
+            label = 'Object_' + str(len(self.spotter.tracker.oois))
+
         features = []
         for n in xrange(min(len(self.spotter.tracker.leds), len(template['features']))):
             for l in self.spotter.tracker.leds:
@@ -366,10 +369,11 @@ class Main(QtGui.QMainWindow):
         to Objects with conditions to trigger events.
         TODO: New regions created empty!
         """
-#        if not template:
-#            template = self.region_templates['default']
-#        if not label:
-#            label =  'ROI_' + str(len(self.spotter.tracker.rois))
+        if not template:
+            key = self.template_default['REGIONS'].iterkeys().next()
+            template = self.template_default['REGIONS'][key]
+            label =  'ROI_' + str(len(self.spotter.tracker.rois))
+
         shape_list = []
         for s_key in template['shapes']:
             if s_key in shapes:

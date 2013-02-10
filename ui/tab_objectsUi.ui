@@ -77,9 +77,6 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="editTriggers">
-              <set>QAbstractItemView::NoEditTriggers</set>
-             </property>
              <property name="showDropIndicator" stdset="0">
               <bool>false</bool>
              </property>
@@ -89,16 +86,7 @@
              <property name="indentation">
               <number>0</number>
              </property>
-             <property name="rootIsDecorated">
-              <bool>false</bool>
-             </property>
-             <property name="itemsExpandable">
-              <bool>false</bool>
-             </property>
              <property name="headerHidden">
-              <bool>false</bool>
-             </property>
-             <property name="expandsOnDoubleClick">
               <bool>false</bool>
              </property>
              <attribute name="headerVisible">

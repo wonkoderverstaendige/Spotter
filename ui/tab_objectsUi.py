@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'tab_objectsUi.ui'
 #
-# Created: Sat Feb 09 00:47:13 2013
+# Created: Sun Feb 10 00:33:35 2013
 #      by: PyQt4 UI code generator 4.8.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -48,14 +48,10 @@ class Ui_tab_objects(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.tree_link_features.sizePolicy().hasHeightForWidth())
         self.tree_link_features.setSizePolicy(sizePolicy)
-        self.tree_link_features.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.tree_link_features.setProperty("showDropIndicator", False)
         self.tree_link_features.setAlternatingRowColors(True)
         self.tree_link_features.setIndentation(0)
-        self.tree_link_features.setRootIsDecorated(False)
-        self.tree_link_features.setItemsExpandable(False)
         self.tree_link_features.setHeaderHidden(False)
-        self.tree_link_features.setExpandsOnDoubleClick(False)
         self.tree_link_features.setObjectName(_fromUtf8("tree_link_features"))
         self.tree_link_features.headerItem().setText(0, QtGui.QApplication.translate("tab_objects", "Features", None, QtGui.QApplication.UnicodeUTF8))
         self.tree_link_features.header().setVisible(True)
