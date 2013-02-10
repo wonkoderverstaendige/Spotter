@@ -20,8 +20,6 @@ class Tab(QtGui.QWidget, Ui_tab_features):
     feature = None
     accept_events = False
     tab_type = "feature"
-    
-    
 
     def __init__(self, parent, feature, label = None):
         self.feature = feature
@@ -71,6 +69,10 @@ class Tab(QtGui.QWidget, Ui_tab_features):
         if self.label == None:
             print "Empty tab! This should not have happened!"
             return
+
+
+        if not self.label == self.feature.label:
+            self.label = self.feature.label
 
         if self.feature.pos_hist and self.feature.pos_hist[-1]:
             self.lbl_x.setText(str(self.feature.pos_hist[-1][0]))

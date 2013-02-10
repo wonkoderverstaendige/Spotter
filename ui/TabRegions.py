@@ -45,6 +45,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
             shape_item = QtGui.QTreeWidgetItem([s.label])
             shape_item.shape = s
             shape_item.setCheckState(0,QtCore.Qt.Checked)
+            shape_item.setFlags(shape_item.flags() | QtCore.Qt.ItemIsEditable)
             self.tree_region_shapes.addTopLevelItem(shape_item)
 
         self.connect(self.btn_add_shape, QtCore.SIGNAL('toggled(bool)'), self.accept_selection)
@@ -62,8 +63,9 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
 
 
     def update(self):
-        pass
-
+        # If nothing selected, select the first item in the list
+        if self.tree_region_shapes.topLevelItemCount() and not self.tree_region_shapes.currentItem():
+            self.tree_region_shapes.setCurrentItem(self.tree_region_shapes.topLevelItem(0))
 
     def update_spin_boxes(self):
         tree_item = self.tree_region_shapes.selectedItems()

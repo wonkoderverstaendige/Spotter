@@ -27,7 +27,6 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         self.all_features = self.parent.spotter.tracker.leds
         self.all_regions = self.parent.spotter.tracker.oois
 
-        self.refresh_lists()
         if label == None:
             self.label = self.object.label
         else:
@@ -36,22 +35,9 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         super(QtGui.QWidget, self).__init__(parent)
         self.setupUi(self)
 
-
         # Fill tree/list with all available LEDs and mark linked as checked
-        for l in self.all_features:
-            feature_item = QtGui.QTreeWidgetItem([l.label])
-            feature_item.feature = l
-            if feature_item.feature in self.object.linked_leds:
-                feature_item.setCheckState(0,QtCore.Qt.Checked)
-            else:
-                feature_item.setCheckState(0,QtCore.Qt.Unchecked)
-            self.tree_link_features.addTopLevelItem(feature_item)
+        self.refresh_lists()
 
-        # I could not get the signal to work in the old connection syntax,
-        # so I had to use the new one here. The new one is of course nice, but
-        # I'd rather stick to the old for consistency. :(
-        # NVM! It works with the old one, but why do I need that star?
-#        self.tree_link_features.itemChanged.connect(self.itemChanged)
         self.connect(self.tree_link_features, QtCore.SIGNAL('itemChanged(QTreeWidgetItem *, int)'), self.itemChanged)
 
         self.connect(self.ckb_track, QtCore.SIGNAL('stateChanged(int)'), self.update_object)
@@ -73,11 +59,37 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
                 self.link_feature(item.feature)
             else:
                 self.unlink_feature(item.feature)
+        if not item.feature.label == item.text(0):
+            item.feature.label = item.text(0)
+
 
     def refresh_lists(self):
-        pass
+        remove = []
+        listed = []
+        for n in xrange(self.tree_link_features.topLevelItemCount()):
+            if not self.tree_link_features.topLevelItem(n).feature in self.all_features:
+                remove.append(self.tree_link_features.topLevelItem(n))
+            else:
+                listed.append(self.tree_link_features.topLevelItem(n).feature)
+
+        for f in remove:
+            self.tree_link_features.removeItemWidget(f)
+
+        for l in self.all_features:
+            if not l in listed:
+                feature_item = QtGui.QTreeWidgetItem([l.label])
+                feature_item.feature = l
+                if feature_item.feature in self.object.linked_leds:
+                    feature_item.setCheckState(0,QtCore.Qt.Checked)
+                else:
+                    feature_item.setCheckState(0,QtCore.Qt.Unchecked)
+                self.tree_link_features.addTopLevelItem(feature_item)
+                feature_item.setFlags(feature_item.flags() | QtCore.Qt.ItemIsEditable)
+
 
     def update(self):
+        self.refresh_lists()
+
         if self.label == None:
             print "empty tab"
             return
