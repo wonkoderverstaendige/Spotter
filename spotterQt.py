@@ -389,7 +389,7 @@ class Main(QtGui.QMainWindow):
 
     def add_serial(self, serial_object, label=None):
         """
-        Serial object tab. Probably an Arduino Mega 2560.
+        Serial object tab. Probably an Arduino comatible board linked to it.
         """
         new_tab = self.add_tab(self.ui.tab_serial, TabSerial, serial_object)
         self.serial_tabs.append(new_tab)
@@ -430,7 +430,7 @@ class Main(QtGui.QMainWindow):
         elif active_top_tab_label == "ROIs" and (self.ui.tab_regions.count() > 1):
             return self.ui.tab_regions.widget(self.ui.tab_regions.currentIndex())
 
-        elif active_top_tab_label == "SerialOut":
+        elif active_top_tab_label == "Serial":
             return self.ui.tab_serial.widget(self.ui.tab_serial.currentIndex())
 
         else:

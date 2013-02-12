@@ -29,8 +29,23 @@ To do:
 
 import sys
 #import serial
+import re
 import time
-from serial.tools import list_ports
+import platform
+
+os_str = platform.system().lower()
+if len(os_str) > 0:
+    is_nix = os_str.find('linux') > -1 or os_str.find('darwin') > -1
+    is_win = os_str.find("win") > -1
+if is_nix:
+    from serial.tools import list_ports
+elif is_win:
+    import _winreg as winreg
+    import itertools
+else:
+    raise EnvironmentError("Operating system not recognized!")
+
+print os_str
 
 #project libraries
 sys.path.append('./lib')
@@ -151,18 +166,74 @@ class Chatter:
         else:
             return None
 
+
+###############################################################################
+# These two methods are directly taken from Eli Bendersky's example code:
+# http://eli.thegreenplace.net/2009/07/31/listing-all-serial-ports-on-windows-with-python
+###############################################################################
+    def enum_win_ports(self):
+        """ Uses the Win32 registry to return an
+            iterator of serial (COM) ports
+            existing on this computer.
+        """
+        path = 'HARDWARE\\DEVICEMAP\\SERIALCOMM'
+        try:
+            key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, path)
+        except WindowsError:
+            raise IterationError
+
+        for i in itertools.count():
+            try:
+                val = winreg.EnumValue(key, i)
+                yield str(val[1])
+            except EnvironmentError:
+                break
+
+    def full_port_name(self, portname):
+        """ Given a port-name (of the form COM7,
+            COM12, CNCA0, etc.) returns a full
+            name suitable for opening with the
+            Serial class.
+        """
+        m = re.match('^COM(\d+)$', portname)
+        if m and int(m.group(1)) < 10:
+            return portname
+        return '\\\\.\\' + portname
+###############################################################################
+
     def list_ports(self):
-        return list_ports.comports()
+        """
+        List all serial ports visible.
+
+        On Windows, serial.tools.comports() does not return all ports, and
+        seems to reliable miss the Serial port of the Arduinos. Not sure why,
+        it seems to be widely used in examples. Maybe I am not using the
+        iterator correctly. So for Windows, I'm using code from the always
+        interesting Eli Bendersky, see comment above.
+        """
+        if is_nix:
+            portlist = [p for p in list_ports.comports()]
+        if is_win:
+            portlist = [(p, self.full_port_name(p)) for p in self.enum_win_ports()]
+            portlist.reverse()
+        return portlist
+
 
     def close(self):
-        print 'Closing Serial'
+        """
+        Close serial port if any device connected. May cause trouble if
+        port remains open!
+        """
         if self.serial_device:
+            print 'Closing Serial'
             self.serial_device.close()
+
 
     def test_scan_frame(self, stepsize = 4):
         """
-        scan through all points in frame size, pause between
-        each point for [delay] milliseconds
+        scan through all points in frame size and give their coordinates
+        as analog values via DACs, Stepsize to keep it at a reasonable
+        time frame...
         """
         for y in xrange(0, self.range_xy[1]+1, stepsize):
             t = time.clock()
@@ -186,7 +257,7 @@ class Chatter:
 #############################################################
 if __name__ == '__main__':
 #############################################################
-    chatter = Chatter('COM4')
+    chatter = Chatter(sys.argv[1])
     chatter.test_scan_frame(stepsize = 2)
     print 'Done'
 #    time.sleep(2)

@@ -16,6 +16,13 @@ import struct
 
 VERSION = 0.1
 
+class Pin(object):
+    def __init__(self, n, pin_type):
+        self.n = n
+        self.type = pin_type
+        self.available = True
+
+
 class Arduino(object):
     firmware_version = None
     connected = False
@@ -28,14 +35,26 @@ class Arduino(object):
         self.bytes_sent = 0
         self.bytes_received = 0
 
-        self.portString = port
-        self.sp.flushInput()
+        self.pins = dict(dac=None, digital=None, pwm=None, adc=None)
 
-#        self.send_instructions([[0, 2048], [1, 1024]])
+        self.portString = port
+#        self.sp.flushInput()
+
+        mirror_test_val = 4095
         for n in xrange(100):
+            self.send_instructions([['report', 0, mirror_test_val],
+                                    ['report', 1, 0],
+                                    ['report', 2, 0]])
             if self.bytes_available():
                 self.connected = True
-                print("Connected after " + str(n) + " tries.")
+                print("   --> Connected after " + str(n) + " tries.")
+                responses = map(int, self.read_all_bytes().splitlines())
+                if int(responses[0]) == mirror_test_val:
+                    print '   --> Mirror test passed!'
+                self.pins['dac'] = Pin(responses[1], 1)
+                self.pins['digital'] = Pin(responses[2], 2)
+                print '   --> SPI_DAC pins available:', self.pins['dac'].n
+                print '   --> Digital pins available:', self.pins['digital'].n
                 break
             self.pass_time(0.01)
 
@@ -85,11 +104,17 @@ class Arduino(object):
         """
         msg = ''
         for i in instruction_list:
-            if i[0] == 'dac':
+            if i[0] == 'report':
+                msg = msg + chr(0 + i[1])
+            elif i[0] == 'dac':
                 msg = msg + chr(ord('H') + i[1])
             elif i[0] == 'digital':
                 msg = msg + chr(ord('P') + i[1])
             msg = msg + struct.pack('H', i[2]) + '\n'
+
+        # write all instructions as on string to reduce the amount of
+        # time spent in the annoying 4ms delay arduino spends on serial
+        # communication according to
         self.sp.write(msg)
         self.bytes_sent += len(msg)
 
@@ -97,10 +122,13 @@ class Arduino(object):
         """ Call this to exit cleanly. """
         if hasattr(self, 'sp'):
             self.sp.close()
+        self.bytes_received = 0
+        self.bytes_sent = 0
+
 
     def pass_time(self, t):
         """
-        Non-blocking time-out for ''t'' seconds.
+        Non-blocking time-out for t seconds.
         """
         cont = time.time() + t
         while time.time() < cont:

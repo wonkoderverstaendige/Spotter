@@ -7,6 +7,7 @@ Created on Sun Jan 18 21:13:54 2013
 """
 
 import sys
+from time import sleep
 from PyQt4 import QtGui, QtCore
 
 sys.path.append('./lib')
@@ -31,35 +32,36 @@ class Tab(QtGui.QWidget, Ui_tab_serial):
         else:
             self.label = label
             self.serial.label = label
-        
+
         super(QtGui.QWidget, self).__init__(parent)
         self.setupUi(self)
-        
+
         self.connect(self.btn_serial_refresh, QtCore.SIGNAL('clicked()'), self.refresh_port_list)
         self.connect(self.btn_serial_connect, QtCore.SIGNAL('clicked()'), self.toggle_connection)
-        
+        self.btn_serial_connect.setCheckable(True)
+
         self.refresh_port_list()
         self.update()
 
 
     def update(self):
         if self.serial.is_open():
-            tx = self.serial.bytes_tx()
-            rx = self.serial.bytes_rx()
-            tx_unit = utils.binary_prefix(tx)
-            rx_unit = utils.binary_prefix(rx)
-            self.lbl_bytes_sent.setText(tx_unit)
-            self.lbl_bytes_received.setText(rx_unit)
-    
+            # Human readable values of bytes sent/received
+            tx = utils.binary_prefix(self.serial.bytes_tx())
+            rx = utils.binary_prefix(self.serial.bytes_rx())
+            self.lbl_bytes_sent.setText(tx)
+            self.lbl_bytes_received.setText(rx)
+
     def refresh_port_list(self):
         """ Populates the list of available serial ports in the machine.
-        May not work under windows at all. Would then require the user to 
+        May not work under windows at all. Would then require the user to
         provide the proper port. Either via command line or typing it into the
         combobox.
         """
         candidate = None
+        for i in range(self.combo_serialports.count()):
+            self.combo_serialports.removeItem(i)
         for p in self.serial.list_ports():
-            print p
             if len(p) > 2 and "USB" in p[2]:
                 candidate = p
             self.combo_serialports.addItem(p[0])
@@ -68,9 +70,24 @@ class Tab(QtGui.QWidget, Ui_tab_serial):
 
 
     def toggle_connection(self):
-        self.btn_serial_connect.setText('Connecting...')
-        self.serial.serial_port = str(self.combo_serialports.currentText())
-        if self.serial.open_serial(self.serial.serial_port):
-                    self.btn_serial_connect.setText('Connected!')
-                    self.btn_serial_connect.setCheckable(True)
-                    self.btn_serial_connect.setChecked(True)
+        """
+        Toggle button to either connect or disconnect serial connection.
+        """
+        # This test is inversed. When the function is called the button is
+        # already pressed, i.e. checked -> representing future state, not past
+        if not self.btn_serial_connect.isChecked():
+            self.btn_serial_connect.setText('Connect')
+            self.btn_serial_connect.setChecked(False)
+            self.serial.close()
+        else:
+            self.serial.serial_port = str(self.combo_serialports.currentText())
+            try:
+                sc = self.serial.open_serial(self.serial.serial_port)
+            except:
+                print "Connection failed! But I won't tell you why..."
+                self.btn_serial_connect.setText('Connect')
+                self.btn_serial_connect.setChecked(False)
+                return
+            if sc:
+                self.btn_serial_connect.setText('Disconnect')
+                self.btn_serial_connect.setChecked(True)

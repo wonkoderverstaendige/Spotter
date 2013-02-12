@@ -13,7 +13,7 @@
  */
 
 //#define DEBUG
-#define DAC_INIT_DELAY 20
+#define DAC_TEST_DELAY 20
 #define DACMAX 4095
 
 #ifdef DEBUG
@@ -60,14 +60,18 @@
 #define CMDTYPE 0x38 // bits 4-6
 #define CMDMSBB 0xC0 // bits 7-8
 
+#define TYPE_UTILITY 0x00
+#define TYPE_SPI_DAC 0x01
+#define TYPE_DIGITAL 0x02
+
 int inData = 0;
 byte outData = 0;
 
-int tmp = 0;
+int tmp = 0x00;
 byte inBytes[4];
 
-byte data = 0;
-byte n = 0;
+byte data = 0x00;
+//byte n = 0;
 
 
 /* 
@@ -75,6 +79,10 @@ byte n = 0;
  via SPI to the DACs
  */
 void setDAC(byte pin_idx, int outputValue) {
+  // check if device index in range
+  if (pin_idx >= SPI_N_DEVS) {
+    return;
+  }
   byte pin = SPI_pins[pin_idx];
   // select SPI device
   digitalWrite(pin, LOW);
@@ -89,6 +97,7 @@ void setDAC(byte pin_idx, int outputValue) {
   // deselect SPI device
   digitalWrite(pin, HIGH);
 }
+
 
 /* 
  Read digital pins, e.g. sensors
@@ -105,9 +114,13 @@ byte readSensors() {
 Set digital pins to the value of their specific bit
  in the received state byte
  */
-void setDigital(byte pin_idx, short data) {
+void setDigital(byte pin_idx, short outputValue) {
+  // check if device index in range
+  if (pin_idx >= DOUT_N) {
+    return;
+  }
   byte pin = DOUT_pins[pin_idx];
-  if (data > 0) {
+  if (outputValue > 0) {
     digitalWrite(pin, HIGH);
   } 
   else {
@@ -115,34 +128,56 @@ void setDigital(byte pin_idx, short data) {
   }
 }
 
+
+/*
+Report arduino capabilities to Spotter. I.e. give number
+ of analog out, digital out pins.
+ */
+void report(byte request, short inputValue) {
+  switch (request) {
+    case 0x00:
+      Serial.println(inputValue, DEC);
+      break;
+    case 0x01:
+      Serial.println(SPI_N_DEVS, DEC);
+      break;
+    case 0x02:
+      Serial.println(DOUT_N, DEC);
+      break;
+  }
+}
+
+
 /*
 Interpret the received byte array by splitting it into a command, followed
  by payload data used in its execution
  */
 void interpretCommand() {
-  if (inBytes[3] == '\n') {
-    inData = inBytes[1] + (inBytes[2]<<8);
-    if (inData > DACMAX) {
-      inData = DACMAX;
-    }
-    byte addr = CMDADDR & inBytes[0];
-    byte type = (CMDTYPE & inBytes[0]) >> 3;
-    DEBUGLN(type);
-    DEBUGLN(addr);
-    DEBUGLN(inData);
-    
-    if (type == 1) {
-      if (addr < SPI_N_DEVS) { 
-        setDAC(addr, inData);
-      }
-    }
-    else if (type == 2) {
-      if (addr < DOUT_N) {
-        setDigital(addr, inData);
-      }
-    }
+  if (inBytes[3] != '\n') {
+    return;
   }
-  Serial.println(readSensors());
+  inData = (inBytes[2]<<8) + inBytes[1];
+  if (inData > DACMAX) {
+    inData = DACMAX;
+  }
+  byte addr = (CMDADDR & inBytes[0]);
+  byte type = (CMDTYPE & inBytes[0]) >> 3;
+  DEBUGLN(type);
+  DEBUGLN(addr);
+  DEBUGLN(inData);
+
+  switch (type) {
+  case TYPE_UTILITY: 
+    report(addr, inData);
+    break;
+  case TYPE_SPI_DAC:
+    setDAC(addr, inData);
+    break;
+  case TYPE_DIGITAL:
+    setDigital(addr, inData);
+    break;
+  }
+//  Serial.println(readSensors());
 }
 
 
@@ -161,7 +196,7 @@ void setup(){
   // DAC test pulses
   for (byte i = 0; i < SPI_N_DEVS; i++) {
     setDAC(i, DACMAX);
-    delay(DAC_INIT_DELAY);
+    delay(DAC_TEST_DELAY);
     setDAC(i, 0);
   }
 
@@ -181,6 +216,9 @@ void setup(){
 Called when serial data available after each loop()
  Requires use of non-blocking timings for opening outputs,
  otherwise delayed and buffers might fill up
+ 
+ Current protocol is defined as one command byte, followed
+ by two data bytes and closed with a newline.
  */
 void serialEvent() {
   while (Serial.available()) {
