@@ -40,23 +40,23 @@ class Arduino(object):
         self.portString = port
 #        self.sp.flushInput()
 
-        mirror_test_val = 4095
-        for n in xrange(100):
-            self.send_instructions([['report', 0, mirror_test_val],
-                                    ['report', 1, 0],
-                                    ['report', 2, 0]])
-            if self.bytes_available():
-                self.connected = True
-                print("   --> Connected after " + str(n) + " tries.")
-                responses = map(int, self.read_all_bytes().splitlines())
-                if int(responses[0]) == mirror_test_val:
-                    print '   --> Mirror test passed!'
-                self.pins['dac'] = Pin(responses[1], 1)
-                self.pins['digital'] = Pin(responses[2], 2)
-                print '   --> SPI_DAC pins available:', self.pins['dac'].n
-                print '   --> Digital pins available:', self.pins['digital'].n
-                break
-            self.pass_time(0.01)
+#        mirror_test_val = 4095
+#        for n in xrange(100):
+#            self.send_instructions([['report', 0, mirror_test_val],
+#                                    ['report', 1, 0],
+#                                    ['report', 2, 0]])
+#            if self.bytes_available():
+#                self.connected = True
+#                print("   --> Connected after " + str(n) + " tries.")
+#                responses = map(int, self.read_all_bytes().splitlines())
+#                if int(responses[0]) == mirror_test_val:
+#                    print '   --> Mirror test passed!'
+#                self.pins['dac'] = Pin(responses[1], 1)
+#                self.pins['digital'] = Pin(responses[2], 2)
+#                print '   --> SPI_DAC pins available:', self.pins['dac'].n
+#                print '   --> Digital pins available:', self.pins['digital'].n
+#                break
+#            self.pass_time(0.01)
 
     def __str__(self):
         return "Board %s on %s" % (self.name, self.sp.port)
@@ -70,6 +70,20 @@ class Arduino(object):
 
     def is_open(self):
         return self.sp.isOpen()
+
+    def get_pins(self):
+        self.send_instructions([['report', 1, 0], ['report', 2, 0]])
+        # give arduino time to respond
+        self.pass_time(0.1)
+        if self.bytes_available():
+            responses = map(int, self.read_all_bytes().splitlines())
+            self.pins['dac'] = Pin(responses[0], 1)
+            self.pins['digital'] = Pin(responses[1], 2)
+            print '   --> SPI_DAC pins available:', self.pins['dac'].n
+            print '   --> Digital pins available:', self.pins['digital'].n
+            return True
+        else:
+            return None
 
     def read_all_bytes(self):
         msg = ''

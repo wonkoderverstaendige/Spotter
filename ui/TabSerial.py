@@ -34,6 +34,7 @@ class Tab(QtGui.QWidget, Ui_tab_serial):
             self.serial.label = label
 
         super(QtGui.QWidget, self).__init__(parent)
+        self.parent = parent
         self.setupUi(self)
 
         self.connect(self.btn_serial_refresh, QtCore.SIGNAL('clicked()'), self.refresh_port_list)
@@ -45,12 +46,18 @@ class Tab(QtGui.QWidget, Ui_tab_serial):
 
 
     def update(self):
-        if self.serial.is_open():
+        if self.serial.is_connected():
+            if not self.btn_serial_connect.isChecked():
+                self.btn_serial_connect.setText('Disconnect')
+                self.btn_serial_connect.setChecked(True)
             # Human readable values of bytes sent/received
             tx = utils.binary_prefix(self.serial.bytes_tx())
             rx = utils.binary_prefix(self.serial.bytes_rx())
             self.lbl_bytes_sent.setText(tx)
             self.lbl_bytes_received.setText(rx)
+        else:
+            self.btn_serial_connect.setText('Connect')
+            self.btn_serial_connect.setChecked(False)
 
     def refresh_port_list(self):
         """ Populates the list of available serial ports in the machine.
@@ -79,15 +86,18 @@ class Tab(QtGui.QWidget, Ui_tab_serial):
             self.btn_serial_connect.setText('Connect')
             self.btn_serial_connect.setChecked(False)
             self.serial.close()
+            self.parent.update_all_tabs()
         else:
             self.serial.serial_port = str(self.combo_serialports.currentText())
             try:
-                sc = self.serial.open_serial(self.serial.serial_port)
+#                sc = self.serial.open_serial(self.serial.serial_port)
+                sc = self.serial.auto_connect(self.serial.serial_port)
             except:
                 print "Connection failed! But I won't tell you why..."
-                self.btn_serial_connect.setText('Connect')
+#                self.btn_serial_connect.setText('Connect')
                 self.btn_serial_connect.setChecked(False)
                 return
             if sc:
                 self.btn_serial_connect.setText('Disconnect')
                 self.btn_serial_connect.setChecked(True)
+                self.parent.update_all_tabs()

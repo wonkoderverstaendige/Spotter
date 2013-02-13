@@ -86,11 +86,8 @@
              <property name="indentation">
               <number>0</number>
              </property>
-             <property name="headerHidden">
+             <attribute name="headerShowSortIndicator" stdset="0">
               <bool>false</bool>
-             </property>
-             <attribute name="headerVisible">
-              <bool>true</bool>
              </attribute>
              <column>
               <property name="text">
@@ -128,13 +125,13 @@
             </widget>
            </item>
            <item row="4" column="1" colspan="2">
-            <widget class="QTreeWidget" name="treeWidget">
+            <widget class="QTreeWidget" name="tree_link_spi_dac">
              <property name="indentation">
               <number>0</number>
              </property>
              <column>
               <property name="text">
-               <string>ROIs</string>
+               <string>Analog Out</string>
               </property>
              </column>
             </widget>

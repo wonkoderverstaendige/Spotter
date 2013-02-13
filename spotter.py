@@ -98,7 +98,7 @@ class Spotter:
         self.tracker = Tracker()
 
         # chatter handles serial communication
-        self.chatter = Chatter(serial)
+        self.chatter = Chatter(serial, auto=True)
 
         # GUI other than Qt currently not available. We apologize for any
         # inconvinience. << NOT TRUE ANYMORE! HOORAY!
@@ -130,7 +130,7 @@ class Spotter:
             for o in self.tracker.oois:
                 o.updatePosition()
                 if o.analog_pos and self.chatter: # and o.guessed_pos
-                    self.chatter.send_point2analog(o.guessed_pos)
+                    self.chatter.send_analog_state(o.guessed_pos)
 
             # run collision detections
             for r in self.tracker.rois:
@@ -138,16 +138,16 @@ class Spotter:
                     collision = r.collision_check(o.guessed_pos)
                     if r.label == 'Trigger' and o.label == 'Subject':
                         if collision:
-                            self.chatter.send_trigger_state(1, 0x07)
+                            self.chatter.send_digital_state(1, 0x07)
                         else:
-                            self.chatter.send_trigger_state(1, 0x00)
+                            self.chatter.send_digital_state(1, 0x00)
 
 
                     if r.label == 'Sync_trig' and o.label == 'Sync':
                         if collision:
-                            self.chatter.send_trigger_state(1, 0x07)
+                            self.chatter.send_digital_state(1, 0x07)
                         else:
-                            self.chatter.send_trigger_state(1, 0x00)
+                            self.chatter.send_digital_state(1, 0x00)
 #                        print collision
 #                    if o.digital_collision_out and self.chatter:
 #                        self.chatter.send_collision2digital(o.digital_ports)
@@ -210,7 +210,7 @@ class Spotter:
 #############################################################
 if __name__ == "__main__":                                  #
 #############################################################
-
+#    pass
     # Command line parsing
     ARGDICT = docopt( __doc__, version=None )
     DEBUG   = ARGDICT['--DEBUG']

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'tab_objectsUi.ui'
 #
-# Created: Sun Feb 10 00:33:35 2013
+# Created: Wed Feb 13 00:50:22 2013
 #      by: PyQt4 UI code generator 4.8.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -51,10 +51,9 @@ class Ui_tab_objects(object):
         self.tree_link_features.setProperty("showDropIndicator", False)
         self.tree_link_features.setAlternatingRowColors(True)
         self.tree_link_features.setIndentation(0)
-        self.tree_link_features.setHeaderHidden(False)
         self.tree_link_features.setObjectName(_fromUtf8("tree_link_features"))
         self.tree_link_features.headerItem().setText(0, QtGui.QApplication.translate("tab_objects", "Features", None, QtGui.QApplication.UnicodeUTF8))
-        self.tree_link_features.header().setVisible(True)
+        self.tree_link_features.header().setSortIndicatorShown(False)
         self.gridLayout_5.addWidget(self.tree_link_features, 4, 0, 1, 1)
         self.lbl_y = QtGui.QLabel(self.page_objects_tracking)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
@@ -68,11 +67,11 @@ class Ui_tab_objects(object):
         self.lbl_y.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.lbl_y.setObjectName(_fromUtf8("lbl_y"))
         self.gridLayout_5.addWidget(self.lbl_y, 2, 2, 1, 1)
-        self.treeWidget = QtGui.QTreeWidget(self.page_objects_tracking)
-        self.treeWidget.setIndentation(0)
-        self.treeWidget.setObjectName(_fromUtf8("treeWidget"))
-        self.treeWidget.headerItem().setText(0, QtGui.QApplication.translate("tab_objects", "ROIs", None, QtGui.QApplication.UnicodeUTF8))
-        self.gridLayout_5.addWidget(self.treeWidget, 4, 1, 1, 2)
+        self.tree_link_spi_dac = QtGui.QTreeWidget(self.page_objects_tracking)
+        self.tree_link_spi_dac.setIndentation(0)
+        self.tree_link_spi_dac.setObjectName(_fromUtf8("tree_link_spi_dac"))
+        self.tree_link_spi_dac.headerItem().setText(0, QtGui.QApplication.translate("tab_objects", "Analog Out", None, QtGui.QApplication.UnicodeUTF8))
+        self.gridLayout_5.addWidget(self.tree_link_spi_dac, 4, 1, 1, 2)
         self.lbl_x = QtGui.QLabel(self.page_objects_tracking)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)

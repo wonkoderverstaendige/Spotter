@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'tab_featuresUi.ui'
 #
-# Created: Fri Feb 01 11:19:32 2013
+# Created: Wed Feb 13 00:50:21 2013
 #      by: PyQt4 UI code generator 4.8.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,7 +17,7 @@ except AttributeError:
 class Ui_tab_features(object):
     def setupUi(self, tab_features):
         tab_features.setObjectName(_fromUtf8("tab_features"))
-        tab_features.resize(219, 324)
+        tab_features.resize(255, 324)
         tab_features.setWindowTitle(QtGui.QApplication.translate("tab_features", "Form", None, QtGui.QApplication.UnicodeUTF8))
         self.gridLayout = QtGui.QGridLayout(tab_features)
         self.gridLayout.setMargin(0)
@@ -29,7 +29,7 @@ class Ui_tab_features(object):
         self.toolBox = QtGui.QToolBox(tab_features)
         self.toolBox.setObjectName(_fromUtf8("toolBox"))
         self.page_feature_detection = QtGui.QWidget()
-        self.page_feature_detection.setGeometry(QtCore.QRect(0, 0, 217, 259))
+        self.page_feature_detection.setGeometry(QtCore.QRect(0, 0, 253, 259))
         self.page_feature_detection.setObjectName(_fromUtf8("page_feature_detection"))
         self.gridLayout_6 = QtGui.QGridLayout(self.page_feature_detection)
         self.gridLayout_6.setMargin(2)
@@ -233,7 +233,7 @@ class Ui_tab_features(object):
         self.gridLayout_6.addWidget(self.line, 9, 0, 1, 1)
         self.toolBox.addItem(self.page_feature_detection, _fromUtf8(""))
         self.page_feature_restriction = QtGui.QWidget()
-        self.page_feature_restriction.setGeometry(QtCore.QRect(0, 0, 120, 58))
+        self.page_feature_restriction.setGeometry(QtCore.QRect(0, 0, 253, 259))
         self.page_feature_restriction.setObjectName(_fromUtf8("page_feature_restriction"))
         self.gridLayout_8 = QtGui.QGridLayout(self.page_feature_restriction)
         self.gridLayout_8.setObjectName(_fromUtf8("gridLayout_8"))
@@ -248,7 +248,7 @@ class Ui_tab_features(object):
         self.gridLayout_8.addWidget(self.ckb_fixed_pos, 1, 0, 1, 1)
         self.toolBox.addItem(self.page_feature_restriction, _fromUtf8(""))
         self.page_feature_IO = QtGui.QWidget()
-        self.page_feature_IO.setGeometry(QtCore.QRect(0, 0, 174, 76))
+        self.page_feature_IO.setGeometry(QtCore.QRect(0, 0, 253, 259))
         self.page_feature_IO.setObjectName(_fromUtf8("page_feature_IO"))
         self.gridLayout_7 = QtGui.QGridLayout(self.page_feature_IO)
         self.gridLayout_7.setObjectName(_fromUtf8("gridLayout_7"))

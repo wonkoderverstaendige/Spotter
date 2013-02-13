@@ -232,12 +232,6 @@
                <property name="indentation">
                 <number>0</number>
                </property>
-               <property name="headerHidden">
-                <bool>false</bool>
-               </property>
-               <attribute name="headerVisible">
-                <bool>true</bool>
-               </attribute>
                <column>
                 <property name="text">
                  <string>Shapes</string>
@@ -246,13 +240,19 @@
               </widget>
              </item>
              <item>
-              <widget class="QTableWidget" name="tableWidget">
-               <attribute name="horizontalHeaderStretchLastSection">
+              <widget class="QTreeWidget" name="tree_region_digital">
+               <property name="showDropIndicator" stdset="0">
+                <bool>false</bool>
+               </property>
+               <property name="alternatingRowColors">
                 <bool>true</bool>
-               </attribute>
+               </property>
+               <property name="indentation">
+                <number>0</number>
+               </property>
                <column>
                 <property name="text">
-                 <string>Ports</string>
+                 <string>Digital Out</string>
                 </property>
                </column>
               </widget>
