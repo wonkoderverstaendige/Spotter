@@ -33,6 +33,7 @@ To do:
 
 NO_EXIT_CONFIRMATION = True
 DIR_TEMPLATES = './config'
+DIR_SPECIFICATION = './config/template_specification.ini'
 DEFAULT_TEMPLATE = 'defaults.ini'
 
 import sys
@@ -108,7 +109,7 @@ class Main(QtGui.QMainWindow):
                 self.ui.combo_templates.addItem(f)
 
         default_path = os.path.join(os.path.abspath(DIR_TEMPLATES), DEFAULT_TEMPLATE)
-        self.template_default = self.parse_file_template(default_path, False)
+        self.template_default = self.parse_file_template(default_path, True)
 
         self.connect(self.ui.btn_load_template, QtCore.SIGNAL('clicked()'), self.load_template)
         self.connect(self.ui.btn_template_file, QtCore.SIGNAL('clicked()'), self.file_dialog_template)
@@ -326,14 +327,16 @@ class Main(QtGui.QMainWindow):
 
     def parse_file_template(self, path, validate=True):
         template = ConfigObj(path, file_error=True, stringify=True,
-                             configspec='./config/template_specification.ini')
+                             configspec=DIR_SPECIFICATION)
         if validate:
             validator = Validator()
-            print 'Template validation... '
+#            print 'Template validation... '
             results = template.validate(validator)
             if results == True:
-                print "    --> Template OK!"
+                pass
+#                print "    --> Template OK!"
             else:
+                print "Template error in file ", path
                 for (section_list, key, _) in flatten_errors(template, results):
                     if key is not None:
                         print 'The "%s" key in the section "%s" failed validation' % (key, ', '.join(section_list))
@@ -431,6 +434,7 @@ class Main(QtGui.QMainWindow):
             for l in self.spotter.tracker.leds:
                 if template['features'][n] == l.label:
                     features.append(l)
+
         trace = template['trace']
         track = template['track']
         _object = self.spotter.tracker.addOOI(features,
@@ -480,6 +484,8 @@ class Main(QtGui.QMainWindow):
             key = self.template_default['REGIONS'].iterkeys().next()
             template = self.template_default['REGIONS'][key]
             label =  'ROI_' + str(len(self.spotter.tracker.rois))
+        if not shapes:
+            shapes = self.template_default['SHAPES']
 
         shape_list = []
         for s_key in template['shapes']:
@@ -487,7 +493,7 @@ class Main(QtGui.QMainWindow):
                 shape_type = shapes[s_key]['type']
                 points = geom.scale_points([shapes[s_key]['p1'], shapes[s_key]['p2']],
                                            (self.glframe.width, self.glframe.height))
-            shape_list.append([shape_type, points, s_key])
+                shape_list.append([shape_type, points, s_key])
 
         region = self.spotter.tracker.addROI(shape_list, label)
         new_tab = self.add_tab(self.ui.tab_regions, TabRegions, region)
