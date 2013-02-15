@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'tab_serialUi.ui'
 #
-# Created: Wed Feb 13 00:50:22 2013
-#      by: PyQt4 UI code generator 4.8.6
+# Created: Fri Feb 15 16:45:09 2013
+#      by: PyQt4 UI code generator 4.9.5
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -18,7 +18,6 @@ class Ui_tab_serial(object):
     def setupUi(self, tab_serial):
         tab_serial.setObjectName(_fromUtf8("tab_serial"))
         tab_serial.resize(236, 324)
-        tab_serial.setWindowTitle(QtGui.QApplication.translate("tab_serial", "Form", None, QtGui.QApplication.UnicodeUTF8))
         self.gridLayout = QtGui.QGridLayout(tab_serial)
         self.gridLayout.setMargin(0)
         self.gridLayout.setSpacing(0)
@@ -52,7 +51,6 @@ class Ui_tab_serial(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.lbl_serial_port.sizePolicy().hasHeightForWidth())
         self.lbl_serial_port.setSizePolicy(sizePolicy)
-        self.lbl_serial_port.setText(QtGui.QApplication.translate("tab_serial", "Available Serial Ports:", None, QtGui.QApplication.UnicodeUTF8))
         self.lbl_serial_port.setAlignment(QtCore.Qt.AlignCenter)
         self.lbl_serial_port.setObjectName(_fromUtf8("lbl_serial_port"))
         self.verticalLayout_2.addWidget(self.lbl_serial_port)
@@ -62,7 +60,6 @@ class Ui_tab_serial(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btn_serial_refresh.sizePolicy().hasHeightForWidth())
         self.btn_serial_refresh.setSizePolicy(sizePolicy)
-        self.btn_serial_refresh.setText(QtGui.QApplication.translate("tab_serial", "Refresh", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_serial_refresh.setObjectName(_fromUtf8("btn_serial_refresh"))
         self.verticalLayout_2.addWidget(self.btn_serial_refresh)
         self.gridLayout_3.addLayout(self.verticalLayout_2, 3, 1, 1, 1)
@@ -85,7 +82,6 @@ class Ui_tab_serial(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btn_serial_connect.sizePolicy().hasHeightForWidth())
         self.btn_serial_connect.setSizePolicy(sizePolicy)
-        self.btn_serial_connect.setText(QtGui.QApplication.translate("tab_serial", "Connect", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_serial_connect.setCheckable(False)
         self.btn_serial_connect.setObjectName(_fromUtf8("btn_serial_connect"))
         self.verticalLayout.addWidget(self.btn_serial_connect)
@@ -96,7 +92,6 @@ class Ui_tab_serial(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.lbl_tx.sizePolicy().hasHeightForWidth())
         self.lbl_tx.setSizePolicy(sizePolicy)
-        self.lbl_tx.setText(QtGui.QApplication.translate("tab_serial", "transferred:", None, QtGui.QApplication.UnicodeUTF8))
         self.lbl_tx.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.lbl_tx.setObjectName(_fromUtf8("lbl_tx"))
         self.gridLayout_3.addWidget(self.lbl_tx, 4, 1, 1, 1)
@@ -106,7 +101,6 @@ class Ui_tab_serial(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.lbl_rx.sizePolicy().hasHeightForWidth())
         self.lbl_rx.setSizePolicy(sizePolicy)
-        self.lbl_rx.setText(QtGui.QApplication.translate("tab_serial", "received:", None, QtGui.QApplication.UnicodeUTF8))
         self.lbl_rx.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.lbl_rx.setObjectName(_fromUtf8("lbl_rx"))
         self.gridLayout_3.addWidget(self.lbl_rx, 5, 1, 1, 1)
@@ -130,19 +124,15 @@ class Ui_tab_serial(object):
         self.gridLayout_7.setSpacing(0)
         self.gridLayout_7.setObjectName(_fromUtf8("gridLayout_7"))
         self.pushButton_8 = QtGui.QPushButton(self.page_objects_IO)
-        self.pushButton_8.setText(QtGui.QApplication.translate("tab_serial", "Save", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_8.setObjectName(_fromUtf8("pushButton_8"))
         self.gridLayout_7.addWidget(self.pushButton_8, 2, 3, 1, 1)
         self.pushButton_9 = QtGui.QPushButton(self.page_objects_IO)
-        self.pushButton_9.setText(QtGui.QApplication.translate("tab_serial", "Open", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_9.setObjectName(_fromUtf8("pushButton_9"))
         self.gridLayout_7.addWidget(self.pushButton_9, 2, 1, 1, 1)
         self.pushButton_4 = QtGui.QPushButton(self.page_objects_IO)
-        self.pushButton_4.setText(QtGui.QApplication.translate("tab_serial", "Clone", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_4.setObjectName(_fromUtf8("pushButton_4"))
         self.gridLayout_7.addWidget(self.pushButton_4, 1, 1, 1, 1)
         self.pushButton_5 = QtGui.QPushButton(self.page_objects_IO)
-        self.pushButton_5.setText(QtGui.QApplication.translate("tab_serial", "Delete", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_5.setObjectName(_fromUtf8("pushButton_5"))
         self.gridLayout_7.addWidget(self.pushButton_5, 1, 3, 1, 1)
         spacerItem1 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
@@ -157,6 +147,16 @@ class Ui_tab_serial(object):
         QtCore.QMetaObject.connectSlotsByName(tab_serial)
 
     def retranslateUi(self, tab_serial):
+        tab_serial.setWindowTitle(QtGui.QApplication.translate("tab_serial", "Form", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_serial_port.setText(QtGui.QApplication.translate("tab_serial", "Available Serial Ports:", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_serial_refresh.setText(QtGui.QApplication.translate("tab_serial", "Refresh", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_serial_connect.setText(QtGui.QApplication.translate("tab_serial", "Connect", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_tx.setText(QtGui.QApplication.translate("tab_serial", "transferred:", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_rx.setText(QtGui.QApplication.translate("tab_serial", "received:", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_serial_connection), QtGui.QApplication.translate("tab_serial", "Connection", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_8.setText(QtGui.QApplication.translate("tab_serial", "Save", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_9.setText(QtGui.QApplication.translate("tab_serial", "Open", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_4.setText(QtGui.QApplication.translate("tab_serial", "Clone", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_5.setText(QtGui.QApplication.translate("tab_serial", "Delete", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_objects_IO), QtGui.QApplication.translate("tab_serial", "In/Out", None, QtGui.QApplication.UnicodeUTF8))
 
