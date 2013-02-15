@@ -207,7 +207,7 @@ class Main(QtGui.QMainWindow):
         size = self.geometry()
         self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
 
-    def add_tab(self, tabwidget, newTabClass, tab_equivalent):
+    def add_tab(self, tabwidget, newTabClass, tab_equivalent, focus_new = True):
         """
         Add new tab with Widget newTabClass and switches to it. The
         tab_equivalent is the object that is being represented by the tab,
@@ -215,7 +215,10 @@ class Main(QtGui.QMainWindow):
         """
         new_tab = newTabClass.Tab(self, tab_equivalent)
         tabwidget.insertTab(tabwidget.count() - 1, new_tab, new_tab.label)
-        tabwidget.setCurrentIndex(tabwidget.count()-2)
+        if focus_new:
+            tabwidget.setCurrentIndex(tabwidget.count()-2)
+        else:
+            tabwidget.setCurrentIndex(0) #tabwidget.count()-2
         return new_tab
 
     def remove_tab(self, tabwidget, tab):
@@ -350,11 +353,11 @@ class Main(QtGui.QMainWindow):
         active_top_tab_label = self.get_top_tab_label()
         if active_top_tab_label == "Settings":
             for f_key, f_val in tObj['FEATURES'].items():
-                self.add_feature(f_val, f_key)
+                self.add_feature(f_val, f_key, focus_new=False)
             for o_key, o_val in tObj['OBJECTS'].items():
-                self.add_object(o_val, o_key)
+                self.add_object(o_val, o_key, focus_new=False)
             for r_key, r_val in tObj['REGIONS'].items():
-                self.add_region(r_val, r_key, shapes=tObj['SHAPES'])
+                self.add_region(r_val, r_key, shapes=tObj['SHAPES'], focus_new=False)
 
 
 ###############################################################################
@@ -374,7 +377,7 @@ class Main(QtGui.QMainWindow):
             self.ui.tab_features.setCurrentIndex(idx_tab)
 
 
-    def add_feature(self, template = None, label = None):
+    def add_feature(self, template = None, label = None, focus_new = True):
         """
         Create a feature from trackables and add a corresponding tab to
         the tab widget, which is linked to show and edit feature properties.
@@ -396,7 +399,7 @@ class Main(QtGui.QMainWindow):
                                                   range_hue,
                                                   range_area,
                                                   fixed_pos)
-        new_tab = self.add_tab(self.ui.tab_features, TabFeatures, feature)
+        new_tab = self.add_tab(self.ui.tab_features, TabFeatures, feature, focus_new)
         self.feature_tabs.append(new_tab)
 
 
@@ -417,7 +420,7 @@ class Main(QtGui.QMainWindow):
             self.ui.tab_objects.setCurrentIndex(idx_tab)
 
 
-    def add_object(self, template = None, label = None):
+    def add_object(self, template = None, label = None, focus_new = True):
         """
         Create a new object that will be linked to LEDs and/r ROIs to
         track and trigger events.
@@ -453,7 +456,7 @@ class Main(QtGui.QMainWindow):
                 _object.analog_spd = True
             if 'direction' in analog_signal:
                 _object.analog_dir = True
-        new_tab = self.add_tab(self.ui.tab_objects, TabObjects, _object)
+        new_tab = self.add_tab(self.ui.tab_objects, TabObjects, _object, focus_new)
         self.object_tabs.append(new_tab)
 
 
@@ -474,7 +477,7 @@ class Main(QtGui.QMainWindow):
             self.ui.tab_regions.setCurrentIndex(idx_tab)
 
 
-    def add_region(self, template=None, label=None, shapes=None):
+    def add_region(self, template=None, label=None, shapes=None, focus_new = True):
         """
         Create a new region of interest that will be that will be linked
         to Objects with conditions to trigger events.
@@ -496,7 +499,7 @@ class Main(QtGui.QMainWindow):
                 shape_list.append([shape_type, points, s_key])
 
         region = self.spotter.tracker.addROI(shape_list, label)
-        new_tab = self.add_tab(self.ui.tab_regions, TabRegions, region)
+        new_tab = self.add_tab(self.ui.tab_regions, TabRegions, region, focus_new)
         self.region_tabs.append(new_tab)
 
 
