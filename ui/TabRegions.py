@@ -173,7 +173,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         selected_item = self.tree_region_shapes.currentItem()
         index = self.tree_region_shapes.indexOfTopLevelItem(selected_item)
         if selected_item:
-            self.region.shapes.pop(self.region.shapes.index(selected_item.shape))
+            self.region.remove_shape(selected_item.shape)
             self.tree_region_shapes.takeTopLevelItem(index)
 
     def update_shape_position(self):

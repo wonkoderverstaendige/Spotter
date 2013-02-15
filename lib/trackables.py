@@ -113,16 +113,30 @@ class LED:
         pass
 
 
+class Slot:
+    def __init__(self, label, _type):
+        self.label = label
+        self.type = _type
+        self.pin = None
+        self.state = None
+
+    def attach_pin(self, pin):
+        pass
+
+    def detach_pin(self, pin):
+        pass
 
 
 class OOI:
-    """ Mobile object LEDs are attached to, if any."""
+    """
+    Object Of Interest. Collection of features to be tracked together and
+    report state and behavior, or trigger events upon conditions.
+    """
 
     # TODO: Use general "features" rather than LEDs specifically
 
-    pos_hist = None    # Has the "real" values
-    guessed_pos = None # Holds currently guessed position, either from tracking
-                       # or estimation
+    pos_hist = None    # history of position
+    guessed_pos = None # Holds currently guessed position, tracked or guessed
     linked_leds = None
 
     tracked = True
@@ -132,6 +146,8 @@ class OOI:
     analog_dir = False
     analog_spd = False
 
+    slots = None
+
     def __init__( self, led_list, label, traced = False, tracked = True ):
         self.linked_leds = led_list
         self.label = label
@@ -139,8 +155,11 @@ class OOI:
         self.tracked = tracked
         self.pos_hist = []
 
-        if self.label == 'Subject':
-            self.analog_pos = True
+        # listed order important. First come, first serve
+        self.slots = [Slot('x position', 'analog'),
+                      Slot('y position', 'analog'),
+                      Slot('direction', 'analog'),
+                      Slot('speed', 'analog')]
 
     def updatePosition( self ):
         if self.tracked:
@@ -154,6 +173,13 @@ class OOI:
             self.guessed_pos = geom.guessedPosition( self.pos_hist )
         else:
             self.guessed_pos = None
+
+    def list_open_slots(self):
+        open_slots = []
+        for s in self.slots:
+            if s.pin:
+                open_slots.append(s)
+        return open_slots
 
     def predictPositionFast( self, frame_idx ):
         pass
@@ -172,6 +198,8 @@ class ROI:
     alpha = .6
 
     linked_objects = None
+
+    slots = None
 
     def __init__(self, shape_list = None, label = None, color = None ):
         if not color:
@@ -201,6 +229,7 @@ class ROI:
         return shape
 
     def remove_shape(self, shape):
+        self.shapes.pop(self.shapes.index(shape))
         print 'not really removing shape'
 
     def assemble_collision_array(self):
