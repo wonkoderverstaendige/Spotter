@@ -10,9 +10,9 @@ import numpy as np
 import math
 
 class Point:
-	def __init__(self,x,y):
-		self.x = x
-		self.y = y
+    def __init__(self,x,y):
+        self.x = x
+        self.y = y
 
 def middle_point( coord_list ):
     """ Find center point of a list of not None coordinates. E.g. find center
@@ -139,6 +139,47 @@ def seg_intersect(a1,a2, b1,b2) :
         return (num / denom)*db + b1
 
 
+# Improved point in polygon test which includes edge
+# and vertex points
+#http://geospatialpython.com/2011/08/point-in-polygon-2-on-line.html
+def point_in_poly(point, poly):
+    x = point[0]
+    y = point[1]
+    n = len(poly)
+
+    # check if point is a vertex
+    if (x,y) in poly: return True
+
+    # check if point is on a boundary
+    for i in range(n):
+        p1 = None
+        p2 = None
+        if i==0:
+            p1 = poly[0]
+            p2 = poly[1]
+        else:
+            p1 = poly[i-1]
+            p2 = poly[i]
+        if p1[1]==p2[1] and p1[1]==y and x > min(p1[0], p2[0]) and x < max(p1[0], p2[0]):
+            return True
+
+    # check the actual polygon space
+    inside = False
+
+    p1x,p1y = poly[0]
+    for i in range(n+1):
+        p2x,p2y = poly[i % n]
+        if y > min(p1y,p2y):
+            if y <= max(p1y,p2y):
+                if x <= max(p1x,p2x):
+                    if p1y != p2y:
+                        xints = (y-p1y)*(p2x-p1x)/(p2y-p1y)+p1x
+                    if p1x == p2x or x <= xints:
+                        inside = not inside
+        p1x,p1y = p2x,p2y
+
+    return inside
+
 
 if __name__ == "__main__":
     a = np.array( [0.0, 0.0] )
@@ -152,3 +193,15 @@ if __name__ == "__main__":
     p3 = np.array( [6.0, 0.0] )
     p4 = np.array( [6.0, 3.0] )
     print seg_intersect( p1,p2, p3,p4)
+
+    # Test a vertex for inclusion
+    poly = [(-33.416032,-70.593016), (-33.415370,-70.589604),
+    (-33.417340,-70.589046), (-33.417949,-70.592351),
+    (-33.416032,-70.593016)]
+    point = (-33.416032,-70.593016)
+    print point_in_poly(point, poly)
+
+    # test a boundary point for inclusion
+    poly = [(1,1), (5,1), (5,5), (1,5), (1,1)]
+    point = (3, 1)
+    print point_in_poly(point, poly)

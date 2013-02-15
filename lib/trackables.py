@@ -230,7 +230,6 @@ class ROI:
 
     def remove_shape(self, shape):
         self.shapes.pop(self.shapes.index(shape))
-        print 'not really removing shape'
 
     def assemble_collision_array(self):
         for s in self.shapes:
