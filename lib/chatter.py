@@ -109,7 +109,8 @@ class Chatter:
                     print "Connection established!"
                     self.connected = True
                     return self.connected
-            except:
+            except Exception, e:
+                print str(e)
                 print 'This port was broken!'
         self.connected = False
         return self.connected
@@ -212,9 +213,12 @@ class Chatter:
         else:
             return None
 
-    def pins(self):
+    def pins(self, pin_type):
         if self.serial_device:
-            return self.serial_device.pins
+            try:
+                return self.serial_device.pins[pin_type]
+            except:
+                return None
         else:
             return None
 
@@ -275,9 +279,11 @@ class Chatter:
         Close serial port if any device connected. May cause trouble if
         port remains open!
         """
+        self.connected = False
         if self.serial_device:
             print 'Closing Serial'
             self.serial_device.close()
+
 
 
     def test_scan_frame(self, stepsize=4):

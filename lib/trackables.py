@@ -156,10 +156,10 @@ class OOI:
         self.pos_hist = []
 
         # listed order important. First come, first serve
-        self.slots = [Slot('x position', 'analog'),
-                      Slot('y position', 'analog'),
-                      Slot('direction', 'analog'),
-                      Slot('speed', 'analog')]
+        self.slots = [Slot('x position', 'dac'),
+                      Slot('y position', 'dac'),
+                      Slot('direction', 'dac'),
+                      Slot('speed', 'dac')]
 
     def updatePosition( self ):
         if self.tracked:

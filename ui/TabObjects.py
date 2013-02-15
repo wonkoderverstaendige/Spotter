@@ -35,13 +35,20 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         super(QtGui.QWidget, self).__init__(parent)
         self.setupUi(self)
 
+        self.combo_label.setEditText(self.label)
+
         self.connect(self.tree_link_features, QtCore.SIGNAL('itemChanged(QTreeWidgetItem *, int)'), self.feature_item_changed)
 
         self.connect(self.ckb_track, QtCore.SIGNAL('stateChanged(int)'), self.update_object)
         self.connect(self.ckb_trace, QtCore.SIGNAL('stateChanged(int)'), self.update_object)
         self.connect(self.ckb_analog_pos, QtCore.SIGNAL('stateChanged(int)'), self.update_object)
 
+        self.connect(self.btn_lock_table, QtCore.SIGNAL('toggled(bool)'), self.lock_slot_table)
+
         self.update()
+
+        # slot table is static for Object
+        self.populate_slot_table()
 
     def update(self):
         if self.label == None:
@@ -50,6 +57,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
 
         self.refresh_feature_list()
         self.refresh_pin_list()
+        self.refresh_slot_table()
 
         if not self.ckb_trace.isChecked() == self.object.traced:
             self.ckb_trace.setChecked(self.object.traced)
@@ -67,6 +75,12 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
             self.lbl_x.setText('---')
             self.lbl_y.setText('---')
 
+#        if not self.object.speed() == None:
+#            self.lbl_speed.setText(str(self.object.speed()))
+#
+#        if not self.object.direction() == None:
+#            self.lbl_speed.setText(str(self.object.speed()))
+
     def update_object(self):
         if self.label == None:
             print "Empty object tab! This should not have happened!"
@@ -74,7 +88,6 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         self.object.tracked = self.ckb_track.isChecked()
         self.object.traced = self.ckb_trace.isChecked()
         self.object.analog_pos = self.ckb_analog_pos.isChecked()
-        self.combo_analog_signal.setEnabled(self.ckb_analog_pos.isChecked())
 
     def process_event(self, event):
         pass
@@ -143,28 +156,135 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
 ## PIN LIST
 ###############################################################################
     def refresh_pin_list(self):
-        pins = self.parent.spotter.chatter.pins()
-        if pins:
-            pins = pins['dac']
-        if self.parent.spotter.chatter.is_open() and pins:
-            if not self.tree_link_spi_dac.topLevelItemCount() == pins.n:
-                self.add_pin(self.tree_link_spi_dac.topLevelItemCount())
-        else:
-            while not self.tree_link_spi_dac.topLevelItemCount() == 0:
-                self.remove_pin()
+        pass
+#        pins = self.parent.spotter.chatter.pins('dac')
+#        if self.parent.spotter.chatter.is_open() and pins:
+#            if not self.tree_link_spi_dac.topLevelItemCount() == len(pins):
+#                self.add_pin(self.tree_link_spi_dac.topLevelItemCount())
+#        else:
+#            while not self.tree_link_spi_dac.topLevelItemCount() == 0:
+#                self.remove_pin()
 
     def add_pin(self, pin):
-        """
-        Add a new digital out pin to the list of pins.
-        """
-        pin_item = QtGui.QTreeWidgetItem([str(pin)])
-#        pin_item.pin = self.region.add_shape(shape_type, shape_points, shape_type)
-        pin_item.setCheckState(0, QtCore.Qt.Unchecked)
-        self.tree_link_spi_dac.addTopLevelItem(pin_item)
-        self.tree_link_spi_dac.setCurrentItem(pin_item)
-#        pin_item.setFlags(pin_item.flags() | QtCore.Qt.ItemIsEditable)
+        pass
+#        """
+#        Add a new digital out pin to the list of pins.
+#        """
+#        pin_item = QtGui.QTreeWidgetItem([str(pin)])
+#        pin_item.setCheckState(0, QtCore.Qt.Unchecked)
+#        self.tree_link_spi_dac.addTopLevelItem(pin_item)
+#        self.tree_link_spi_dac.setCurrentItem(pin_item)
 
-    def remove_pin(self):
+    def remove_pin(self, index = 0):
         """ Remove a pin from the list of available digital out pins """
-        print "removing pins"
-        self.tree_link_spi_dac.takeTopLevelItem(0)
+        self.tree_link_spi_dac.takeTopLevelItem(index)
+
+    def _combo_pins(self, slot):
+        pins, enable = self.available_pins(slot)
+
+        if not pins:
+            return None
+        cbx = QtGui.QComboBox()
+        for i, p in enumerate(pins):
+            cbx.addItem(p.label)
+            # Disable all pins already in use somewhere
+            # From: http://stackoverflow.com/questions/11099975/pyqt-set-enabled-property-of-a-row-of-qcombobox
+            # to re-enable: QVariant(
+            j = cbx.model().index(i,0)
+            cbx.model().setData(j, QtCore.QVariant(enable[i]), QtCore.Qt.UserRole-1)
+        cbx.addItem('None')
+        cbx.setCurrentIndex(len(pins))
+
+#        cbx.insertSeparator(1)
+        self.connect(cbx, QtCore.SIGNAL('currentIndexChanged(int)'), self.refresh_slot_table)
+        return cbx
+
+
+    def available_pins(self, slot):
+        """
+        Return list of pins suitable for the slot. Mark those available or
+        already selected
+        """
+        enable = []
+        pins = self.parent.spotter.chatter.pins(slot.type)
+        for p in pins:
+#            print p.slot, slot
+            if not p.slot == None and not p.slot is slot:
+                enable.append(0)
+            else:
+                enable.append(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)#33
+        return pins, enable
+
+
+###############################################################################
+## SLOT TABLE
+###############################################################################
+    def populate_slot_table(self):
+        if not self.object.slots:
+            return
+
+        self.table_slots.setRowCount(len(self.object.slots))
+        for i, s in enumerate(self.object.slots):
+            item = [s.label, '', 'IGNORE']
+            row_items = self._table_slot_row(item)
+            for j, item in enumerate(row_items):
+                if j == 1:
+                    self.table_slots.setCellWidget(i, j, self._combo_pins(s))
+                self.table_slots.setItem(i, j, item)
+#            self.table_slots.setRowHeight(i, 18)
+        self.table_slots.resizeColumnsToContents()
+        self.table_slots.resizeRowsToContents()
+
+
+    def refresh_slot_table(self):
+        """
+        Check if pins still exist (run refresh pin list) and compare to pins
+        in the combobox. If different, refresh combo box. Each combobox has
+        different pins attached to it, though!
+        """
+        for i in xrange(self.table_slots.rowCount()):
+            cbx = self.table_slots.cellWidget(i, 1)
+            sel_pin = cbx.currentIndex()
+            pins, enabled = self.available_pins(self.object.slots[i])
+            # None-"None" pin selected, check if proper slot linked
+            if sel_pin < len(pins):
+                if not pins[sel_pin].slot is self.object.slots[i]:
+                    pins[sel_pin].slot = self.object.slots[i]
+            # Nothing selected, check if slot linked somewhere, but shouldn't
+            else:
+                for p in pins:
+                    if p.slot == self.object.slots[i]:
+                        p.slot = None
+
+        # refresh combo boxes with proper availabilities
+        for row in xrange(self.table_slots.rowCount()):
+            pins, enabled = self.available_pins(self.object.slots[row])
+            cbx = self.table_slots.cellWidget(row, 1)
+            for i in xrange(len(pins)):
+                j = cbx.model().index(i,0)
+                cbx.model().setData(j, QtCore.QVariant(enabled[i]), QtCore.Qt.UserRole-1)
+
+
+    def _table_slot_row(self, row):
+        """ List of row widget items. """
+        item_list = []
+        for i in xrange(len(row)):
+            item_list.append(QtGui.QTableWidgetItem(row[i]))
+        return item_list
+
+    def lock_slot_table(self, state):
+        self.table_slots.setEnabled(state)
+        if state:
+            self.btn_lock_table.setText("Lock")
+        else:
+            self.btn_lock_table.setText("Unlock")
+
+#        eventfilter = WheelEventFilter()
+#        combobox.view().installEventFilter(eventfilter)
+#class WheelEventFilter(QtCore.QObject):
+#    def eventFilter(self, filteredObj, event):
+#        print event.type()
+#        if event.type() == QtCore.QEvent.Wheel:
+#            print "pew pew"
+#            return
+#        return QtCore.QObject.eventFilter(self, filteredObj, event)

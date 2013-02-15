@@ -31,7 +31,7 @@ To do:
 
 """
 
-NO_EXIT_CONFIRMATION = True
+NO_EXIT_CONFIRMATION = False
 DIR_TEMPLATES = './config'
 DIR_SPECIFICATION = './config/template_specification.ini'
 DEFAULT_TEMPLATE = 'defaults.ini'

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>240</width>
+    <width>241</width>
     <height>324</height>
    </rect>
   </property>
@@ -25,7 +25,7 @@
      <property name="spacing">
       <number>1</number>
      </property>
-     <item row="0" column="0">
+     <item row="1" column="0">
       <widget class="QToolBox" name="toolBox">
        <property name="frameShape">
         <enum>QFrame::NoFrame</enum>
@@ -37,7 +37,7 @@
         <number>0</number>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <property name="tabSpacing">
         <number>0</number>
@@ -47,7 +47,7 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>238</width>
+          <width>239</width>
           <height>259</height>
          </rect>
         </property>
@@ -69,33 +69,6 @@
            <property name="spacing">
             <number>1</number>
            </property>
-           <item row="4" column="0">
-            <widget class="QTreeWidget" name="tree_link_features">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="showDropIndicator" stdset="0">
-              <bool>false</bool>
-             </property>
-             <property name="alternatingRowColors">
-              <bool>true</bool>
-             </property>
-             <property name="indentation">
-              <number>0</number>
-             </property>
-             <attribute name="headerShowSortIndicator" stdset="0">
-              <bool>false</bool>
-             </attribute>
-             <column>
-              <property name="text">
-               <string>Features</string>
-              </property>
-             </column>
-            </widget>
-           </item>
            <item row="2" column="2">
             <widget class="QLabel" name="lbl_y">
              <property name="sizePolicy">
@@ -124,8 +97,41 @@
              </property>
             </widget>
            </item>
-           <item row="4" column="1" colspan="2">
+           <item row="3" column="0">
+            <widget class="QCheckBox" name="ckb_trace">
+             <property name="text">
+              <string>Show Trace</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QCheckBox" name="ckb_analog_pos">
+             <property name="text">
+              <string>Analog out</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLabel" name="lbl_xlbl">
+             <property name="text">
+              <string>x:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
             <widget class="QTreeWidget" name="tree_link_spi_dac">
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>5</height>
+              </size>
+             </property>
              <property name="indentation">
               <number>0</number>
              </property>
@@ -134,6 +140,26 @@
                <string>Analog Out</string>
               </property>
              </column>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QCheckBox" name="ckb_track">
+             <property name="text">
+              <string>Track</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLabel" name="lbl_y_lbl">
+             <property name="text">
+              <string>y:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
             </widget>
            </item>
            <item row="1" column="2">
@@ -164,83 +190,70 @@
              </property>
             </widget>
            </item>
-           <item row="2" column="1">
-            <widget class="QLabel" name="lbl_y_lbl">
+           <item row="3" column="1">
+            <widget class="QLabel" name="lbl_speed_lbl">
              <property name="text">
-              <string>y:</string>
+              <string>v:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3" rowspan="3">
+            <widget class="QDial" name="dial_direction">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="maximum">
+              <number>90</number>
+             </property>
+             <property name="pageStep">
+              <number>1</number>
+             </property>
+             <property name="wrapping">
+              <bool>true</bool>
+             </property>
+             <property name="notchTarget">
+              <double>5.000000000000000</double>
+             </property>
+             <property name="notchesVisible">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="2">
+            <widget class="QLabel" name="lbl_speed">
+             <property name="text">
+              <string>---</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
-           <item row="1" column="0">
-            <widget class="QCheckBox" name="ckb_track">
-             <property name="text">
-              <string>Track</string>
+           <item row="4" column="0" colspan="4">
+            <widget class="QTreeWidget" name="tree_link_features">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
              </property>
-             <property name="checked">
+             <property name="showDropIndicator" stdset="0">
+              <bool>false</bool>
+             </property>
+             <property name="alternatingRowColors">
               <bool>true</bool>
              </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QLabel" name="lbl_xlbl">
-             <property name="text">
-              <string>x:</string>
+             <property name="indentation">
+              <number>0</number>
              </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QCheckBox" name="ckb_trace">
-             <property name="text">
-              <string>Show Trace</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0" colspan="3">
-            <widget class="QComboBox" name="combo_Object">
-             <property name="enabled">
+             <attribute name="headerShowSortIndicator" stdset="0">
               <bool>false</bool>
-             </property>
-             <property name="editable">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QCheckBox" name="ckb_analog_pos">
-             <property name="text">
-              <string>Analog out</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1" colspan="2">
-            <widget class="QComboBox" name="combo_analog_signal">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <item>
+             </attribute>
+             <column>
               <property name="text">
-               <string>Position</string>
+               <string>Features</string>
               </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Speed</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Direction</string>
-              </property>
-             </item>
+             </column>
             </widget>
            </item>
           </layout>
@@ -252,7 +265,7 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>238</width>
+          <width>239</width>
           <height>259</height>
          </rect>
         </property>
@@ -266,6 +279,69 @@
          <property name="spacing">
           <number>0</number>
          </property>
+         <item row="0" column="0">
+          <layout class="QGridLayout" name="gridLayout_4">
+           <item row="1" column="0">
+            <widget class="QTableWidget" name="table_slots">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="horizontalScrollBarPolicy">
+              <enum>Qt::ScrollBarAsNeeded</enum>
+             </property>
+             <property name="alternatingRowColors">
+              <bool>true</bool>
+             </property>
+             <property name="selectionMode">
+              <enum>QAbstractItemView::NoSelection</enum>
+             </property>
+             <property name="selectionBehavior">
+              <enum>QAbstractItemView::SelectRows</enum>
+             </property>
+             <property name="showGrid">
+              <bool>true</bool>
+             </property>
+             <attribute name="horizontalHeaderMinimumSectionSize">
+              <number>5</number>
+             </attribute>
+             <attribute name="horizontalHeaderStretchLastSection">
+              <bool>true</bool>
+             </attribute>
+             <attribute name="verticalHeaderVisible">
+              <bool>false</bool>
+             </attribute>
+             <column>
+              <property name="text">
+               <string>Property</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Pin</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Logic</string>
+              </property>
+             </column>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QPushButton" name="btn_lock_table">
+             <property name="text">
+              <string>Unlock</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="default">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
         </layout>
        </widget>
        <widget class="QWidget" name="page_objects_IO">
@@ -273,7 +349,7 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>238</width>
+          <width>239</width>
           <height>259</height>
          </rect>
         </property>
@@ -287,46 +363,57 @@
          <property name="spacing">
           <number>0</number>
          </property>
-         <item row="2" column="3">
-          <widget class="QPushButton" name="pushButton_8">
-           <property name="text">
-            <string>Save</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QPushButton" name="pushButton_9">
-           <property name="text">
-            <string>Open</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QPushButton" name="pushButton_4">
-           <property name="text">
-            <string>Clone</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="3">
-          <widget class="QPushButton" name="pushButton_5">
-           <property name="text">
-            <string>Delete</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <spacer name="verticalSpacer_3">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
+         <item row="0" column="2">
+          <layout class="QGridLayout" name="gridLayout_3">
+           <item row="1" column="1">
+            <widget class="QPushButton" name="pushButton_8">
+             <property name="text">
+              <string>Save</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QPushButton" name="pushButton_5">
+             <property name="text">
+              <string>Delete</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QPushButton" name="pushButton_4">
+             <property name="text">
+              <string>Clone</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QPushButton" name="pushButton_9">
+             <property name="text">
+              <string>Open</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0" colspan="2">
+            <widget class="QComboBox" name="combo_label">
+             <property name="editable">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0" rowspan="2" colspan="2">
+            <spacer name="verticalSpacer_3">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>

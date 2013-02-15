@@ -17,11 +17,14 @@ import struct
 VERSION = 0.1
 
 class Pin(object):
-    def __init__(self, n, pin_type):
-        self.n = n
+    def __init__(self, idx, instruction, pin_type):
+        self.id = idx
+        self.instruction = instruction
         self.type = pin_type
-        self.available = True
+        self.label = ''.join([pin_type, '.', str(idx)])
 
+        self.slot = None
+        self.available = True
 
 class Arduino(object):
     firmware_version = None
@@ -77,10 +80,13 @@ class Arduino(object):
         self.pass_time(0.1)
         if self.bytes_available():
             responses = map(int, self.read_all_bytes().splitlines())
-            self.pins['dac'] = Pin(responses[0], 1)
-            self.pins['digital'] = Pin(responses[1], 2)
-            print '   --> SPI_DAC pins available:', self.pins['dac'].n
-            print '   --> Digital pins available:', self.pins['digital'].n
+            # Analog pins are of type 1
+            self.pins['dac'] = [Pin(idx, 1, 'DAC') for idx in xrange(responses[0])]
+            # Digital Pins are type 2
+            self.pins['digital'] = [Pin(idx, 2, 'DO') for idx in xrange(responses[1])]
+
+            print '   --> SPI_DAC pins available:', len(self.pins['dac'])
+            print '   --> Digital pins available:', len(self.pins['digital'])
             return True
         else:
             return None

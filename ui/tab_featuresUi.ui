@@ -52,7 +52,7 @@
          <property name="spacing">
           <number>2</number>
          </property>
-         <item row="11" column="0">
+         <item row="10" column="0">
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <property name="spacing">
             <number>1</number>
@@ -94,7 +94,7 @@
            </item>
           </layout>
          </item>
-         <item row="10" column="0">
+         <item row="9" column="0">
           <layout class="QGridLayout" name="layout_feature_parameters">
            <property name="horizontalSpacing">
             <number>2</number>
@@ -324,37 +324,6 @@
            </item>
           </layout>
          </item>
-         <item row="8" column="0">
-          <widget class="QComboBox" name="combo_label">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="editable">
-            <bool>false</bool>
-           </property>
-           <property name="currentIndex">
-            <number>-1</number>
-           </property>
-           <property name="insertPolicy">
-            <enum>QComboBox::NoInsert</enum>
-           </property>
-           <item>
-            <property name="text">
-             <string>redLED</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>greenLED</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>blueLED</string>
-            </property>
-           </item>
-          </widget>
-         </item>
          <item row="3" column="0">
           <layout class="QGridLayout" name="gridLayout_3">
            <property name="topMargin">
@@ -481,7 +450,7 @@
            </item>
           </layout>
          </item>
-         <item row="9" column="0">
+         <item row="8" column="0">
           <widget class="Line" name="line">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
@@ -535,46 +504,60 @@
          <string>In/Out</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_7">
-         <item row="2" column="3">
-          <widget class="QPushButton" name="pushButton_8">
-           <property name="text">
-            <string>Save</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QPushButton" name="pushButton_9">
-           <property name="text">
-            <string>Open</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QPushButton" name="pushButton_4">
-           <property name="text">
-            <string>Clone</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="3">
-          <widget class="QPushButton" name="pushButton_5">
-           <property name="text">
-            <string>Delete</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <spacer name="verticalSpacer_3">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <item row="0" column="0">
+          <layout class="QGridLayout" name="gridLayout_9">
+           <item row="1" column="1">
+            <widget class="QPushButton" name="pushButton_12">
+             <property name="text">
+              <string>Save</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QPushButton" name="pushButton_13">
+             <property name="text">
+              <string>Delete</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QPushButton" name="pushButton_14">
+             <property name="text">
+              <string>Clone</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QPushButton" name="pushButton_15">
+             <property name="text">
+              <string>Open</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0" colspan="2">
+            <widget class="QComboBox" name="combo_label">
+             <property name="editable">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0" rowspan="2" colspan="2">
+            <spacer name="verticalSpacer_5">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>

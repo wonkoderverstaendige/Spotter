@@ -35,8 +35,6 @@ import trackables as trkbl
 sys.path.append('./lib/docopt')
 from docopt import docopt
 
-
-
 DEBUG = True
 
 class Tracker:

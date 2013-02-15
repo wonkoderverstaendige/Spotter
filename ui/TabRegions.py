@@ -42,6 +42,8 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         super(QtGui.QWidget, self).__init__(parent)
         self.setupUi(self)
 
+        self.combo_label.setEditText(self.label)
+
         # Fill tree/list with all available shapes
         for s in self.region.shapes:
             shape_item = QtGui.QTreeWidgetItem([s.label])
@@ -230,19 +232,20 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
 ## PIN LIST
 ###############################################################################
     def refresh_pin_list(self):
-        # If nothing selected, select the first item in the list
-        n_items = self.tree_region_digital.topLevelItemCount()
-        if n_items and not self.tree_region_digital.currentItem():
-            self.tree_region_digital.setCurrentItem(self.tree_region_digital.topLevelItem(0))
-        pins = self.parent.spotter.chatter.pins()
-        if pins:
-            pins = pins['digital']
-        if self.parent.spotter.chatter.is_open() and pins:
-            while not self.tree_region_digital.topLevelItemCount() == pins.n:
-                self.add_pin(self.tree_region_digital.topLevelItemCount())
-        else:
-            while not self.tree_region_digital.topLevelItemCount() == 0:
-                self.remove_pin()
+        pass
+#        # If nothing selected, select the first item in the list
+#        n_items = self.tree_region_digital.topLevelItemCount()
+#        if n_items and not self.tree_region_digital.currentItem():
+#            self.tree_region_digital.setCurrentItem(self.tree_region_digital.topLevelItem(0))
+#        pins = self.parent.spotter.chatter.pins()
+#        if pins:
+#            pins = pins['digital']
+#        if self.parent.spotter.chatter.is_open() and pins:
+#            while not self.tree_region_digital.topLevelItemCount() == pins.n:
+#                self.add_pin(self.tree_region_digital.topLevelItemCount())
+#        else:
+#            while not self.tree_region_digital.topLevelItemCount() == 0:
+#                self.remove_pin()
 
 
     def add_pin(self, pin):
