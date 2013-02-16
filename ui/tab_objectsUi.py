@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'tab_objectsUi.ui'
 #
-# Created: Fri Feb 15 22:30:14 2013
+# Created: Sat Feb 16 03:37:11 2013
 #      by: PyQt4 UI code generator 4.9.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -117,17 +117,17 @@ class Ui_tab_objects(object):
         self.gridLayout_5.addWidget(self.tree_link_features, 4, 0, 1, 4)
         self.gridLayout_6.addLayout(self.gridLayout_5, 0, 1, 1, 1)
         self.toolBox.addItem(self.page_objects_tracking, _fromUtf8(""))
-        self.page_objects_restriction = QtGui.QWidget()
-        self.page_objects_restriction.setGeometry(QtCore.QRect(0, 0, 239, 259))
-        self.page_objects_restriction.setObjectName(_fromUtf8("page_objects_restriction"))
-        self.gridLayout_8 = QtGui.QGridLayout(self.page_objects_restriction)
+        self.page_objects_slots = QtGui.QWidget()
+        self.page_objects_slots.setGeometry(QtCore.QRect(0, 0, 239, 259))
+        self.page_objects_slots.setObjectName(_fromUtf8("page_objects_slots"))
+        self.gridLayout_8 = QtGui.QGridLayout(self.page_objects_slots)
         self.gridLayout_8.setMargin(0)
         self.gridLayout_8.setSpacing(0)
         self.gridLayout_8.setObjectName(_fromUtf8("gridLayout_8"))
         self.gridLayout_4 = QtGui.QGridLayout()
         self.gridLayout_4.setObjectName(_fromUtf8("gridLayout_4"))
-        self.table_slots = QtGui.QTableWidget(self.page_objects_restriction)
-        self.table_slots.setEnabled(True)
+        self.table_slots = QtGui.QTableWidget(self.page_objects_slots)
+        self.table_slots.setEnabled(False)
         self.table_slots.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self.table_slots.setAlternatingRowColors(True)
         self.table_slots.setSelectionMode(QtGui.QAbstractItemView.NoSelection)
@@ -146,13 +146,13 @@ class Ui_tab_objects(object):
         self.table_slots.horizontalHeader().setStretchLastSection(True)
         self.table_slots.verticalHeader().setVisible(False)
         self.gridLayout_4.addWidget(self.table_slots, 1, 0, 1, 1)
-        self.btn_lock_table = QtGui.QPushButton(self.page_objects_restriction)
+        self.btn_lock_table = QtGui.QPushButton(self.page_objects_slots)
         self.btn_lock_table.setCheckable(True)
         self.btn_lock_table.setDefault(True)
         self.btn_lock_table.setObjectName(_fromUtf8("btn_lock_table"))
         self.gridLayout_4.addWidget(self.btn_lock_table, 0, 0, 1, 1)
         self.gridLayout_8.addLayout(self.gridLayout_4, 0, 0, 1, 1)
-        self.toolBox.addItem(self.page_objects_restriction, _fromUtf8(""))
+        self.toolBox.addItem(self.page_objects_slots, _fromUtf8(""))
         self.page_objects_IO = QtGui.QWidget()
         self.page_objects_IO.setGeometry(QtCore.QRect(0, 0, 239, 259))
         self.page_objects_IO.setObjectName(_fromUtf8("page_objects_IO"))
@@ -211,7 +211,7 @@ class Ui_tab_objects(object):
         item = self.table_slots.horizontalHeaderItem(2)
         item.setText(QtGui.QApplication.translate("tab_objects", "Logic", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_lock_table.setText(QtGui.QApplication.translate("tab_objects", "Unlock", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page_objects_restriction), QtGui.QApplication.translate("tab_objects", "Interactions", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page_objects_slots), QtGui.QApplication.translate("tab_objects", "Analog Out Slots", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_8.setText(QtGui.QApplication.translate("tab_objects", "Save", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_5.setText(QtGui.QApplication.translate("tab_objects", "Delete", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_4.setText(QtGui.QApplication.translate("tab_objects", "Clone", None, QtGui.QApplication.UnicodeUTF8))

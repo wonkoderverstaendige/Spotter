@@ -37,7 +37,7 @@
         <number>0</number>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <property name="tabSpacing">
         <number>0</number>
@@ -256,7 +256,7 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="page_regions_conditions">
+       <widget class="QWidget" name="page_regions_collisions">
         <property name="geometry">
          <rect>
           <x>0</x>
@@ -266,7 +266,7 @@
          </rect>
         </property>
         <attribute name="label">
-         <string>Conditions/Triggers</string>
+         <string>Collision Slots</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_8">
          <property name="margin">
@@ -277,8 +277,11 @@
          </property>
          <item row="0" column="0">
           <layout class="QGridLayout" name="gridLayout_10">
-           <item row="0" column="0">
+           <item row="1" column="0">
             <widget class="QTableWidget" name="table_slots">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="horizontalScrollBarPolicy">
               <enum>Qt::ScrollBarAsNeeded</enum>
              </property>
@@ -289,7 +292,7 @@
               <enum>QAbstractItemView::NoSelection</enum>
              </property>
              <property name="selectionBehavior">
-              <enum>QAbstractItemView::SelectItems</enum>
+              <enum>QAbstractItemView::SelectRows</enum>
              </property>
              <property name="showGrid">
               <bool>true</bool>
@@ -318,6 +321,19 @@
                <string>Logic</string>
               </property>
              </column>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QPushButton" name="btn_lock_table">
+             <property name="text">
+              <string>Unlock</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="default">
+              <bool>true</bool>
+             </property>
             </widget>
            </item>
           </layout>

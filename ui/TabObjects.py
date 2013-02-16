@@ -45,10 +45,9 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
 
         self.connect(self.btn_lock_table, QtCore.SIGNAL('toggled(bool)'), self.lock_slot_table)
 
-        self.update()
-
-        # slot table is static for Object
+        # slot table is static for Object, lists object properties
         self.populate_slot_table()
+        self.update()
 
     def update(self):
         if self.label == None:
@@ -176,8 +175,9 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
 #        self.tree_link_spi_dac.setCurrentItem(pin_item)
 
     def remove_pin(self, index = 0):
-        """ Remove a pin from the list of available digital out pins """
-        self.tree_link_spi_dac.takeTopLevelItem(index)
+        pass
+#        """ Remove a pin from the list of available digital out pins """
+#        self.tree_link_spi_dac.takeTopLevelItem(index)
 
     def _combo_pins(self, slot):
         pins, enable = self.available_pins(slot)
@@ -189,13 +189,12 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
             cbx.addItem(p.label)
             # Disable all pins already in use somewhere
             # From: http://stackoverflow.com/questions/11099975/pyqt-set-enabled-property-of-a-row-of-qcombobox
-            # to re-enable: QVariant(
             j = cbx.model().index(i,0)
             cbx.model().setData(j, QtCore.QVariant(enable[i]), QtCore.Qt.UserRole-1)
+        cbx.insertSeparator(len(pins))
         cbx.addItem('None')
-        cbx.setCurrentIndex(len(pins))
+        cbx.setCurrentIndex(len(pins)+1)
 
-#        cbx.insertSeparator(1)
         self.connect(cbx, QtCore.SIGNAL('currentIndexChanged(int)'), self.refresh_slot_table)
         return cbx
 
@@ -271,6 +270,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         for i in xrange(len(row)):
             item_list.append(QtGui.QTableWidgetItem(row[i]))
         return item_list
+
 
     def lock_slot_table(self, state):
         self.table_slots.setEnabled(state)

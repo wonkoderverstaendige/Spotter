@@ -60,7 +60,7 @@ class Tracker:
         return ooi
 
     def addROI( self, shape_list, label ):
-        roi = trkbl.ROI( shape_list, label )
+        roi = trkbl.ROI( shape_list, label, obj_list=self.oois )
         self.rois.append( roi )
         return roi
 

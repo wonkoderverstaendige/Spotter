@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'tab_regionsUi.ui'
 #
-# Created: Fri Feb 15 22:30:14 2013
+# Created: Sat Feb 16 03:37:12 2013
 #      by: PyQt4 UI code generator 4.9.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -109,20 +109,21 @@ class Ui_tab_regions(object):
         self.gridLayout_5.addWidget(self.tree_region_shapes, 6, 0, 1, 2)
         self.gridLayout_6.addLayout(self.gridLayout_5, 0, 1, 1, 1)
         self.toolBox.addItem(self.page_regions_overview, _fromUtf8(""))
-        self.page_regions_conditions = QtGui.QWidget()
-        self.page_regions_conditions.setGeometry(QtCore.QRect(0, 0, 239, 260))
-        self.page_regions_conditions.setObjectName(_fromUtf8("page_regions_conditions"))
-        self.gridLayout_8 = QtGui.QGridLayout(self.page_regions_conditions)
+        self.page_regions_collisions = QtGui.QWidget()
+        self.page_regions_collisions.setGeometry(QtCore.QRect(0, 0, 239, 260))
+        self.page_regions_collisions.setObjectName(_fromUtf8("page_regions_collisions"))
+        self.gridLayout_8 = QtGui.QGridLayout(self.page_regions_collisions)
         self.gridLayout_8.setMargin(0)
         self.gridLayout_8.setSpacing(0)
         self.gridLayout_8.setObjectName(_fromUtf8("gridLayout_8"))
         self.gridLayout_10 = QtGui.QGridLayout()
         self.gridLayout_10.setObjectName(_fromUtf8("gridLayout_10"))
-        self.table_slots = QtGui.QTableWidget(self.page_regions_conditions)
+        self.table_slots = QtGui.QTableWidget(self.page_regions_collisions)
+        self.table_slots.setEnabled(False)
         self.table_slots.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self.table_slots.setAlternatingRowColors(True)
         self.table_slots.setSelectionMode(QtGui.QAbstractItemView.NoSelection)
-        self.table_slots.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
+        self.table_slots.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.table_slots.setShowGrid(True)
         self.table_slots.setObjectName(_fromUtf8("table_slots"))
         self.table_slots.setColumnCount(3)
@@ -136,9 +137,14 @@ class Ui_tab_regions(object):
         self.table_slots.horizontalHeader().setMinimumSectionSize(5)
         self.table_slots.horizontalHeader().setStretchLastSection(True)
         self.table_slots.verticalHeader().setVisible(False)
-        self.gridLayout_10.addWidget(self.table_slots, 0, 0, 1, 1)
+        self.gridLayout_10.addWidget(self.table_slots, 1, 0, 1, 1)
+        self.btn_lock_table = QtGui.QPushButton(self.page_regions_collisions)
+        self.btn_lock_table.setCheckable(True)
+        self.btn_lock_table.setDefault(True)
+        self.btn_lock_table.setObjectName(_fromUtf8("btn_lock_table"))
+        self.gridLayout_10.addWidget(self.btn_lock_table, 0, 0, 1, 1)
         self.gridLayout_8.addLayout(self.gridLayout_10, 0, 0, 1, 1)
-        self.toolBox.addItem(self.page_regions_conditions, _fromUtf8(""))
+        self.toolBox.addItem(self.page_regions_collisions, _fromUtf8(""))
         self.page_regions_IO = QtGui.QWidget()
         self.page_regions_IO.setGeometry(QtCore.QRect(0, 0, 239, 260))
         self.page_regions_IO.setObjectName(_fromUtf8("page_regions_IO"))
@@ -172,7 +178,7 @@ class Ui_tab_regions(object):
         self.gridLayout.addLayout(self.gridLayout_2, 0, 0, 1, 1)
 
         self.retranslateUi(tab_regions)
-        self.toolBox.setCurrentIndex(0)
+        self.toolBox.setCurrentIndex(1)
         self.toolBox.layout().setSpacing(0)
         QtCore.QMetaObject.connectSlotsByName(tab_regions)
 
@@ -193,7 +199,8 @@ class Ui_tab_regions(object):
         item.setText(QtGui.QApplication.translate("tab_regions", "Pin", None, QtGui.QApplication.UnicodeUTF8))
         item = self.table_slots.horizontalHeaderItem(2)
         item.setText(QtGui.QApplication.translate("tab_regions", "Logic", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page_regions_conditions), QtGui.QApplication.translate("tab_regions", "Conditions/Triggers", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_lock_table.setText(QtGui.QApplication.translate("tab_regions", "Unlock", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page_regions_collisions), QtGui.QApplication.translate("tab_regions", "Collision Slots", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_15.setText(QtGui.QApplication.translate("tab_regions", "Open", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_14.setText(QtGui.QApplication.translate("tab_regions", "Clone", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_13.setText(QtGui.QApplication.translate("tab_regions", "Delete", None, QtGui.QApplication.UnicodeUTF8))

@@ -119,6 +119,7 @@ class Slot:
         self.type = _type
         self.pin = None
         self.state = None
+        self.ref = None
 
     def attach_pin(self, pin):
         pass
@@ -197,43 +198,64 @@ class ROI:
     color = None
     alpha = .6
 
-    linked_objects = None
+    linked_objects = None # aka slots!
 
-    slots = None
-
-    def __init__(self, shape_list = None, label = None, color = None ):
+    def __init__(self, shape_list=None, label=None, color=None, obj_list=None ):
         if not color:
             self.normal_color = self.get_normal_color()
         else:
             self.normal_color = self.normalize_color(color)
-
         self.passive_color = self.scale_color(self.normal_color, 200)
         self.active_color = self.scale_color(self.normal_color, 255)
-
         self.set_passive_color()
 
         self.label = label
-        self.shapes = []
+
+        self.slots = []
+
+        # reference to all objects spotter holds
+        self.oois = obj_list
+
         # if the ROI is initialized with a set of shapes to begin with:
+        self.shapes = []
         if shape_list:
             for shape in shape_list:
                 self.add_shape(*shape)
 
     def move( self, dx, dy ):
+        """ Moves all shapes, aka the whole ROI, by delta pixels. """
         for s in self.shapes:
             s.move(dx, dy)
 
     def add_shape(self, shape_type, points, label):
+        """ Adds a new shape. """
         shape = Shape(shape_type, points, label)
         self.shapes.append(shape)
         return shape
 
     def remove_shape(self, shape):
+        """ Removes a shape. """
         self.shapes.pop(self.shapes.index(shape))
 
-    def assemble_collision_array(self):
-        for s in self.shapes:
-            pass
+
+    def refresh_slot_list(self):
+        if self.oois and len(self.slots) < len(self.oois):
+            for o in self.oois:
+                for s in self.slots:
+                    if s.label == o.label:
+                        break
+                else:
+                    self.link_object(o)
+
+    def link_object(self, obj):
+        self.slots.append(Slot(obj.label, 'digital'))
+#        print "Added object", obj.label, "to slot list of", self.label
+
+    def unlink_object(self, obj):
+        for s in self.slots:
+            if s.label == obj.label:
+                self.slots.pop(self.slots.find(s))
+                print "removed object ", obj.label, " from slot list of ", self.label
 
     def collision_check(self, point1, point2 = None):
         """ Test if a line between start and end would somewhere collide with

@@ -260,7 +260,7 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="page_objects_restriction">
+       <widget class="QWidget" name="page_objects_slots">
         <property name="geometry">
          <rect>
           <x>0</x>
@@ -270,7 +270,7 @@
          </rect>
         </property>
         <attribute name="label">
-         <string>Interactions</string>
+         <string>Analog Out Slots</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_8">
          <property name="margin">
@@ -284,7 +284,7 @@
            <item row="1" column="0">
             <widget class="QTableWidget" name="table_slots">
              <property name="enabled">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
              <property name="horizontalScrollBarPolicy">
               <enum>Qt::ScrollBarAsNeeded</enum>
