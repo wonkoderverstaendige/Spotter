@@ -55,7 +55,6 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
             return
 
         self.refresh_feature_list()
-        self.refresh_pin_list()
         self.refresh_slot_table()
 
         if not self.ckb_trace.isChecked() == self.object.traced:
@@ -152,70 +151,6 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
 
 
 ###############################################################################
-## PIN LIST
-###############################################################################
-    def refresh_pin_list(self):
-        pass
-#        pins = self.parent.spotter.chatter.pins('dac')
-#        if self.parent.spotter.chatter.is_open() and pins:
-#            if not self.tree_link_spi_dac.topLevelItemCount() == len(pins):
-#                self.add_pin(self.tree_link_spi_dac.topLevelItemCount())
-#        else:
-#            while not self.tree_link_spi_dac.topLevelItemCount() == 0:
-#                self.remove_pin()
-
-    def add_pin(self, pin):
-        pass
-#        """
-#        Add a new digital out pin to the list of pins.
-#        """
-#        pin_item = QtGui.QTreeWidgetItem([str(pin)])
-#        pin_item.setCheckState(0, QtCore.Qt.Unchecked)
-#        self.tree_link_spi_dac.addTopLevelItem(pin_item)
-#        self.tree_link_spi_dac.setCurrentItem(pin_item)
-
-    def remove_pin(self, index = 0):
-        pass
-#        """ Remove a pin from the list of available digital out pins """
-#        self.tree_link_spi_dac.takeTopLevelItem(index)
-
-    def _combo_pins(self, slot):
-        pins, enable = self.available_pins(slot)
-
-        if not pins:
-            return None
-        cbx = QtGui.QComboBox()
-        for i, p in enumerate(pins):
-            cbx.addItem(p.label)
-            # Disable all pins already in use somewhere
-            # From: http://stackoverflow.com/questions/11099975/pyqt-set-enabled-property-of-a-row-of-qcombobox
-            j = cbx.model().index(i,0)
-            cbx.model().setData(j, QtCore.QVariant(enable[i]), QtCore.Qt.UserRole-1)
-        cbx.insertSeparator(len(pins))
-        cbx.addItem('None')
-        cbx.setCurrentIndex(len(pins)+1)
-
-        self.connect(cbx, QtCore.SIGNAL('currentIndexChanged(int)'), self.refresh_slot_table)
-        return cbx
-
-
-    def available_pins(self, slot):
-        """
-        Return list of pins suitable for the slot. Mark those available or
-        already selected
-        """
-        enable = []
-        pins = self.parent.spotter.chatter.pins(slot.type)
-        for p in pins:
-#            print p.slot, slot
-            if not p.slot == None and not p.slot is slot:
-                enable.append(0)
-            else:
-                enable.append(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)#33
-        return pins, enable
-
-
-###############################################################################
 ## SLOT TABLE
 ###############################################################################
     def populate_slot_table(self):
@@ -233,6 +168,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
 #            self.table_slots.setRowHeight(i, 18)
         self.table_slots.resizeColumnsToContents()
         self.table_slots.resizeRowsToContents()
+        self.table_slots.horizontalHeader().setStretchLastSection(True)
 
 
     def refresh_slot_table(self):
@@ -243,19 +179,29 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         """
         for i in xrange(self.table_slots.rowCount()):
             cbx = self.table_slots.cellWidget(i, 1)
-            sel_pin = cbx.currentIndex()
+            selected_pin = cbx.currentIndex()
             pins, enabled = self.available_pins(self.object.slots[i])
-            # None-"None" pin selected, check if proper slot linked
-            if sel_pin < len(pins):
-                if not pins[sel_pin].slot is self.object.slots[i]:
-                    pins[sel_pin].slot = self.object.slots[i]
-            # Nothing selected, check if slot linked somewhere, but shouldn't
-            else:
-                for p in pins:
-                    if p.slot == self.object.slots[i]:
+
+            # If a pin is selected from the combobox, check if it is linked. If
+            # not, link the slot to the selected pin
+            if selected_pin < len(pins):
+                if not pins[selected_pin].slot is self.object.slots[i]:
+                    pins[selected_pin].slot = self.object.slots[i]
+                # check if this slot is still linked to another pin
+                for j, p in enumerate(pins):
+                    if not j == selected_pin and p.slot is self.object.slots[i]:
                         p.slot = None
 
-        # refresh combo boxes with proper availabilities
+            # If nothing is selected from the combobox, check if this slot is
+            # still linked to a pin. If so, cut that link.
+            else:
+                for p in pins:
+                    if (p.slot is self.object.slots[i]):
+                        p.slot = None
+
+        # refresh combo boxes with proper availabilities. Disable all pins that
+        # are already in use. Has to be repeated from above, as slot links
+        # could have changed.
         for row in xrange(self.table_slots.rowCount()):
             pins, enabled = self.available_pins(self.object.slots[row])
             cbx = self.table_slots.cellWidget(row, 1)
@@ -265,7 +211,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
 
 
     def _table_slot_row(self, row):
-        """ List of row widget items. """
+        """List of row widget items."""
         item_list = []
         for i in xrange(len(row)):
             item_list.append(QtGui.QTableWidgetItem(row[i]))
@@ -288,3 +234,41 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
 #            print "pew pew"
 #            return
 #        return QtCore.QObject.eventFilter(self, filteredObj, event)
+
+
+###############################################################################
+## PIN LIST
+###############################################################################
+    def _combo_pins(self, slot):
+        pins, enable = self.available_pins(slot)
+
+        if not pins:
+            return None
+        cbx = QtGui.QComboBox()
+        for i, p in enumerate(pins):
+            cbx.addItem(p.label)
+            # Disable all pins already in use somewhere
+            # From: http://stackoverflow.com/questions/11099975/pyqt-set-enabled-property-of-a-row-of-qcombobox
+            j = cbx.model().index(i,0)
+            cbx.model().setData(j, QtCore.QVariant(enable[i]), QtCore.Qt.UserRole-1)
+        cbx.insertSeparator(len(pins))
+        cbx.addItem('None')
+        cbx.setCurrentIndex(len(pins)+1)
+
+        self.connect(cbx, QtCore.SIGNAL('currentIndexChanged(int)'), self.refresh_slot_table)
+        return cbx
+
+
+    def available_pins(self, slot):
+        """
+        Return list of pins suitable for a specific slot and list of flags of
+        availabilities.
+        """
+        enable = []
+        pins = self.parent.spotter.chatter.pins(slot.type)
+        for p in pins:
+            if p.slot and not (p.slot is slot):
+                enable.append(0)
+            else:
+                enable.append(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)#33
+        return pins, enable

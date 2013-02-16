@@ -52,6 +52,9 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
             shape_item.setFlags(shape_item.flags() | QtCore.Qt.ItemIsEditable)
             self.tree_region_shapes.addTopLevelItem(shape_item)
 
+        # List of items in the table to compare when updated. Ugly solution.
+        self.slots_items = []
+
         self.connect(self.btn_add_shape, QtCore.SIGNAL('toggled(bool)'), self.accept_selection)
         self.connect(self.btn_remove_shape, QtCore.SIGNAL('clicked()'), self.remove_shape)
         self.connect(self.btn_lock_table, QtCore.SIGNAL('toggled(bool)'), self.lock_slot_table)
@@ -68,7 +71,6 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
 
 
     def update(self):
-        self.refresh_pin_list()
         self.refresh_shape_list()
         self.refresh_slot_table()
 
@@ -231,42 +233,130 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
 
 
 ###############################################################################
+## SLOT TABLE
+###############################################################################
+    def populate_slot_table(self):
+        """
+        Slots for regions are dynamically built, will be empty at start
+        unless object template has been loaded before.
+        """
+        self.region.refresh_slot_list()
+
+        # if there are no slots, the table and its list should be empty
+        if not self.region.slots and self.slots_items:
+            print 'removing all rows'
+            while self.table_slots.rowCount():
+                self.slots_remove_row(0)
+            return
+
+        # check if table of slots is up to date. No missing slots, not listing
+        # slots that no longer exist!
+        if not (self.slots_items == self.region.slots):
+            # Check that no slots are missing from the table
+            missing = []
+            remove = []
+            for rs in self.region.slots:
+                if not (rs in self.slots_items):
+                    missing.append(rs)
+
+            # Check that no non-existing slots are listed in the table
+            for ts in self.slots_items:
+                if not (ts in self.region.slots):
+                    remove.append(ts)
+
+            # remove the additional rows:
+            for rs in remove:
+                self.slots_remove_row(self.slots_items.find(rs))
+
+            # add the missing rows
+            for ms in missing:
+                self.slots_add_row(ms)
+
+            if len(missing) or len(remove):
+                self.slots_resize_columns()
+
+
+    def refresh_slot_table(self):
+        # make sure table is updated
+        self.populate_slot_table()
+
+        for i in xrange(self.table_slots.rowCount()):
+            cbx = self.table_slots.cellWidget(i, 1)
+            selected_pin = cbx.currentIndex()
+            pins, enabled = self.available_pins(self.region.slots[i])
+
+            # If a pin is selected from the combobox, check if it is linked. If
+            # not, link the slot to the selected pin
+            if selected_pin < len(pins):
+                if not pins[selected_pin].slot is self.region.slots[i]:
+                    pins[selected_pin].slot = self.region.slots[i]
+                # check if this slot is still linked to another pin
+                for j, p in enumerate(pins):
+                    if not j == selected_pin and p.slot is self.region.slots[i]:
+                        p.slot = None
+
+            # If nothing is selected from the combobox, check if this slot is
+            # still linked to a pin. If so, cut that link.
+            else:
+                for p in pins:
+                    if (p.slot is self.region.slots[i]):
+                        p.slot = None
+
+        # refresh combo boxes with proper availabilities. Disable all pins that
+        # are already in use. Has to be repeated from above, as slot links
+        # could have changed.
+        for row in xrange(self.table_slots.rowCount()):
+            pins, enabled = self.available_pins(self.region.slots[row])
+            cbx = self.table_slots.cellWidget(row, 1)
+            for i in xrange(len(pins)):
+                j = cbx.model().index(i,0)
+                cbx.model().setData(j, QtCore.QVariant(enabled[i]), QtCore.Qt.UserRole-1)
+
+
+    def _table_slot_row(self, row):
+        """ List of row widget items. """
+        item_list = []
+        for i in xrange(len(row)):
+            item_list.append(QtGui.QTableWidgetItem(row[i]))
+        return item_list
+
+
+    def lock_slot_table(self, state):
+        self.table_slots.setEnabled(state)
+        if state:
+            self.btn_lock_table.setText("Lock")
+        else:
+            self.btn_lock_table.setText("Unlock")
+
+
+    def slots_add_row(self, slot, pos=-1):
+        item = [slot.label, '', 'IGNORE']
+        row_items = self._table_slot_row(item)
+        if pos < 0:
+            pos = len(self.slots_items)
+        self.table_slots.insertRow(len(self.slots_items))
+        self.slots_items.append(slot)
+
+        for j, item in enumerate(row_items):
+            if j == 1:
+                self.table_slots.setCellWidget(pos, j, self._combo_pins(slot))
+            self.table_slots.setItem(pos, j, item)
+
+
+    def slots_remove_row(self, index):
+        self.table_slots.removeRow(index)
+        self.slots_items.pop(index)
+
+
+    def slots_resize_columns(self):
+        self.table_slots.resizeColumnsToContents()
+        self.table_slots.resizeRowsToContents()
+        self.table_slots.horizontalHeader().setStretchLastSection(True)
+
+
+###############################################################################
 ## PIN LIST
 ###############################################################################
-    def refresh_pin_list(self):
-        pass
-#        # If nothing selected, select the first item in the list
-#        n_items = self.tree_region_digital.topLevelItemCount()
-#        if n_items and not self.tree_region_digital.currentItem():
-#            self.tree_region_digital.setCurrentItem(self.tree_region_digital.topLevelItem(0))
-#        pins = self.parent.spotter.chatter.pins()
-#        if pins:
-#            pins = pins['digital']
-#        if self.parent.spotter.chatter.is_open() and pins:
-#            while not self.tree_region_digital.topLevelItemCount() == pins.n:
-#                self.add_pin(self.tree_region_digital.topLevelItemCount())
-#        else:
-#            while not self.tree_region_digital.topLevelItemCount() == 0:
-#                self.remove_pin()
-
-
-    def add_pin(self, pin):
-        pass
-#        """
-#        Add a new digital out pin to the list of pins.
-#        """
-#        pin_item = QtGui.QTreeWidgetItem([str(pin)])
-##        pin_item.pin = self.region.add_shape(shape_type, shape_points, shape_type)
-#        pin_item.setCheckState(0, QtCore.Qt.Unchecked)
-#        self.tree_region_digital.addTopLevelItem(pin_item)
-#        self.tree_region_digital.setCurrentItem(pin_item)
-##        pin_item.setFlags(pin_item.flags() | QtCore.Qt.ItemIsEditable)
-
-    def remove_pin(self):
-        pass
-#        """ Remove a pin from the list of available digital out pins """
-#        self.tree_region_digital.takeTopLevelItem(0)
-
     def _combo_pins(self, slot):
         pins, enable = self.available_pins(slot)
 
@@ -289,75 +379,14 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
 
     def available_pins(self, slot):
         """
-        Return list of pins suitable for the slot. Mark those available or
-        already selected
+        Return list of pins suitable for a specific slot and list of flags of
+        availabilities.
         """
         enable = []
         pins = self.parent.spotter.chatter.pins(slot.type)
         for p in pins:
-            if not p.slot == None and not p.slot is slot:
+            if p.slot and not (p.slot is slot):
                 enable.append(0)
             else:
                 enable.append(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)#33
         return pins, enable
-
-
-
-
-###############################################################################
-## SLOT TABLE
-###############################################################################
-    def populate_slot_table(self):
-        self.refresh_slot_table()
-
-
-    def refresh_slot_table(self):
-        self.region.refresh_slot_list()
-#        print self.region.slots, self.region.oois
-        if not self.region.slots:
-            while self.table_slots.rowCount():
-                print 'removing row'
-                self.table_slots.removeRow(0)
-            return
-
-#        remove = []
-#        missing = []
-        old_count = self.table_slots.rowCount()
-        self.table_slots.setRowCount(len(self.region.slots))
-        for i, s in enumerate(self.region.slots):
-            if i < old_count:
-                continue
-            item = [s.label, '', 'IGNORE']
-            row_items = self._table_slot_row(item)
-            self.table_slots.insertRow(i)
-            for j, item in enumerate(row_items):
-                if j == 1:
-                    self.table_slots.setCellWidget(i, j, self._combo_pins(s))
-                self.table_slots.setItem(i, j, item)
-        self.table_slots.resizeColumnsToContents()
-        self.table_slots.resizeRowsToContents()
-        self.table_slots.horizontalHeader().setStretchLastSection(True)
-
-        # refresh combo boxes with proper availabilities
-        for row in xrange(self.table_slots.rowCount()-2):
-            pins, enabled = self.available_pins(self.region.slots[row])
-            cbx = self.table_slots.cellWidget(row, 1)
-            for i in xrange(len(pins)):
-                j = cbx.model().index(i,0)
-                cbx.model().setData(j, QtCore.QVariant(enabled[i]), QtCore.Qt.UserRole-1)
-
-
-    def _table_slot_row(self, row):
-        """ List of row widget items. """
-        item_list = []
-        for i in xrange(len(row)):
-            item_list.append(QtGui.QTableWidgetItem(row[i]))
-        return item_list
-
-
-    def lock_slot_table(self, state):
-        self.table_slots.setEnabled(state)
-        if state:
-            self.btn_lock_table.setText("Lock")
-        else:
-            self.btn_lock_table.setText("Unlock")

@@ -262,3 +262,72 @@ Created on Fri Nov 02 21:23:19 2012
 
     # features, objects, regions
     full_templates = dict( LinearTrack =  [feature_templates, object_templates, region_templates] )
+
+
+
+
+###############################################################################
+## PIN LIST - from TabRegions.py
+###############################################################################
+#    def refresh_pin_list(self):
+#        pass
+##        # If nothing selected, select the first item in the list
+##        n_items = self.tree_region_digital.topLevelItemCount()
+##        if n_items and not self.tree_region_digital.currentItem():
+##            self.tree_region_digital.setCurrentItem(self.tree_region_digital.topLevelItem(0))
+##        pins = self.parent.spotter.chatter.pins()
+##        if pins:
+##            pins = pins['digital']
+##        if self.parent.spotter.chatter.is_open() and pins:
+##            while not self.tree_region_digital.topLevelItemCount() == pins.n:
+##                self.add_pin(self.tree_region_digital.topLevelItemCount())
+##        else:
+##            while not self.tree_region_digital.topLevelItemCount() == 0:
+##                self.remove_pin()
+#
+#
+#    def add_pin(self, pin):
+#        pass
+##        """
+##        Add a new digital out pin to the list of pins.
+##        """
+##        pin_item = QtGui.QTreeWidgetItem([str(pin)])
+###        pin_item.pin = self.region.add_shape(shape_type, shape_points, shape_type)
+##        pin_item.setCheckState(0, QtCore.Qt.Unchecked)
+##        self.tree_region_digital.addTopLevelItem(pin_item)
+##        self.tree_region_digital.setCurrentItem(pin_item)
+###        pin_item.setFlags(pin_item.flags() | QtCore.Qt.ItemIsEditable)
+#
+#    def remove_pin(self):
+#        pass
+##        """ Remove a pin from the list of available digital out pins """
+##        self.tree_region_digital.takeTopLevelItem(0)
+
+
+###############################################################################
+## PIN LIST - from TabObjects.py
+###############################################################################
+    def refresh_pin_list(self):
+        pass
+#        pins = self.parent.spotter.chatter.pins('dac')
+#        if self.parent.spotter.chatter.is_open() and pins:
+#            if not self.tree_link_spi_dac.topLevelItemCount() == len(pins):
+#                self.add_pin(self.tree_link_spi_dac.topLevelItemCount())
+#        else:
+#            while not self.tree_link_spi_dac.topLevelItemCount() == 0:
+#                self.remove_pin()
+
+    def add_pin(self, pin):
+        pass
+#        """
+#        Add a new digital out pin to the list of pins.
+#        """
+#        pin_item = QtGui.QTreeWidgetItem([str(pin)])
+#        pin_item.setCheckState(0, QtCore.Qt.Unchecked)
+#        self.tree_link_spi_dac.addTopLevelItem(pin_item)
+#        self.tree_link_spi_dac.setCurrentItem(pin_item)
+
+    def remove_pin(self, index = 0):
+        pass
+#        """ Remove a pin from the list of available digital out pins """
+#        self.tree_link_spi_dac.takeTopLevelItem(index)

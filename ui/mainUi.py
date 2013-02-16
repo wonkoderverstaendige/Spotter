@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Sat Feb 16 03:37:11 2013
+# Created: Sat Feb 16 16:33:07 2013
 #      by: PyQt4 UI code generator 4.9.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -29,8 +29,8 @@ class Ui_MainWindow(object):
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.horizontalLayout_2 = QtGui.QHBoxLayout(self.centralwidget)
-        self.horizontalLayout_2.setSpacing(1)
-        self.horizontalLayout_2.setMargin(1)
+        self.horizontalLayout_2.setSpacing(0)
+        self.horizontalLayout_2.setMargin(0)
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
         self.frame_video = QtGui.QHBoxLayout()
         self.frame_video.setSpacing(0)
@@ -44,6 +44,7 @@ class Ui_MainWindow(object):
         self.frame_video.addWidget(self.frame)
         self.horizontalLayout_2.addLayout(self.frame_video)
         self.frame_parameters = QtGui.QHBoxLayout()
+        self.frame_parameters.setSpacing(0)
         self.frame_parameters.setObjectName(_fromUtf8("frame_parameters"))
         self.tab_parameters = QtGui.QTabWidget(self.centralwidget)
         self.tab_parameters.setEnabled(True)
@@ -57,8 +58,8 @@ class Ui_MainWindow(object):
         self.widget_settings = QtGui.QWidget()
         self.widget_settings.setObjectName(_fromUtf8("widget_settings"))
         self.gridLayout_2 = QtGui.QGridLayout(self.widget_settings)
-        self.gridLayout_2.setMargin(3)
-        self.gridLayout_2.setSpacing(1)
+        self.gridLayout_2.setMargin(0)
+        self.gridLayout_2.setSpacing(0)
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
         self.gridLayout_3 = QtGui.QGridLayout()
         self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
@@ -108,6 +109,7 @@ class Ui_MainWindow(object):
         self.tab_features_newTab = QtGui.QWidget()
         self.tab_features_newTab.setObjectName(_fromUtf8("tab_features_newTab"))
         self.verticalLayout_2 = QtGui.QVBoxLayout(self.tab_features_newTab)
+        self.verticalLayout_2.setContentsMargins(9, -1, -1, -1)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
         self.btn_new_feature_tab = QtGui.QPushButton(self.tab_features_newTab)
         self.btn_new_feature_tab.setObjectName(_fromUtf8("btn_new_feature_tab"))
@@ -138,6 +140,7 @@ class Ui_MainWindow(object):
         self.tab_object_newTab = QtGui.QWidget()
         self.tab_object_newTab.setObjectName(_fromUtf8("tab_object_newTab"))
         self.verticalLayout = QtGui.QVBoxLayout(self.tab_object_newTab)
+        self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.btn_new_object_tab = QtGui.QPushButton(self.tab_object_newTab)
         self.btn_new_object_tab.setObjectName(_fromUtf8("btn_new_object_tab"))
@@ -161,6 +164,7 @@ class Ui_MainWindow(object):
         self.tab_regions_newTab = QtGui.QWidget()
         self.tab_regions_newTab.setObjectName(_fromUtf8("tab_regions_newTab"))
         self.verticalLayout_3 = QtGui.QVBoxLayout(self.tab_regions_newTab)
+        self.verticalLayout_3.setSpacing(0)
         self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
         self.btn_new_region_tab = QtGui.QPushButton(self.tab_regions_newTab)
         self.btn_new_region_tab.setObjectName(_fromUtf8("btn_new_region_tab"))
@@ -175,6 +179,7 @@ class Ui_MainWindow(object):
         self.widget_serial = QtGui.QWidget()
         self.widget_serial.setObjectName(_fromUtf8("widget_serial"))
         self.verticalLayout_4 = QtGui.QVBoxLayout(self.widget_serial)
+        self.verticalLayout_4.setSpacing(0)
         self.verticalLayout_4.setMargin(0)
         self.verticalLayout_4.setObjectName(_fromUtf8("verticalLayout_4"))
         self.tab_serial = QtGui.QTabWidget(self.widget_serial)
