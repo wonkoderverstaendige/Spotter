@@ -16,7 +16,7 @@ Options:
     -s --source SRC     Path to file or device ID [default: 0]
     -S --Serial         Serial port to uC [default: None]
     -o --outfile DST    Path to video out file [default: None]
-    -d --dims DIMS      Frame size [default: 320x200]
+    -d --dims DIMS      Frame size [default: 640x360]
     -H --Headless       Run without interface
     -D --DEBUG          Verbose output
 
