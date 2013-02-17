@@ -205,7 +205,7 @@ if __name__ == '__main__':                                  #
         tracker.ooi.updatePosition()
 
         if not tracker.ooi.pos_hist[-1] == None:
-            tracker.chatter.send(tracker.ooi.guessed_pos)
+            tracker.chatter.send(tracker.ooi.position)
 
         for idx, led in enumerate( tracker.leds ):
             if not led.pos_hist[-1] == None:

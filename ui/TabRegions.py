@@ -282,29 +282,18 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
 
         for i in xrange(self.table_slots.rowCount()):
             cbx = self.table_slots.cellWidget(i, 1)
+            slot = self.region.slots[i]
             selected_pin = cbx.currentIndex()
-            pins, enabled = self.available_pins(self.region.slots[i])
+            pins, enabled = self.available_pins(slot)
 
-            # If a pin is selected from the combobox, check if it is linked. If
-            # not, link the slot to the selected pin
             if selected_pin < len(pins):
-                if not pins[selected_pin].slot is self.region.slots[i]:
-                    pins[selected_pin].slot = self.region.slots[i]
-                # check if this slot is still linked to another pin
-                for j, p in enumerate(pins):
-                    if not j == selected_pin and p.slot is self.region.slots[i]:
-                        p.slot = None
-
-            # If nothing is selected from the combobox, check if this slot is
-            # still linked to a pin. If so, cut that link.
+                if not slot.pin is pins[selected_pin]:
+                    slot.attach_pin(pins[selected_pin])
             else:
-                for p in pins:
-                    if (p.slot is self.region.slots[i]):
-                        p.slot = None
+                if slot.pin:
+                    slot.detach_pin()
 
-        # refresh combo boxes with proper availabilities. Disable all pins that
-        # are already in use. Has to be repeated from above, as slot links
-        # could have changed.
+        # Disable pins that are already in use
         for row in xrange(self.table_slots.rowCount()):
             pins, enabled = self.available_pins(self.region.slots[row])
             cbx = self.table_slots.cellWidget(row, 1)
@@ -322,6 +311,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
 
 
     def lock_slot_table(self, state):
+        """Toggle button to lock or unlock the whole table."""
         self.table_slots.setEnabled(state)
         if state:
             self.btn_lock_table.setText("Lock")
@@ -330,11 +320,12 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
 
 
     def slots_add_row(self, slot, pos=-1):
+        """Add new row for [slot] at position. If no position given, append."""
         item = [slot.label, '', 'IGNORE']
         row_items = self._table_slot_row(item)
         if pos < 0:
             pos = len(self.slots_items)
-        self.table_slots.insertRow(len(self.slots_items))
+        self.table_slots.insertRow(pos)
         self.slots_items.append(slot)
 
         for j, item in enumerate(row_items):
@@ -344,11 +335,13 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
 
 
     def slots_remove_row(self, index):
+        """Remove row from table."""
         self.table_slots.removeRow(index)
         self.slots_items.pop(index)
 
 
     def slots_resize_columns(self):
+        """Resizing columns to fill whole horizontal space."""
         self.table_slots.resizeColumnsToContents()
         self.table_slots.resizeRowsToContents()
         self.table_slots.horizontalHeader().setStretchLastSection(True)
@@ -360,8 +353,6 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
     def _combo_pins(self, slot):
         pins, enable = self.available_pins(slot)
 
-        if not pins:
-            return None
         cbx = QtGui.QComboBox()
         for i, p in enumerate(pins):
             cbx.addItem(p.label)

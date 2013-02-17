@@ -218,9 +218,9 @@ class Chatter:
             try:
                 return self.serial_device.pins[pin_type]
             except:
-                return None
+                return []
         else:
-            return None
+            return []
 
 
 ###############################################################################

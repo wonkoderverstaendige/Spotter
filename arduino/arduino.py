@@ -38,28 +38,10 @@ class Arduino(object):
         self.bytes_sent = 0
         self.bytes_received = 0
 
-        self.pins = dict(dac=None, digital=None, pwm=None, adc=None)
+        self.pins = dict(dac=[], digital=[], pwm=[], adc=[])
 
         self.portString = port
 #        self.sp.flushInput()
-
-#        mirror_test_val = 4095
-#        for n in xrange(100):
-#            self.send_instructions([['report', 0, mirror_test_val],
-#                                    ['report', 1, 0],
-#                                    ['report', 2, 0]])
-#            if self.bytes_available():
-#                self.connected = True
-#                print("   --> Connected after " + str(n) + " tries.")
-#                responses = map(int, self.read_all_bytes().splitlines())
-#                if int(responses[0]) == mirror_test_val:
-#                    print '   --> Mirror test passed!'
-#                self.pins['dac'] = Pin(responses[1], 1)
-#                self.pins['digital'] = Pin(responses[2], 2)
-#                print '   --> SPI_DAC pins available:', self.pins['dac'].n
-#                print '   --> Digital pins available:', self.pins['digital'].n
-#                break
-#            self.pass_time(0.01)
 
     def __str__(self):
         return "Board %s on %s" % (self.name, self.sp.port)
@@ -80,16 +62,17 @@ class Arduino(object):
         self.pass_time(0.1)
         if self.bytes_available():
             responses = map(int, self.read_all_bytes().splitlines())
+            dac_pins = [Pin(idx, 1, 'DAC') for idx in xrange(responses[0])]
+            dig_pins = [Pin(idx, 2, 'DO') for idx in xrange(responses[1])]
             # Analog pins are of type 1
-            self.pins['dac'] = [Pin(idx, 1, 'DAC') for idx in xrange(responses[0])]
+            self.pins['dac'].extend(dac_pins)
             # Digital Pins are type 2
-            self.pins['digital'] = [Pin(idx, 2, 'DO') for idx in xrange(responses[1])]
+            self.pins['digital'].extend(dig_pins)
 
             print '   --> SPI_DAC pins available:', len(self.pins['dac'])
             print '   --> Digital pins available:', len(self.pins['digital'])
             return True
-        else:
-            return None
+        return False
 
     def read_all_bytes(self):
         msg = ''

@@ -124,30 +124,40 @@ class Spotter:
             self.hsv_frame = cv2.cvtColor( self.newest_frame, cv2.COLOR_BGR2HSV )
             self.tracker.trackLeds( self.hsv_frame, method = 'hsv_thresh' )
 
-            # Calculate positions send to Serial if object linked to serial
-            # if no point detected (guessed_pos == None)
-            # output will be zeroed
+
+            # Update positions of all objects
             for o in self.tracker.oois:
-                o.updatePosition()
-                if o.analog_pos and self.chatter: # and o.guessed_pos
-                    self.chatter.send_analog_state(o.guessed_pos)
-
-            # run collision detections
-            for r in self.tracker.rois:
-                for o in self.tracker.oois:
-                    collision = r.collision_check(o.guessed_pos)
-                    if r.label == 'Trigger' and o.label == 'Subject':
-                        if collision:
-                            self.chatter.send_digital_state(1, 0x07)
-                        else:
-                            self.chatter.send_digital_state(1, 0x00)
+                o.update_state()
+                o.phys_out()
 
 
-                    if r.label == 'Sync_trig' and o.label == 'Sync':
-                        if collision:
-                            self.chatter.send_digital_state(1, 0x07)
-                        else:
-                            self.chatter.send_digital_state(1, 0x00)
+#            # Calculate positions send to Serial if object linked to serial
+#            # if no point detected (position == None)
+#            # output will be zeroed
+#            for o in self.tracker.oois:
+#                o.updatePosition()
+#                if o.analog_pos and self.chatter: # and o.position
+#                    self.chatter.send_analog_state(o.position)
+#
+#
+#
+#
+#            # run collision detections
+#            for r in self.tracker.rois:
+#                for o in self.tracker.oois:
+#                    collision = r.collision_check(o.position)
+#                    if r.label == 'Trigger' and o.label == 'Subject':
+#                        if collision:
+#                            self.chatter.send_digital_state(1, 0x07)
+#                        else:
+#                            self.chatter.send_digital_state(1, 0x00)
+#
+#
+#                    if r.label == 'Sync_trig' and o.label == 'Sync':
+#                        if collision:
+#                            self.chatter.send_digital_state(1, 0x07)
+#                        else:
+#                            self.chatter.send_digital_state(1, 0x00)
 #                        print collision
 #                    if o.digital_collision_out and self.chatter:
 #                        self.chatter.send_collision2digital(o.digital_ports)
@@ -269,8 +279,8 @@ if __name__ == "__main__":                                  #
 #            main.Object.updatePosition()
 
             # send position of tracked object to serial port
-#            if not main.Object.guessed_pos is None:
-#                main.tracker.chatter.send( main.Object.guessed_pos )
+#            if not main.Object.position is None:
+#                main.tracker.chatter.send( main.Object.position )
 
             # freezes frame being shown, but not frame being processed/written
             main.gui.update( main.newest_frame )

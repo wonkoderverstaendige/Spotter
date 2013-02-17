@@ -119,13 +119,16 @@ class Slot:
         self.type = _type
         self.pin = None
         self.state = None
-        self.ref = None
 
     def attach_pin(self, pin):
-        pass
+        if self.pin and self.pin.slot:
+            self.detach_pin()
+        self.pin = pin
+        self.pin.slot = self
 
-    def detach_pin(self, pin):
-        pass
+    def detach_pin(self):
+        self.pin.slot = None
+        self.pin = None
 
 
 class OOI:
@@ -136,12 +139,18 @@ class OOI:
 
     # TODO: Use general "features" rather than LEDs specifically
 
-    pos_hist = None    # history of position
-    guessed_pos = None # Holds currently guessed position, tracked or guessed
     linked_leds = None
+
+    pos_hist = None    # history of position
+    position = None # Holds currently guessed position, tracked or guessed
+    speed = None
+    direction = None
 
     tracked = True
     traced = False
+
+    lookahead_roi = None # region pos will likely be in next frame, limit search
+                         # of all linked features to this mask
 
     analog_pos = False
     analog_dir = False
@@ -162,30 +171,56 @@ class OOI:
                       Slot('direction', 'dac'),
                       Slot('speed', 'dac')]
 
-    def updatePosition( self ):
+    def update_state(self):
+        """
+        Calculate position, direction and speed of object. Based on these,
+        try to predict a region to look for the object in the next frame.
+        """
+        self.position = self._position()
+        self.speed = self._speed()
+        self.direction = self._direction()
+        self.lookahead_roi = None
+
+    def _position(self):
         if self.tracked:
             feature_coords = []
-            for linked_led in self.linked_leds:
-                if not linked_led.pos_hist[-1] == None:
-                    feature_coords.append( linked_led.pos_hist[-1] )
+            for feature in self.linked_leds:
+                if not feature.pos_hist[-1] == None:
+                    feature_coords.append( feature.pos_hist[-1] )
 
             # find !mean! coordinates
             self.pos_hist.append( geom.middle_point( feature_coords ) )
-            self.guessed_pos = geom.guessedPosition( self.pos_hist )
+            return geom.guessedPosition( self.pos_hist )
         else:
-            self.guessed_pos = None
+            return None
 
-    def list_open_slots(self):
-        open_slots = []
+    def _speed(self):
+        """Return movement speed in pixel/s."""
+        return None
+
+    def _direction(self, v_thresh = 5):
+        """
+        Calculate direction of the object.
+
+        If one feature, direction is not None if speed > v_threshold in px/s
+        If multiple features, calculate peak movement direction relative to
+        normal of features. This assumes the alignment of features is constant.
+        """
+        return None
+
+    def phys_out(self):
+        """
+        Return list of instructions based on slots and their respective
+        states.
+        """
         for s in self.slots:
-            if s.pin:
-                open_slots.append(s)
-        return open_slots
+            pass
+#            print s.pin
 
-    def predictPositionFast( self, frame_idx ):
+    def predictPositionFast(self, frame_idx):
         pass
 
-    def predictPositionAccurate( self, frame_idx ):
+    def predictPositionAccurate(self, frame_idx):
         pass
 
 

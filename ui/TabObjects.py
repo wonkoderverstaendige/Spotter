@@ -66,9 +66,9 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         if not self.ckb_analog_pos.isChecked() == self.object.analog_pos:
             self.ckb_analog_pos.setChecked(self.object.analog_pos)
 
-        if self.object.guessed_pos:
-            self.lbl_x.setText(str(self.object.guessed_pos[0]))
-            self.lbl_y.setText(str(self.object.guessed_pos[1]))
+        if self.object.position:
+            self.lbl_x.setText(str(self.object.position[0]))
+            self.lbl_y.setText(str(self.object.position[1]))
         else:
             self.lbl_x.setText('---')
             self.lbl_y.setText('---')
@@ -154,21 +154,9 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
 ## SLOT TABLE
 ###############################################################################
     def populate_slot_table(self):
-        if not self.object.slots:
-            return
-
-        self.table_slots.setRowCount(len(self.object.slots))
         for i, s in enumerate(self.object.slots):
-            item = [s.label, '', 'IGNORE']
-            row_items = self._table_slot_row(item)
-            for j, item in enumerate(row_items):
-                if j == 1:
-                    self.table_slots.setCellWidget(i, j, self._combo_pins(s))
-                self.table_slots.setItem(i, j, item)
-#            self.table_slots.setRowHeight(i, 18)
-        self.table_slots.resizeColumnsToContents()
-        self.table_slots.resizeRowsToContents()
-        self.table_slots.horizontalHeader().setStretchLastSection(True)
+            self.slots_add_row(s, i)
+        self.slots_resize_columns()
 
 
     def refresh_slot_table(self):
@@ -179,25 +167,16 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         """
         for i in xrange(self.table_slots.rowCount()):
             cbx = self.table_slots.cellWidget(i, 1)
+            slot = self.object.slots[i]
             selected_pin = cbx.currentIndex()
-            pins, enabled = self.available_pins(self.object.slots[i])
+            pins, enabled = self.available_pins(slot)
 
-            # If a pin is selected from the combobox, check if it is linked. If
-            # not, link the slot to the selected pin
             if selected_pin < len(pins):
-                if not pins[selected_pin].slot is self.object.slots[i]:
-                    pins[selected_pin].slot = self.object.slots[i]
-                # check if this slot is still linked to another pin
-                for j, p in enumerate(pins):
-                    if not j == selected_pin and p.slot is self.object.slots[i]:
-                        p.slot = None
-
-            # If nothing is selected from the combobox, check if this slot is
-            # still linked to a pin. If so, cut that link.
+                if not slot.pin is pins[selected_pin]:
+                    slot.attach_pin(pins[selected_pin])
             else:
-                for p in pins:
-                    if (p.slot is self.object.slots[i]):
-                        p.slot = None
+                if slot.pin:
+                    slot.detach_pin()
 
         # refresh combo boxes with proper availabilities. Disable all pins that
         # are already in use. Has to be repeated from above, as slot links
@@ -216,6 +195,27 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         for i in xrange(len(row)):
             item_list.append(QtGui.QTableWidgetItem(row[i]))
         return item_list
+
+
+    def slots_add_row(self, slot, pos=None):
+        row_items = self._table_slot_row([slot.label, '', 'IGNORE'])
+        if pos == None:
+            pos = len(self.slots_items)
+        self.table_slots.insertRow(pos)
+        for j, item in enumerate(row_items):
+            if j == 1:
+                self.table_slots.setCellWidget(pos, j, self._combo_pins(slot))
+            self.table_slots.setItem(pos, j, item)
+
+
+    def slots_remove_row(self, index):
+        self.table_slots.removeRow(index)
+
+
+    def slots_resize_columns(self):
+        self.table_slots.resizeColumnsToContents()
+        self.table_slots.resizeRowsToContents()
+        self.table_slots.horizontalHeader().setStretchLastSection(True)
 
 
     def lock_slot_table(self, state):
@@ -242,8 +242,6 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
     def _combo_pins(self, slot):
         pins, enable = self.available_pins(slot)
 
-        if not pins:
-            return None
         cbx = QtGui.QComboBox()
         for i, p in enumerate(pins):
             cbx.addItem(p.label)

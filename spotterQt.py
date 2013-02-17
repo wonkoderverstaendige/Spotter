@@ -160,8 +160,8 @@ class Main(QtGui.QMainWindow):
                 self.glframe.jobs.append([self.glframe.drawCross, l.pos_hist[-1], 14, l.lblcolor])
 
         for o in self.spotter.tracker.oois:
-            if not o.guessed_pos == None:
-                self.glframe.jobs.append([self.glframe.drawCross, o.guessed_pos, 8, (1.0, 1.0, 1.0, 1.0), 7, True])
+            if not o.position == None:
+                self.glframe.jobs.append([self.glframe.drawCross, o.position, 8, (1.0, 1.0, 1.0, 1.0), 7, True])
                 if o.traced:
                     points = []
                     for n in xrange(min(len(o.pos_hist), 100)):
