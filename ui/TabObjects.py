@@ -165,18 +165,45 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         in the combobox. If different, refresh combo box. Each combobox has
         different pins attached to it, though!
         """
+#        for i in xrange(self.table_slots.rowCount()):
+#            cbx = self.table_slots.cellWidget(i, 1)
+#            slot = self.object.slots[i]
+#            selected_pin = cbx.currentIndex()
+#            pins, enabled = self.available_pins(slot)
+#
+#            if selected_pin < len(pins):
+#                if not slot.pin is pins[selected_pin]:
+#                    slot.attach_pin(pins[selected_pin])
+#            else:
+#                if slot.pin:
+#                    slot.detach_pin()
         for i in xrange(self.table_slots.rowCount()):
             cbx = self.table_slots.cellWidget(i, 1)
-            slot = self.object.slots[i]
             selected_pin = cbx.currentIndex()
+            slot = self.object.slots[i]
             pins, enabled = self.available_pins(slot)
 
             if selected_pin < len(pins):
-                if not slot.pin is pins[selected_pin]:
-                    slot.attach_pin(pins[selected_pin])
+                # Slot selected, but the wrong one or shouldn't be selected
+                if not (slot.pin is pins[selected_pin]):
+                    if slot.pin in pins:
+                        pin_idx = pins.index(slot.pin)
+                        if pin_idx < 0:
+                            cbx.setCurrentIndex(cbx.count()-1)
+                        else:
+                            cbx.setCurrentIndex(pin_idx)
+                    else:
+                        cbx.setCurrentIndex(cbx.count()-1)
             else:
-                if slot.pin:
-                    slot.detach_pin()
+                # Nothing selected, but slot has a pin!
+                if (slot.pin is not None):
+                    pin_idx = pins.index(slot.pin)
+                    if pin_idx < 0:
+                        cbx.setCurrentIndex(cbx.count()-1)
+                    else:
+                        cbx.setCurrentIndex(pin_idx)
+                else:
+                    cbx.setCurrentIndex(cbx.count()-1)
 
         # refresh combo boxes with proper availabilities. Disable all pins that
         # are already in use. Has to be repeated from above, as slot links
@@ -188,6 +215,19 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
                 j = cbx.model().index(i,0)
                 cbx.model().setData(j, QtCore.QVariant(enabled[i]), QtCore.Qt.UserRole-1)
 
+    def slot_table_changed(self):
+          for i in xrange(self.table_slots.rowCount()):
+            cbx = self.table_slots.cellWidget(i, 1)
+            slot = self.object.slots[i]
+            selected_pin = cbx.currentIndex()
+            pins, enabled = self.available_pins(slot)
+
+            if selected_pin < len(pins):
+                if not slot.pin is pins[selected_pin]:
+                    slot.attach_pin(pins[selected_pin])
+            else:
+                if slot.pin:
+                    slot.detach_pin()
 
     def _table_slot_row(self, row):
         """List of row widget items."""
@@ -253,7 +293,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         cbx.addItem('None')
         cbx.setCurrentIndex(len(pins)+1)
 
-        self.connect(cbx, QtCore.SIGNAL('currentIndexChanged(int)'), self.refresh_slot_table)
+        self.connect(cbx, QtCore.SIGNAL('currentIndexChanged(int)'), self.slot_table_changed)
         return cbx
 
 

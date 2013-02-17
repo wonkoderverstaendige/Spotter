@@ -122,41 +122,18 @@ class Spotter:
             self.hsv_frame = cv2.cvtColor( self.newest_frame, cv2.COLOR_BGR2HSV )
             self.tracker.trackLeds( self.hsv_frame, method = 'hsv_thresh' )
 
-
             slots = []
             # Update positions of all objects
             for o in self.tracker.oois:
+                o.update_slots(self.chatter)
                 o.update_state()
                 slots.extend(o.linked_slots())
             for r in self.tracker.rois:
+                r.update_slots(self.chatter)
                 r.update_state()
                 slots.extend(r.linked_slots())
 
             self.chatter.update_pins(slots)
-
-#
-#            # run collision detections
-#            for r in self.tracker.rois:
-#                for o in self.tracker.oois:
-#                    collision = r.collision_check(o.position)
-#                    if r.label == 'Trigger' and o.label == 'Subject':
-#                        if collision:
-#                            self.chatter.send_digital_state(1, 0x07)
-#                        else:
-#                            self.chatter.send_digital_state(1, 0x00)
-#
-#
-#                    if r.label == 'Sync_trig' and o.label == 'Sync':
-#                        if collision:
-#                            self.chatter.send_digital_state(1, 0x07)
-#                        else:
-#                            self.chatter.send_digital_state(1, 0x00)
-#                        print collision
-#                    if o.digital_collision_out and self.chatter:
-#                        self.chatter.send_collision2digital(o.digital_ports)
-
-            # freezes frame being shown, but not frame being processed/written
-#            self.gui.update( self.newest_frame )
 
         else:
             print 'No new frame returned!!! What does it mean??? We are going to die! Eventually!!!'
@@ -176,22 +153,17 @@ class Spotter:
         else:
             return True
 
-
     def exitMain( self ):
         """ Graceful exit. Ha. Ha. Ha. Bottle of root beer anyone? """
-
         # closing grabber is straight forward, will release capture object
         if self.grabber:
             self.grabber.close()
-
         # tracker no longer has serial handle to take care of
         if self.tracker:
             self.tracker.close()
-
         # chatter HAS to close serial connection or all hell breaks loose!
         if self.chatter:
             self.chatter.close()
-
         # writer is a bit trickier, may have frames left to stow away
         if not self.writer == None and self.writer.is_alive():
             self.write_queue.put( 'terminate' )
@@ -200,7 +172,6 @@ class Spotter:
             self.writer.join( 1 )
             if self.writer.is_alive():
                 main.writer.terminate()
-
         try:
             fc = self.grabber.framecount
             tt = ( time.clock() - self.ts_start )
@@ -245,8 +216,8 @@ if __name__ == "__main__":                                  #
                     serial      = ARGDICT['--Serial'])
 
     # It's Math. 3rd grade Math. Wait time between frames, if any left
-    log.debug( 'fps: ' + str( main.grabber.fps ) )
-    t = int( 1000/main.grabber.fps )
+    log.debug( 'fps: ' + str(main.grabber.fps) )
+    t = int(1000/main.grabber.fps)
 
     # Main loop, runs until EOF or <ESCAPE> key pressed
     log.debug( 'starting main loop' )

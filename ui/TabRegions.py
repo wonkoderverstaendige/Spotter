@@ -7,8 +7,8 @@ Created on Sun Jan 13 14:19:24 2013
 """
 
 import sys
-import math
-import random
+#import math
+#import random
 from PyQt4 import QtGui, QtCore
 
 sys.path.append('./ui')
@@ -275,11 +275,47 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
             if len(missing) or len(remove):
                 self.slots_resize_columns()
 
-
     def refresh_slot_table(self):
         # make sure table is updated
         self.populate_slot_table()
+        for i in xrange(self.table_slots.rowCount()):
+            cbx = self.table_slots.cellWidget(i, 1)
+            selected_pin = cbx.currentIndex()
+            slot = self.region.slots[i]
+            pins, enabled = self.available_pins(slot)
 
+            if selected_pin < len(pins):
+                # Slot selected, but the wrong one or shouldn't be selected
+                if not (slot.pin is pins[selected_pin]):
+                    if slot.pin in pins:
+                        pin_idx = pins.index(slot.pin)
+                        if pin_idx < 0:
+                            cbx.setCurrentIndex(cbx.count()-1)
+                        else:
+                            cbx.setCurrentIndex(pin_idx)
+                    else:
+                        cbx.setCurrentIndex(cbx.count()-1)
+            else:
+                # Nothing selected, but slot has a pin!
+                if (slot.pin is not None):
+                    pin_idx = pins.index(slot.pin)
+                    if pin_idx < 0:
+                        cbx.setCurrentIndex(cbx.count()-1)
+                    else:
+                        cbx.setCurrentIndex(pin_idx)
+                else:
+                    cbx.setCurrentIndex(cbx.count()-1)
+
+        # Disable pins that are already in use
+        for row in xrange(self.table_slots.rowCount()):
+            pins, enabled = self.available_pins(self.region.slots[row])
+            cbx = self.table_slots.cellWidget(row, 1)
+            for i in xrange(len(pins)):
+                j = cbx.model().index(i,0)
+                cbx.model().setData(j, QtCore.QVariant(enabled[i]), QtCore.Qt.UserRole-1)
+
+
+    def slot_table_changed(self):
         for i in xrange(self.table_slots.rowCount()):
             cbx = self.table_slots.cellWidget(i, 1)
             slot = self.region.slots[i]
@@ -292,14 +328,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
             else:
                 if slot.pin:
                     slot.detach_pin()
-
-        # Disable pins that are already in use
-        for row in xrange(self.table_slots.rowCount()):
-            pins, enabled = self.available_pins(self.region.slots[row])
-            cbx = self.table_slots.cellWidget(row, 1)
-            for i in xrange(len(pins)):
-                j = cbx.model().index(i,0)
-                cbx.model().setData(j, QtCore.QVariant(enabled[i]), QtCore.Qt.UserRole-1)
+        self.refresh_slot_table()
 
 
     def _table_slot_row(self, row):
@@ -309,7 +338,6 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
             item_list.append(QtGui.QTableWidgetItem(row[i]))
         return item_list
 
-
     def lock_slot_table(self, state):
         """Toggle button to lock or unlock the whole table."""
         self.table_slots.setEnabled(state)
@@ -317,7 +345,6 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
             self.btn_lock_table.setText("Lock")
         else:
             self.btn_lock_table.setText("Unlock")
-
 
     def slots_add_row(self, slot, pos=-1):
         """Add new row for [slot] at position. If no position given, append."""
@@ -333,19 +360,16 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
                 self.table_slots.setCellWidget(pos, j, self._combo_pins(slot))
             self.table_slots.setItem(pos, j, item)
 
-
     def slots_remove_row(self, index):
         """Remove row from table."""
         self.table_slots.removeRow(index)
         self.slots_items.pop(index)
-
 
     def slots_resize_columns(self):
         """Resizing columns to fill whole horizontal space."""
         self.table_slots.resizeColumnsToContents()
         self.table_slots.resizeRowsToContents()
         self.table_slots.horizontalHeader().setStretchLastSection(True)
-
 
 ###############################################################################
 ## PIN LIST
@@ -364,9 +388,8 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         cbx.addItem('None')
         cbx.setCurrentIndex(len(pins)+1)
 
-        self.connect(cbx, QtCore.SIGNAL('currentIndexChanged(int)'), self.refresh_slot_table)
+        self.connect(cbx, QtCore.SIGNAL('currentIndexChanged(int)'), self.slot_table_changed)
         return cbx
-
 
     def available_pins(self, slot):
         """
@@ -374,7 +397,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         availabilities.
         """
         enable = []
-        pins = self.parent.spotter.chatter.pins(slot.type)
+        pins = self.parent.spotter.chatter.pins_for_slot(slot)
         for p in pins:
             if p.slot and not (p.slot is slot):
                 enable.append(0)

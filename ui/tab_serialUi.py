@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'tab_serialUi.ui'
 #
-# Created: Sun Feb 17 01:13:55 2013
+# Created: Sun Feb 17 16:51:11 2013
 #      by: PyQt4 UI code generator 4.9.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,7 +17,7 @@ except AttributeError:
 class Ui_tab_serial(object):
     def setupUi(self, tab_serial):
         tab_serial.setObjectName(_fromUtf8("tab_serial"))
-        tab_serial.resize(236, 324)
+        tab_serial.resize(241, 324)
         self.gridLayout = QtGui.QGridLayout(tab_serial)
         self.gridLayout.setMargin(0)
         self.gridLayout.setSpacing(0)
@@ -31,7 +31,7 @@ class Ui_tab_serial(object):
         self.toolBox.setLineWidth(0)
         self.toolBox.setObjectName(_fromUtf8("toolBox"))
         self.page_serial_connection = QtGui.QWidget()
-        self.page_serial_connection.setGeometry(QtCore.QRect(0, 0, 234, 280))
+        self.page_serial_connection.setGeometry(QtCore.QRect(0, 0, 239, 280))
         self.page_serial_connection.setObjectName(_fromUtf8("page_serial_connection"))
         self.gridLayout_6 = QtGui.QGridLayout(self.page_serial_connection)
         self.gridLayout_6.setMargin(0)
@@ -117,7 +117,7 @@ class Ui_tab_serial(object):
         self.gridLayout_6.addLayout(self.gridLayout_3, 3, 1, 1, 1)
         self.toolBox.addItem(self.page_serial_connection, _fromUtf8(""))
         self.page_objects_IO = QtGui.QWidget()
-        self.page_objects_IO.setGeometry(QtCore.QRect(0, 0, 234, 280))
+        self.page_objects_IO.setGeometry(QtCore.QRect(0, 0, 239, 280))
         self.page_objects_IO.setObjectName(_fromUtf8("page_objects_IO"))
         self.gridLayout_7 = QtGui.QGridLayout(self.page_objects_IO)
         self.gridLayout_7.setMargin(0)

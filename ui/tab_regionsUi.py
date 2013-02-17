@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'tab_regionsUi.ui'
 #
-# Created: Sun Feb 17 01:13:55 2013
+# Created: Sun Feb 17 16:51:11 2013
 #      by: PyQt4 UI code generator 4.9.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,7 +17,7 @@ except AttributeError:
 class Ui_tab_regions(object):
     def setupUi(self, tab_regions):
         tab_regions.setObjectName(_fromUtf8("tab_regions"))
-        tab_regions.resize(241, 325)
+        tab_regions.resize(241, 324)
         self.gridLayout = QtGui.QGridLayout(tab_regions)
         self.gridLayout.setMargin(0)
         self.gridLayout.setSpacing(0)
@@ -31,7 +31,7 @@ class Ui_tab_regions(object):
         self.toolBox.setLineWidth(0)
         self.toolBox.setObjectName(_fromUtf8("toolBox"))
         self.page_regions_overview = QtGui.QWidget()
-        self.page_regions_overview.setGeometry(QtCore.QRect(0, 0, 239, 260))
+        self.page_regions_overview.setGeometry(QtCore.QRect(0, 0, 239, 259))
         self.page_regions_overview.setObjectName(_fromUtf8("page_regions_overview"))
         self.gridLayout_6 = QtGui.QGridLayout(self.page_regions_overview)
         self.gridLayout_6.setMargin(0)
@@ -98,7 +98,7 @@ class Ui_tab_regions(object):
         self.gridLayout_6.addLayout(self.gridLayout_5, 0, 0, 1, 1)
         self.toolBox.addItem(self.page_regions_overview, _fromUtf8(""))
         self.page_regions_collisions = QtGui.QWidget()
-        self.page_regions_collisions.setGeometry(QtCore.QRect(0, 0, 239, 260))
+        self.page_regions_collisions.setGeometry(QtCore.QRect(0, 0, 239, 259))
         self.page_regions_collisions.setObjectName(_fromUtf8("page_regions_collisions"))
         self.gridLayout_8 = QtGui.QGridLayout(self.page_regions_collisions)
         self.gridLayout_8.setMargin(0)
@@ -134,7 +134,7 @@ class Ui_tab_regions(object):
         self.gridLayout_8.addLayout(self.gridLayout_10, 0, 0, 1, 1)
         self.toolBox.addItem(self.page_regions_collisions, _fromUtf8(""))
         self.page_regions_IO = QtGui.QWidget()
-        self.page_regions_IO.setGeometry(QtCore.QRect(0, 0, 239, 260))
+        self.page_regions_IO.setGeometry(QtCore.QRect(0, 0, 239, 259))
         self.page_regions_IO.setObjectName(_fromUtf8("page_regions_IO"))
         self.gridLayout_7 = QtGui.QGridLayout(self.page_regions_IO)
         self.gridLayout_7.setMargin(0)

@@ -106,7 +106,6 @@ class Chatter:
             try:
                 if self.open_serial(p[1]) and self.test_connection():
                     self.serial_port = p[1]
-                    print "Connection established!"
                     self.connected = True
                     return self.connected
             except Exception, e:
@@ -143,7 +142,6 @@ class Chatter:
                         return True
         return False
 
-
     def update_pins(self, slots):
         """ instr: [type, instr, data, index]"""
         instr = []
@@ -165,6 +163,8 @@ class Chatter:
                 instr.append([s.pin.type_id, s.pin.id, data])
         self.serial_device.send_instructions(instr)
 
+    def pins_for_slot(self, slot):
+        return self.pins(slot.type)
 
     def scale_point(self, point):
         coord_max = max(self.range_xy)

@@ -114,12 +114,14 @@ class LED:
 
 
 class Slot:
-    def __init__(self, label, _type, state_ref=None, state_ref_idx=None):
+    def __init__(self, label, type_, state=None, state_idx=None, ref=None):
         self.label = label
-        self.type = _type
+        self.type = type_
         self.pin = None
-        self.state = state_ref
-        self.state_idx = state_ref_idx
+        self.pin_pref = None
+        self.state = state          # reference to output value
+        self.state_idx = state_idx  # index of output value if iterable
+        self.ref = ref                 # reference to object representing slot
 
     def attach_pin(self, pin):
         if self.pin and self.pin.slot:
@@ -156,12 +158,18 @@ class OOI:
 
     slots = None
 
-    def __init__( self, led_list, label, traced = False, tracked = True ):
+    def __init__( self, led_list, label, traced=False, tracked=True, magnetic_signals=None):
         self.linked_leds = led_list
         self.label = label
         self.traced = traced
         self.tracked = tracked
         self.pos_hist = []
+
+        # the slots for these properties/signals are greedy for pins
+        if magnetic_signals is None:
+            self.magnetic_signals = []
+        else:
+            self.magnetic_signals = magnetic_signals
 
         # listed order important. First come, first serve
         self.slots = [Slot('x position', 'dac', self.last_pos, 0),
@@ -176,6 +184,21 @@ class OOI:
         """
         self.position = self._position()
         self.lookahead_roi = None
+
+    def update_slots(self, chatter):
+        for s in self.slots:
+            for ms in self.magnetic_signals:
+                # Check that pin prefs are set correctly
+                if s.label == ms[0]:
+                    if not s.pin_pref == ms[1]:
+                        s.pin_pref = ms[1]
+
+            if (s.pin_pref is not None) and (s.pin is None):
+                # If pin pref and not connected to pin
+                pins = chatter.pins_for_slot(s)
+                for p in pins:
+                    if p.id == s.pin_pref:
+                        s.attach_pin(p)
 
     def _position(self):
         """ Calculate position from detected features linked to object. """
@@ -220,12 +243,6 @@ class OOI:
                 slots_to_update.append(s)
         return slots_to_update
 
-#    def predictPositionFast(self, frame_idx):
-#        pass
-#
-#    def predictPositionAccurate(self, frame_idx):
-#        pass
-
 
 class ROI:
     """ Region in image registered objects are tested against.
@@ -234,11 +251,15 @@ class ROI:
     """
     visible = True
     color = None
-    alpha = .6
+    alpha = .4
+    highlighted = False
 
-    linked_objects = None # aka slots!
+    strict_prefs_dealt = False
 
-    def __init__(self, shape_list=None, label=None, color=None, obj_list=None ):
+    linked_objects = None # aka slots?!
+
+    def __init__(self, shape_list=None, label=None, color=None, obj_list=None,
+                 magnetic_objects = None):
         self.label = label
         if not color:
             self.normal_color = self.get_normal_color()
@@ -247,13 +268,15 @@ class ROI:
         self.passive_color = self.scale_color(self.normal_color, 200)
         self.active_color = self.scale_color(self.normal_color, 255)
         self.set_passive_color()
-
         # slots linked to pins for physical output
         self.slots = []
-
         # reference to all objects spotter holds
         self.oois = obj_list
-
+        # The slots for these objects are trying to automatically link pins
+        if magnetic_objects is None:
+            self.magnetic_objects = []
+        else:
+            self.magnetic_objects = magnetic_objects
         # if initialized with starting set of shapes
         self.shapes = []
         if shape_list:
@@ -261,7 +284,22 @@ class ROI:
                 self.add_shape(*shape)
 
     def update_state(self):
-        pass
+        self.highlighted = False
+        self.deal_pin_prefs()
+
+    def deal_pin_prefs(self):
+        for mo in self.magnetic_objects:
+            for s in self.slots:
+                if s.ref == mo[0]:
+                    s.pin_pref = mo[1]
+
+    def update_slots(self, chatter):
+        for s in self.slots:
+            if (s.pin_pref is not None) and (s.pin is None):
+                pins = chatter.pins_for_slot(s)
+                for p in pins:
+                    if p.id == s.pin_pref:
+                        s.attach_pin(p)
 
     def linked_slots(self):
         """ Return list of slots that are linked to a pin. """
@@ -301,9 +339,11 @@ class ROI:
 
     def link_object(self, obj):
         if obj in self.oois:
-            self.slots.append(Slot(obj.label, 'digital',
-                                   self.test_collision,
-                                   self.oois.index(obj)))
+            self.slots.append(Slot(label=obj.label,
+                                   type_='digital',
+                                   state=self.test_collision,
+                                   state_idx=self.oois.index(obj),
+                                   ref=obj))
 
     def unlink_object(self, obj):
         for s in self.slots:
@@ -312,32 +352,37 @@ class ROI:
                 print "removed object ", obj.label, " from slot list of ", self.label
 
     def test_collision(self, obj_idx):
-        return self.collision_check(self.oois[obj_idx].position)
+        return self.check_shape_collision(self.oois[obj_idx].position)
 
-    def collision_check(self, point1, point2 = None):
+    def check_shape_collision(self, point1, point2 = None):
         """ Test if a line between start and end would somewhere collide with
         any shapes of this ROI. Simple AND values in the collision detection
         array on the line.
-        TODO: Right now the test only checks of the point is within the bounding
-        box of the shapes!!!
-        TODO: I think there is the corner case missing in which no shape
-        receives a valid signal in a while after just triggering, leaving the
-        shape in it's active color
+        TODO: Only checks of the point is within the bounding box of shapes!!!
+
         """
-#        self.set_passive_color()
-        if point1 == None:
+        if point1 is not None:
+            collision = False
+            for s in self.shapes:
+                if s.active and s.collision_check(point1):
+                    self.highlighted = True
+                    collision = True
+                    break
+
+            # no collisions detected for this region
+            self.toggle_highlight()
+            return collision
+        else:
             return None
 
-        for s in self.shapes:
-            if s.active and s.collision_check(point1):
+    def toggle_highlight(self):
+        """ Toggle color to active set if region is highlighted by collision. """
+        if self.highlighted:
+            if self.normal_color != self.active_color:
                 self.set_active_color()
-                return True
-
-        # no collisions detected for this region
-        if self.normal_color != self.passive_color:
-            self.set_passive_color()
-        return False
-
+        else:
+            if self.normal_color != self.passive_color:
+                self.set_passive_color()
 
     def set_active_color(self):
         self.color = self.active_color
@@ -346,9 +391,8 @@ class ROI:
 
     def set_passive_color(self):
         self.color = self.passive_color
-        self.alpha = 0.6
+        self.alpha = 0.4
         self.normal_color = self.normalize_color(self.color)
-
 
     def get_normal_color(self):
         c1 = random.random()

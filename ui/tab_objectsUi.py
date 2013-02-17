@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'tab_objectsUi.ui'
 #
-# Created: Sun Feb 17 01:13:55 2013
+# Created: Sun Feb 17 16:51:10 2013
 #      by: PyQt4 UI code generator 4.9.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,7 +17,7 @@ except AttributeError:
 class Ui_tab_objects(object):
     def setupUi(self, tab_objects):
         tab_objects.setObjectName(_fromUtf8("tab_objects"))
-        tab_objects.resize(210, 324)
+        tab_objects.resize(241, 324)
         self.gridLayout = QtGui.QGridLayout(tab_objects)
         self.gridLayout.setMargin(0)
         self.gridLayout.setSpacing(0)
@@ -31,7 +31,7 @@ class Ui_tab_objects(object):
         self.toolBox.setLineWidth(0)
         self.toolBox.setObjectName(_fromUtf8("toolBox"))
         self.page_objects_tracking = QtGui.QWidget()
-        self.page_objects_tracking.setGeometry(QtCore.QRect(0, 0, 208, 259))
+        self.page_objects_tracking.setGeometry(QtCore.QRect(0, 0, 239, 259))
         self.page_objects_tracking.setObjectName(_fromUtf8("page_objects_tracking"))
         self.gridLayout_6 = QtGui.QGridLayout(self.page_objects_tracking)
         self.gridLayout_6.setMargin(0)
@@ -116,7 +116,7 @@ class Ui_tab_objects(object):
         self.gridLayout_6.addLayout(self.gridLayout_5, 0, 1, 1, 1)
         self.toolBox.addItem(self.page_objects_tracking, _fromUtf8(""))
         self.page_objects_slots = QtGui.QWidget()
-        self.page_objects_slots.setGeometry(QtCore.QRect(0, 0, 208, 259))
+        self.page_objects_slots.setGeometry(QtCore.QRect(0, 0, 239, 259))
         self.page_objects_slots.setObjectName(_fromUtf8("page_objects_slots"))
         self.gridLayout_8 = QtGui.QGridLayout(self.page_objects_slots)
         self.gridLayout_8.setMargin(0)
@@ -152,7 +152,7 @@ class Ui_tab_objects(object):
         self.gridLayout_8.addLayout(self.gridLayout_4, 0, 0, 1, 1)
         self.toolBox.addItem(self.page_objects_slots, _fromUtf8(""))
         self.page_objects_IO = QtGui.QWidget()
-        self.page_objects_IO.setGeometry(QtCore.QRect(0, 0, 208, 259))
+        self.page_objects_IO.setGeometry(QtCore.QRect(0, 0, 239, 259))
         self.page_objects_IO.setObjectName(_fromUtf8("page_objects_IO"))
         self.gridLayout_7 = QtGui.QGridLayout(self.page_objects_IO)
         self.gridLayout_7.setMargin(0)

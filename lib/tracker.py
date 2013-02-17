@@ -39,36 +39,44 @@ DEBUG = True
 
 class Tracker:
     """ Performs tracking and returns positions of found LEDs """
-
-    # frame buffer
     frame = None
-
 
     def __init__( self ):
         self.oois = []
         self.rois = []
         self.leds = []
 
-    def addLED( self, label, range_hue, min_area = 5, fixed_pos = False, linked_to = None ):
-        led = trkbl.LED( label, range_hue, min_area, fixed_pos, linked_to )
-        self.leds.append( led )
+    def addLED(self, label, range_hue, min_area=5, fixed_pos=False, linked_to=None):
+        led = trkbl.LED(label,
+                        range_hue,
+                        min_area,
+                        fixed_pos,
+                        linked_to)
+        self.leds.append(led)
         return led
 
-    def addOOI( self, led_list, label, traced = False, tracked = True ):
-        ooi = trkbl.OOI( led_list, label, traced, tracked )
-        self.oois.append( ooi )
+    def addOOI(self, led_list, label, traced=False, tracked=True, magnetic_signals=None):
+        ooi = trkbl.OOI(led_list,
+                        label,
+                        traced,
+                        tracked,
+                        magnetic_signals)
+        self.oois.append(ooi)
         return ooi
 
-    def addROI( self, shape_list, label ):
-        roi = trkbl.ROI( shape_list, label, obj_list=self.oois )
-        self.rois.append( roi )
+    def addROI(self, shape_list, label, color=None, magnetic_objects=None):
+        roi = trkbl.ROI(shape_list,
+                        label,
+                        color,
+                        self.oois,
+                        magnetic_objects)
+        self.rois.append(roi)
         return roi
 
     def trackLeds( self, frame, method = 'hsv_thresh' ):
         """ Intermediate method selecting tracking method and seperating those
             tracking methods from the frames stored in the instantiatd Tracker
         """
-
         # dilate bright spots
 #        kernel = np.ones( (3,3), 'uint8' )
 #        # conversion to HSV before dilation causes artifacts
@@ -80,7 +88,6 @@ class Tracker:
                     self.threshTrack( self.frame, led )
                 else:
                     led.pos_hist.append(None)
-
 
     def threshTrack( self, hsv_frame, l ):
         """ Tracks LEDs from a list in a HSV frame by thresholding
@@ -125,7 +132,6 @@ class Tracker:
             # Couldn't find a good enough spot
             l.pos_hist.append(None)
 
-
     def findContour(self, frame, range_area):
         """
         Return contour with largest area. Returns None if no contour
@@ -144,7 +150,6 @@ class Tracker:
 
         return largest_area, best_cnt
 
-
     def camshiftTrack( self, hsv_frame, led_list ):
         """ camshifting shifty histograms
         """
@@ -156,7 +161,6 @@ class Tracker:
 
         ledpos = ( 100, 100 )
         return ledpos
-
 
     def close( self ):
         """ Nothing to do here as of moving chatter to spotter. """

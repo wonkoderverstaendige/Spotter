@@ -112,7 +112,7 @@ class Main(QtGui.QMainWindow):
         self.template_default = self.parse_file_template(default_path, True)
 
         self.connect(self.ui.btn_load_template, QtCore.SIGNAL('clicked()'), self.load_template)
-        self.connect(self.ui.btn_template_file, QtCore.SIGNAL('clicked()'), self.file_dialog_template)
+        self.connect(self.ui.btn_template_file, QtCore.SIGNAL('clicked()'), self.template_from_file)
         self.connect(self.ui.btn_feature_template, QtCore.SIGNAL('clicked()'), self.load_template)
         self.connect(self.ui.btn_object_template, QtCore.SIGNAL('clicked()'), self.load_template)
         self.connect(self.ui.btn_region_template, QtCore.SIGNAL('clicked()'), self.load_template)
@@ -315,17 +315,18 @@ class Main(QtGui.QMainWindow):
         """
         active_top_tab_label = self.get_top_tab_label()
         if active_top_tab_label == "Settings":
-            path = os.path.join(DIR_TEMPLATES, str(self.ui.combo_templates.currentText()))
-            self.file_dialog_template(path)
+            path = os.path.join(DIR_TEMPLATES,
+                                str(self.ui.combo_templates.currentText()))
+            self.template_from_file(path)
 
-    def file_dialog_template(self, filename = None, directory = DIR_TEMPLATES):
+    def template_from_file(self, filename = None, directory = DIR_TEMPLATES):
         """
         Opens file dialog to choose template file and starts parsing of it
         """
-        if filename == None:
+        if filename is None:
             filename = str(QtGui.QFileDialog.getOpenFileName(self, 'Open Template', directory))
         template = self.parse_file_template(filename)
-        if not template == None:
+        if template is not None:
             self.template_to_spotter(template)
 
     def parse_file_template(self, path, validate=True):
@@ -333,12 +334,8 @@ class Main(QtGui.QMainWindow):
                              configspec=DIR_SPECIFICATION)
         if validate:
             validator = Validator()
-#            print 'Template validation... '
             results = template.validate(validator)
-            if results == True:
-                pass
-#                print "    --> Template OK!"
-            else:
+            if not results == True:
                 print "Template error in file ", path
                 for (section_list, key, _) in flatten_errors(template, results):
                     if key is not None:
@@ -371,10 +368,10 @@ class Main(QtGui.QMainWindow):
         the mousewheel can cause to create a lot of tabs unfortunately.
         TODO: Mousewheel handling.
         """
-        if idx_tab == self.ui.tab_features.count() - 1:
-            self.add_feature()
-        else:
-            self.ui.tab_features.setCurrentIndex(idx_tab)
+#        if idx_tab == self.ui.tab_features.count() - 1:
+#            self.add_feature()
+#        else:
+        self.ui.tab_features.setCurrentIndex(idx_tab)
 
 
     def add_feature(self, template = None, label = None, focus_new = True):
@@ -414,10 +411,10 @@ class Main(QtGui.QMainWindow):
         the mousewheel can cause to create a lot of tabs unfortunately.
         TODO: Mousewheel handling.
         """
-        if idx_tab == self.ui.tab_objects.count() - 1:
-            self.add_object()
-        else:
-            self.ui.tab_objects.setCurrentIndex(idx_tab)
+#        if idx_tab == self.ui.tab_objects.count() - 1:
+#            self.add_object()
+#        else:
+        self.ui.tab_objects.setCurrentIndex(idx_tab)
 
 
     def add_object(self, template = None, label = None, focus_new = True):
@@ -438,25 +435,59 @@ class Main(QtGui.QMainWindow):
                 if template['features'][n] == l.label:
                     features.append(l)
 
+
+        analog_out = template['analog_out']
+        if analog_out:
+            # Magnetic objects from collision list
+            signal_names = template['analog_signal']
+            pin_prefs = template['pin_pref']
+            magnetic_signals = []
+            if (template['pin_pref_strict'] and
+               (pin_prefs is None or not len(pin_prefs) > 0)):
+                # If pin preference is strict but no/not enough pins given,
+                # reject all/those without given pin preference
+                signal_names = []
+            elif (not template['pin_pref_strict'] and
+                  len(pin_prefs) < len(signal_names)):
+                # if not strict but also not enough given, fill 'em up with -1
+                # which sets those objects to being indifferent in their pin pref
+                pin_prefs[-(len(signal_names)-len(pin_prefs))] = -1
+
+            # Reject all objects that still don't have a corresponding pin pref
+            signal_names = signal_names[0:min(len(pin_prefs), len(signal_names))]
+
+            # Those still in the race, assemble into
+            # List of [object label, object, pin preference]
+            for isig, sn in enumerate(signal_names):
+                # Does an object with this name exist? If so, link its reference!
+#                obj = None
+#                for o in self.spotter.tracker.oois:
+#                    if o.label == on:
+#                        obj = o
+                magnetic_signals.append([sn, pin_prefs[isig]])
+        else:
+            magnetic_signals = None
+
         trace = template['trace']
         track = template['track']
-        _object = self.spotter.tracker.addOOI(features,
+        object_ = self.spotter.tracker.addOOI(features,
                                               label,
                                               trace,
-                                              track)
-        analog_out = template['analog_out']
+                                              track,
+                                              magnetic_signals)
         if analog_out:
             if any(template['analog_signal']):
                 analog_signal = template['analog_signal']
-            else:
-                analog_signal = ['position']
-            if 'position' in analog_signal:
-                _object.analog_pos = True
+            if 'x position' in analog_signal:
+                object_.analog_pos = True
+            if 'y position' in analog_signal:
+                object_.analog_pos = True
             if 'speed' in analog_signal:
-                _object.analog_spd = True
+                object_.analog_spd = True
             if 'direction' in analog_signal:
-                _object.analog_dir = True
-        new_tab = self.add_tab(self.ui.tab_objects, TabObjects, _object, focus_new)
+                object_.analog_dir = True
+
+        new_tab = self.add_tab(self.ui.tab_objects, TabObjects, object_, focus_new)
         self.object_tabs.append(new_tab)
 
 
@@ -471,18 +502,18 @@ class Main(QtGui.QMainWindow):
         the mousewheel can cause to create a lot of tabs unfortunately.
         TODO: Mousewheel handling.
         """
-        if idx_tab == self.ui.tab_regions.count() - 1:
-            self.add_region()
-        else:
-            self.ui.tab_regions.setCurrentIndex(idx_tab)
+#        if idx_tab == self.ui.tab_regions.count() - 1:
+#            self.add_region()
+#        else:
+        self.ui.tab_regions.setCurrentIndex(idx_tab)
 
-
-    def add_region(self, template=None, label=None, shapes=None, focus_new = True):
+    def add_region(self, template=None, label=None, shapes=None, focus_new=True):
         """
         Create a new region of interest that will be that will be linked
         to Objects with conditions to trigger events.
         TODO: New regions created empty!
         """
+        # Defaults if nothing else given
         if not template:
             key = self.template_default['REGIONS'].iterkeys().next()
             template = self.template_default['REGIONS'][key]
@@ -490,16 +521,55 @@ class Main(QtGui.QMainWindow):
         if not shapes:
             shapes = self.template_default['SHAPES']
 
+        # extract shapes from shape templates
         shape_list = []
         for s_key in template['shapes']:
             if s_key in shapes:
                 shape_type = shapes[s_key]['type']
-                points = geom.scale_points([shapes[s_key]['p1'], shapes[s_key]['p2']],
-                                           (self.glframe.width, self.glframe.height))
+                points = geom.scale_points([shapes[s_key]['p1'],
+                                            shapes[s_key]['p2']],
+                                           (self.glframe.width,
+                                            self.glframe.height))
                 shape_list.append([shape_type, points, s_key])
 
-        region = self.spotter.tracker.addROI(shape_list, label)
-        new_tab = self.add_tab(self.ui.tab_regions, TabRegions, region, focus_new)
+        # Magnetic objects from collision list
+        obj_names = template['digital_collision']
+        pin_prefs = template['pin_pref']
+        magnetic_objects = []
+        if (template['pin_pref_strict'] and
+           (pin_prefs is None or not len(pin_prefs) > 0)):
+            # If pin preference is strict but no/not enough pins given,
+            # reject all/those without given pin preference
+            obj_names = []
+        elif (not template['pin_pref_strict'] and
+              len(pin_prefs) < len(obj_names)):
+            # if not strict but also not enough given, fill 'em up with -1
+            # which sets those objects to being indifferent in their pin pref
+            pin_prefs[-(len(obj_names)-len(pin_prefs))] = -1
+
+        # Reject all objects that still don't have a corresponding pin pref
+        obj_names = obj_names[0:min(len(pin_prefs), len(obj_names))]
+
+        # Those still in the race, assemble into
+        # List of [object label, object, pin preference]
+        for io, on in enumerate(obj_names):
+            # Does an object with this name exist? If so, link its reference!
+            obj = None
+            for o in self.spotter.tracker.oois:
+                if o.label == on:
+                    obj = o
+            magnetic_objects.append([obj, pin_prefs[io]])
+
+        color = template['color']
+
+        region = self.spotter.tracker.addROI(shape_list,
+                                             label,
+                                             color,
+                                             magnetic_objects)
+        new_tab = self.add_tab(self.ui.tab_regions,
+                               TabRegions,
+                               region,
+                               focus_new)
         self.region_tabs.append(new_tab)
 
 
@@ -516,9 +586,6 @@ class Main(QtGui.QMainWindow):
         """
         new_tab = self.add_tab(self.ui.tab_serial, TabSerial, serial_object)
         self.serial_tabs.append(new_tab)
-
-
-
 
 
 #############################################################
