@@ -132,7 +132,7 @@ class Chatter:
             test_vals = [0, self.range_dac[0], randint(0, 4095)]
         instructions = []
         for v in test_vals:
-            instructions.append(['report', 0, v])
+            instructions.append([0, 0, v])
 
         for n in xrange(N_TRIES):
             self.serial_device.send_instructions(instructions)
@@ -144,26 +144,29 @@ class Chatter:
         return False
 
 
-    def send_analog_state(self, point):
-        if not self.serial_device:
-            return
-        if point == None:
-            scaled_point = (0, 0)
-        else:
-            scaled_point = self.map_point(point)
+    def update_pins(self, slots):
+        """ instr: [type, instr, data, index]"""
+        instr = []
+        for s in slots:
+            if s.state_idx == None:
+                instr.append([s.pin.type_id, s.pin.id, s.state()])
+            else:
+                data = s.state(s.state_idx)
+                if s.type == 'digital':
+                    if data:
+                        data = 100 # pin HIGH if larger 0
+                    else:
+                        data = 0
+                elif s.type == 'dac':
+                    if data == None:
+                        data = 0
+                    else:
+                        data = self.scale_point(data)[s.state_idx]
+                instr.append([s.pin.type_id, s.pin.id, data])
+        self.serial_device.send_instructions(instr)
 
-        if self.is_open():
-            self.serial_device.send_instructions([['dac', 0, scaled_point[0]],
-                                                  ['dac', 1, scaled_point[1]]])
 
-    def send_digital_state(self, addr, data):
-        if not self.serial_device:
-            return
-        if self.is_open():
-            self.serial_device.send_instructions([['digital', addr, data]])
-
-
-    def map_point(self, point):
+    def scale_point(self, point):
         coord_max = max(self.range_xy)
 
         # center point coordinates into range
@@ -174,10 +177,6 @@ class Chatter:
         yc = int(yc * self.factor_dac + self.offset_dac)
         return (xc, yc)
 
-#    def read( self, length ):
-#        if not self.serial_device:
-#            return
-#        rt =  self.serial_device.read(length)
 
     def read_all(self):
         if not self.serial_device:

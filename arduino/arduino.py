@@ -17,11 +17,13 @@ import struct
 VERSION = 0.1
 
 class Pin(object):
-    def __init__(self, idx, instruction, pin_type):
+    prefixes = ['CMD', 'DAC', 'DO', 'PWM']
+    types = ['report', 'dac', 'digital', 'pwm']
+    def __init__(self, idx, type_id):
         self.id = idx
-        self.instruction = instruction
-        self.type = pin_type
-        self.label = ''.join([pin_type, '.', str(idx)])
+        self.type_id = type_id
+        self.type = self.types[type_id]
+        self.label = ''.join([self.prefixes[type_id], '.', str(idx)])
 
         self.slot = None
         self.available = True
@@ -57,13 +59,13 @@ class Arduino(object):
         return self.sp.isOpen()
 
     def get_pins(self):
-        self.send_instructions([['report', 1, 0], ['report', 2, 0]])
+        self.send_instructions([[0, 1, 0], [0, 2, 0]])
         # give arduino time to respond
         self.pass_time(0.1)
         if self.bytes_available():
             responses = map(int, self.read_all_bytes().splitlines())
-            dac_pins = [Pin(idx, 1, 'DAC') for idx in xrange(responses[0])]
-            dig_pins = [Pin(idx, 2, 'DO') for idx in xrange(responses[1])]
+            dac_pins = [Pin(idx, 1) for idx in xrange(responses[0])]
+            dig_pins = [Pin(idx, 2) for idx in xrange(responses[1])]
             # Analog pins are of type 1
             self.pins['dac'].extend(dac_pins)
             # Digital Pins are type 2
@@ -73,6 +75,17 @@ class Arduino(object):
             print '   --> Digital pins available:', len(self.pins['digital'])
             return True
         return False
+
+
+    def null_pins(self, pins=None):
+        """ Reset the given pins to zero (0, low). If no pins given, do all."""
+        if self.is_open():
+            instr = []
+            for pkey in self.pins.iterkeys():
+                for p in self.pins[pkey]:
+                    instr.append([p.type_id, p.id, 0])
+            self.send_instructions(instr)
+
 
     def read_all_bytes(self):
         msg = ''
@@ -94,36 +107,38 @@ class Arduino(object):
     def send_instructions(self, instruction_list):
         """ Send command byte followed by two data bytes. struct packs short
         unsigned value ('H') as two bytes, big endian.
-        Type (3LSB bits) + Address (next 3 bits)
-        DAC/SPI         DigitalOut
-        H AO.0          P DO.0
-        I AO.1          Q DO.1
-        J AO.2          R DO.2
-        K AO.3          S DO.3
-        L AO.4          T DO.4
-        M AO.5          U DO.5
-        N AO.6          V DO.6
-        O AO.7          W DO.7
+        Type 0 = report
+        Type 1 = dac
+        Type 2 = digital
+        Type 3 = PWM (not implemented!)
+        Instruction: Type (3LSB bits) + Address (next 3 bits) and 2 data bytes
+        DAC/SPI     Digital
+        H DAC.0     P DO.0
+        I DAC.1     Q DO.1
+        J DAC.2     R DO.2
+        K DAC.3     S DO.3
+        L DAC.4     T DO.4
+        M DAC.5     U DO.5
+        N DAC.6     V DO.6
+        O DAC.7     W DO.7
         """
         msg = ''
+        cmd_vals = [0, ord('H'), ord('P')]
         for i in instruction_list:
-            if i[0] == 'report':
-                msg = msg + chr(0 + i[1])
-            elif i[0] == 'dac':
-                msg = msg + chr(ord('H') + i[1])
-            elif i[0] == 'digital':
-                msg = msg + chr(ord('P') + i[1])
-            msg = msg + struct.pack('H', i[2]) + '\n'
+            # instruction and address
+            msg += chr(cmd_vals[i[0]] + i[1])
+            data = i[2] if not i[2] == None else 0
+            msg = msg + struct.pack('H', data) + '\n'
 
-        # write all instructions as on string to reduce the amount of
-        # time spent in the annoying 4ms delay arduino spends on serial
-        # communication according to
+        # all instructions as one string to reduce the amount of
+        # time spent in 4ms delay arduino spends on serial commmunication
         self.sp.write(msg)
         self.bytes_sent += len(msg)
 
     def close(self):
         """ Call this to exit cleanly. """
         if hasattr(self, 'sp'):
+            self.null_pins()
             self.sp.close()
         self.bytes_received = 0
         self.bytes_sent = 0

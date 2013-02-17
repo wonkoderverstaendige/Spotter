@@ -14,7 +14,7 @@ class Point:
         self.x = x
         self.y = y
 
-def middle_point( coord_list ):
+def middle_point(coord_list):
     """ Find center point of a list of not None coordinates. E.g. find center
         of group of LEDs to track. Returns None if no valid LEDs found,
         and position of single LED if only one valid, etc.

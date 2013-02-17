@@ -32,7 +32,6 @@ To do:
 """
 
 import cv2
-#import os
 import sys
 import time
 import multiprocessing
@@ -65,7 +64,7 @@ class Spotter:
     record_to_file = True
 
     # frame buffers
-    write_queue = multiprocessing.Queue( 16 ) # pipe to writer process
+    write_queue = multiprocessing.Queue(16) # pipe to writer process
     newest_frame = None  # fresh from the frame source; to be processed/written
     still_frame = None   # frame shown in GUI, may be an older one
     hsv_frame = None     # converted into HSV colorspace for tracking
@@ -75,20 +74,19 @@ class Spotter:
     paused = False
 
 
-    def __init__( self, source, destination, fps, size, gui, serial = None ):
-
+    def __init__(self, source, destination, fps, size, gui, serial=None):
         # Setup frame grabber object, fills framebuffer
-        self.grabber = Grabber( source, fps, size )
+        self.grabber = Grabber(source, fps, size)
 
         # Setup writer if required, writes frames from buffer to video file.
         if destination:
             print str(multiprocessing.cpu_count()) + ' CPUs found'
             self.writer = multiprocessing.Process(
                         target = Writer,
-                        args = ( destination,
+                        args = (destination,
                                 self.grabber.fps,
                                 self.grabber.size,
-                                self.write_queue, ) )
+                                self.write_queue, ))
             self.writer.start()
             self.check_writer()
         else:
@@ -110,7 +108,7 @@ class Spotter:
 
     def update( self ):
         # Get new frame
-        if self.grabber.grab_next():
+        if not self.paused and self.grabber.grab_next():
             self.newest_frame = self.grabber.framebuffer.pop()
 
             # Check if writer process is still alive
@@ -125,22 +123,17 @@ class Spotter:
             self.tracker.trackLeds( self.hsv_frame, method = 'hsv_thresh' )
 
 
+            slots = []
             # Update positions of all objects
             for o in self.tracker.oois:
                 o.update_state()
-                o.phys_out()
+                slots.extend(o.linked_slots())
+            for r in self.tracker.rois:
+                r.update_state()
+                slots.extend(r.linked_slots())
 
+            self.chatter.update_pins(slots)
 
-#            # Calculate positions send to Serial if object linked to serial
-#            # if no point detected (position == None)
-#            # output will be zeroed
-#            for o in self.tracker.oois:
-#                o.updatePosition()
-#                if o.analog_pos and self.chatter: # and o.position
-#                    self.chatter.send_analog_state(o.position)
-#
-#
-#
 #
 #            # run collision detections
 #            for r in self.tracker.rois:

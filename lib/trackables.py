@@ -114,11 +114,12 @@ class LED:
 
 
 class Slot:
-    def __init__(self, label, _type):
+    def __init__(self, label, _type, state_ref=None, state_ref_idx=None):
         self.label = label
         self.type = _type
         self.pin = None
-        self.state = None
+        self.state = state_ref
+        self.state_idx = state_ref_idx
 
     def attach_pin(self, pin):
         if self.pin and self.pin.slot:
@@ -141,13 +142,10 @@ class OOI:
 
     linked_leds = None
 
-    pos_hist = None    # history of position
-    position = None # Holds currently guessed position, tracked or guessed
-    speed = None
-    direction = None
-
     tracked = True
     traced = False
+
+    position = None
 
     lookahead_roi = None # region pos will likely be in next frame, limit search
                          # of all linked features to this mask
@@ -166,10 +164,10 @@ class OOI:
         self.pos_hist = []
 
         # listed order important. First come, first serve
-        self.slots = [Slot('x position', 'dac'),
-                      Slot('y position', 'dac'),
-                      Slot('direction', 'dac'),
-                      Slot('speed', 'dac')]
+        self.slots = [Slot('x position', 'dac', self.last_pos, 0),
+                      Slot('y position', 'dac', self.last_pos, 1),
+                      Slot('direction', 'dac', self.direction),
+                      Slot('speed', 'dac', self.speed)]
 
     def update_state(self):
         """
@@ -177,11 +175,10 @@ class OOI:
         try to predict a region to look for the object in the next frame.
         """
         self.position = self._position()
-        self.speed = self._speed()
-        self.direction = self._direction()
         self.lookahead_roi = None
 
     def _position(self):
+        """ Calculate position from detected features linked to object. """
         if self.tracked:
             feature_coords = []
             for feature in self.linked_leds:
@@ -194,11 +191,18 @@ class OOI:
         else:
             return None
 
-    def _speed(self):
+    def last_pos(self, *args):
+        """
+        Return last position. Helper to pass reference, rather than value,
+        to slot_state.
+        """
+        return self.position
+
+    def speed(self, *args):
         """Return movement speed in pixel/s."""
         return None
 
-    def _direction(self, v_thresh = 5):
+    def direction(self, *args):
         """
         Calculate direction of the object.
 
@@ -208,20 +212,19 @@ class OOI:
         """
         return None
 
-    def phys_out(self):
-        """
-        Return list of instructions based on slots and their respective
-        states.
-        """
+    def linked_slots(self):
+        """ Return list of slots that are linked to a pin. """
+        slots_to_update = []
         for s in self.slots:
-            pass
-#            print s.pin
+            if s.pin:
+                slots_to_update.append(s)
+        return slots_to_update
 
-    def predictPositionFast(self, frame_idx):
-        pass
-
-    def predictPositionAccurate(self, frame_idx):
-        pass
+#    def predictPositionFast(self, frame_idx):
+#        pass
+#
+#    def predictPositionAccurate(self, frame_idx):
+#        pass
 
 
 class ROI:
@@ -236,6 +239,7 @@ class ROI:
     linked_objects = None # aka slots!
 
     def __init__(self, shape_list=None, label=None, color=None, obj_list=None ):
+        self.label = label
         if not color:
             self.normal_color = self.get_normal_color()
         else:
@@ -244,18 +248,28 @@ class ROI:
         self.active_color = self.scale_color(self.normal_color, 255)
         self.set_passive_color()
 
-        self.label = label
-
+        # slots linked to pins for physical output
         self.slots = []
 
         # reference to all objects spotter holds
         self.oois = obj_list
 
-        # if the ROI is initialized with a set of shapes to begin with:
+        # if initialized with starting set of shapes
         self.shapes = []
         if shape_list:
             for shape in shape_list:
                 self.add_shape(*shape)
+
+    def update_state(self):
+        pass
+
+    def linked_slots(self):
+        """ Return list of slots that are linked to a pin. """
+        slots_to_update = []
+        for s in self.slots:
+            if s.pin:
+                slots_to_update.append(s)
+        return slots_to_update
 
     def move( self, dx, dy ):
         """ Moves all shapes, aka the whole ROI, by delta pixels. """
@@ -272,8 +286,11 @@ class ROI:
         """ Removes a shape. """
         self.shapes.pop(self.shapes.index(shape))
 
-
     def refresh_slot_list(self):
+        """
+        Gather all objects in list. Check done by name.
+        TODO: By label is risky, could lead to collisions
+        """
         if self.oois and len(self.slots) < len(self.oois):
             for o in self.oois:
                 for s in self.slots:
@@ -283,14 +300,19 @@ class ROI:
                     self.link_object(o)
 
     def link_object(self, obj):
-        self.slots.append(Slot(obj.label, 'digital'))
-#        print "Added object", obj.label, "to slot list of", self.label
+        if obj in self.oois:
+            self.slots.append(Slot(obj.label, 'digital',
+                                   self.test_collision,
+                                   self.oois.index(obj)))
 
     def unlink_object(self, obj):
         for s in self.slots:
             if s.label == obj.label:
                 self.slots.pop(self.slots.find(s))
                 print "removed object ", obj.label, " from slot list of ", self.label
+
+    def test_collision(self, obj_idx):
+        return self.collision_check(self.oois[obj_idx].position)
 
     def collision_check(self, point1, point2 = None):
         """ Test if a line between start and end would somewhere collide with
