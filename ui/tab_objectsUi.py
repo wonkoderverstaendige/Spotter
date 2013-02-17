@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'tab_objectsUi.ui'
 #
-# Created: Sun Feb 17 16:51:10 2013
+# Created: Sun Feb 17 23:57:44 2013
 #      by: PyQt4 UI code generator 4.9.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -106,10 +106,12 @@ class Ui_tab_objects(object):
         self.gridLayout_5.addItem(spacerItem, 2, 1, 1, 1)
         self.dial_direction = QtGui.QDial(self.page_objects_tracking)
         self.dial_direction.setEnabled(False)
-        self.dial_direction.setMaximum(90)
+        self.dial_direction.setMaximum(359)
         self.dial_direction.setPageStep(1)
+        self.dial_direction.setOrientation(QtCore.Qt.Vertical)
+        self.dial_direction.setInvertedAppearance(True)
         self.dial_direction.setWrapping(True)
-        self.dial_direction.setNotchTarget(5.0)
+        self.dial_direction.setNotchTarget(20.0)
         self.dial_direction.setNotchesVisible(True)
         self.dial_direction.setObjectName(_fromUtf8("dial_direction"))
         self.gridLayout_5.addWidget(self.dial_direction, 2, 2, 3, 2)

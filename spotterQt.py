@@ -435,7 +435,6 @@ class Main(QtGui.QMainWindow):
                 if template['features'][n] == l.label:
                     features.append(l)
 
-
         analog_out = template['analog_out']
         if analog_out:
             # Magnetic objects from collision list
@@ -475,6 +474,7 @@ class Main(QtGui.QMainWindow):
                                               trace,
                                               track,
                                               magnetic_signals)
+
         if analog_out:
             if any(template['analog_signal']):
                 analog_signal = template['analog_signal']

@@ -9,6 +9,7 @@ Trackable object class.
 import geometry as geom
 import random
 import utilities as utils
+import math
 
 class Shape:
     """ Geometrical shape that comprise ROIs. ROIs can be made of several
@@ -148,6 +149,7 @@ class OOI:
     traced = False
 
     position = None
+    angle = None
 
     lookahead_roi = None # region pos will likely be in next frame, limit search
                          # of all linked features to this mask
@@ -183,6 +185,7 @@ class OOI:
         try to predict a region to look for the object in the next frame.
         """
         self.position = self._position()
+        self.angle = self.direction()
         self.lookahead_roi = None
 
     def update_slots(self, chatter):
@@ -205,8 +208,8 @@ class OOI:
         if self.tracked:
             feature_coords = []
             for feature in self.linked_leds:
-                if not feature.pos_hist[-1] == None:
-                    feature_coords.append( feature.pos_hist[-1] )
+                if feature.pos_hist[-1] is not None:
+                    feature_coords.append(feature.pos_hist[-1])
 
             # find !mean! coordinates
             self.pos_hist.append( geom.middle_point( feature_coords ) )
@@ -225,7 +228,7 @@ class OOI:
         """Return movement speed in pixel/s."""
         return None
 
-    def direction(self, *args):
+    def direction(self):
         """
         Calculate direction of the object.
 
@@ -233,6 +236,51 @@ class OOI:
         If multiple features, calculate peak movement direction relative to
         normal of features. This assumes the alignment of features is constant.
         """
+        if not self.tracked:
+            return None
+
+        if self.linked_leds is None or len(self.linked_leds) < 2:
+            return None
+
+        feature_coords = []
+        for feature in self.linked_leds:
+            if (len(feature.pos_hist) > 0) and (feature.pos_hist[-1] is not None):
+#                print self.label, self.linked_leds, len(self.linked_leds), feature.label, feature.pos_hist[-1]
+                feature_coords.append(feature.pos_hist[-1])
+
+        if len(feature_coords) == 2:
+            x1 = feature_coords[0][0]*1.0
+            y1 = feature_coords[0][1]*1.0
+            x2 = feature_coords[1][0]*1.0
+            y2 = feature_coords[1][1]*1.0
+
+#            print feature_coords
+            angle = math.degrees(math.atan2(x1 - x2, y2 - y1))
+            return int(angle+179)
+#            print angle
+#            dx = p2[0] - p1[0]
+#            dy = p2[1] - p1[1]
+#
+#            ldx = dy
+#            ldy = -dx
+#
+#            line_start = ( int(p1[0] + .5 * dx), int(p1[1] + .5 * dy) )
+#            line_end = (line_start[0] + ldx, line_start[1] + ldy)
+
+#// Calculate angle between vector from (x1,y1) to (x2,y2) & +Y axis in degrees.
+#// Essentially gives a compass reading, where N is 0 degrees and E is 90 degrees.
+#
+#double bearing(double x1, double y1, double x2, double y2)
+#{
+#    // x and y args to atan2() swapped to rotate resulting angle 90 degrees
+#    // (Thus angle in respect to +Y axis instead of +X axis)
+#    double angle = Math.toDegrees(atan2(x1 - x2, y2 - y1));
+#
+#    // Ensure result is in interval [0, 360)
+#    // Subtract because positive degree angles go clockwise
+#    return (360 - angle) %  360;
+#}
+
         return None
 
     def linked_slots(self):

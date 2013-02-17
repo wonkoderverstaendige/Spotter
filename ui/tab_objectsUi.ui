@@ -238,16 +238,22 @@
               <bool>false</bool>
              </property>
              <property name="maximum">
-              <number>90</number>
+              <number>359</number>
              </property>
              <property name="pageStep">
               <number>1</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="invertedAppearance">
+              <bool>true</bool>
              </property>
              <property name="wrapping">
               <bool>true</bool>
              </property>
              <property name="notchTarget">
-              <double>5.000000000000000</double>
+              <double>20.000000000000000</double>
              </property>
              <property name="notchesVisible">
               <bool>true</bool>

@@ -25,7 +25,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         self.parent = parent
 
         self.all_features = self.parent.spotter.tracker.leds
-        self.all_regions = self.parent.spotter.tracker.oois
+        self.all_regions = self.parent.spotter.tracker.rois
 
         if label == None:
             self.label = self.object.label
@@ -37,6 +37,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
 
         self.combo_label.setEditText(self.label)
 
+        self.populate_feature_list()
         self.connect(self.tree_link_features, QtCore.SIGNAL('itemChanged(QTreeWidgetItem *, int)'), self.feature_item_changed)
 
         self.connect(self.ckb_track, QtCore.SIGNAL('stateChanged(int)'), self.update_object)
@@ -76,8 +77,9 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
 #        if not self.object.speed() == None:
 #            self.lbl_speed.setText(str(self.object.speed()))
 #
-#        if not self.object.direction() == None:
-#            self.lbl_speed.setText(str(self.object.speed()))
+        if self.object.angle is not None:
+            self.lbl_speed.setText(str(self.object.angle))
+            self.dial_direction.setValue(self.object.angle)
 
     def update_object(self):
         if self.label == None:
@@ -94,6 +96,15 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
 ###############################################################################
 ## FEATURE LIST
 ###############################################################################
+    def populate_feature_list(self):
+        """Initial population of feature list, without adding to linked_leds"""
+        for f in self.object.linked_leds:
+            feature_item = QtGui.QTreeWidgetItem([f.label])
+            feature_item.feature = f
+            feature_item.setCheckState(0,QtCore.Qt.Checked)
+            self.tree_link_features.addTopLevelItem(feature_item)
+            feature_item.setFlags(feature_item.flags() | QtCore.Qt.ItemIsEditable)
+
     def refresh_feature_list(self):
         """
         Compare the content of the list of all available features with the
