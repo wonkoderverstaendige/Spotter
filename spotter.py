@@ -27,7 +27,7 @@ To do:
     - can never overwrite a file
 
 #Example:
-    --source 0 --outfile test.avi --size=320x200 --fps=30
+    --source 0 --dims 320x200 --outfile test.avi
 
 """
 
@@ -63,8 +63,6 @@ class Spotter:
     # state variables
     record_to_file = True
 
-    # frame buffers
-    write_queue = multiprocessing.Queue(16) # pipe to writer process
     newest_frame = None  # fresh from the frame source; to be processed/written
     still_frame = None   # frame shown in GUI, may be an older one
     hsv_frame = None     # converted into HSV colorspace for tracking
@@ -78,19 +76,18 @@ class Spotter:
         # Setup frame grabber object, fills framebuffer
         self.grabber = Grabber(source, fps, size)
 
-        # Setup writer if required, writes frames from buffer to video file.
-        if destination:
-            print str(multiprocessing.cpu_count()) + ' CPUs found'
-            self.writer = multiprocessing.Process(
-                        target = Writer,
-                        args = (destination,
-                                self.grabber.fps,
-                                self.grabber.size,
-                                self.write_queue, ))
-            self.writer.start()
-            self.check_writer()
-        else:
-            self.writer = None
+        # Writer writes frames from buffer to video file in a seperate process.
+#        print str(multiprocessing.cpu_count()) + ' CPUs found'
+        self.writer_queue = multiprocessing.Queue(16)
+        self.writer_pipe, child_pipe = multiprocessing.Pipe()
+
+        self.writer = multiprocessing.Process(
+                    target = Writer,
+                    args = (self.grabber.fps,
+                            self.grabber.size,
+                            self.writer_queue,
+                            child_pipe,))
+        self.writer.start()
 
         # tracker object finds LEDs in frames
         self.tracker = Tracker()
@@ -106,17 +103,11 @@ class Spotter:
 #        self.hist = utils.HSVHist()
 
 
-    def update( self ):
+    def update(self):
         # Get new frame
+#        print "updating"
         if not self.paused and self.grabber.grab_next():
             self.newest_frame = self.grabber.framebuffer.pop()
-
-            # Check if writer process is still alive
-            # Otherwise might lose data without knowing!
-            # Copy numpy array, otherwise queue references same object
-            if not self.writer == None and self.check_writer():
-                self.write_queue.put( self.newest_frame.copy() )
-                time.sleep( 0.001 ) # required, or may crash?
 
             # Find and update position of tracked object
             self.hsv_frame = cv2.cvtColor( self.newest_frame, cv2.COLOR_BGR2HSV )
@@ -135,6 +126,16 @@ class Spotter:
 
             self.chatter.update_pins(slots)
 
+            # Check if writer process is still alive
+            # Otherwise might lose data without knowing!
+            # Copy numpy array, otherwise queue references same object
+#            print self.writer_pipe.recv()
+            if self.check_writer():
+                self.writer_pipe.send('alive')
+                self.writer_queue.put(self.newest_frame.copy())
+                # required, or may crash?
+                time.sleep(0.001)
+
         else:
             print 'No new frame returned!!! What does it mean??? We are going to die! Eventually!!!'
 
@@ -144,34 +145,44 @@ class Spotter:
 #            log.info('Missed next frame by: ' + str( t * -1. ) + ' ms')
             t = 1
 
-    def check_writer( self ):
-        """ True if alive, otherwise causes script to terminate. """
-        if not self.writer.is_alive():
-            print('Writing to disk failed.')
-            log.error('Writing to disk failed.')
-            self.exitMain()
+    def toggle_video_recording(self, state):
+        if state:
+            self.writer_pipe.send('start')
         else:
-            return True
+            self.writer_pipe.send('stop')
+
+    def check_writer(self):
+        """ True if alive """
+        return self.writer.is_alive()
+        #check pipe!
+#        if self.return_queue.is_
+#        if not self.writer.is_alive():
+#            print('Writing to disk failed.')
+#            log.error('Writing to disk failed.')
+#            self.exitMain()
+#        else:
+#            return True
 
     def exitMain( self ):
         """ Graceful exit. Ha. Ha. Ha. Bottle of root beer anyone? """
         # closing grabber is straight forward, will release capture object
-        if self.grabber:
+        if self.grabber is not None:
             self.grabber.close()
-        # tracker no longer has serial handle to take care of
-        if self.tracker:
+        # tracker has no volatile things to handle either
+        if self.tracker is not None:
             self.tracker.close()
         # chatter HAS to close serial connection or all hell breaks loose!
-        if self.chatter:
+        if self.chatter is not None:
             self.chatter.close()
         # writer is a bit trickier, may have frames left to stow away
-        if not self.writer == None and self.writer.is_alive():
-            self.write_queue.put( 'terminate' )
-            # gives the child process one second to finish up, will be
-            # terminated otherwise
-            self.writer.join( 1 )
+        if self.writer is not None and self.writer.is_alive():
+            self.writer_pipe.send( 'terminate' )
+            # gives the child process one second to finish up
+            self.writer.join(1)
+            # will be terminated otherwise
             if self.writer.is_alive():
-                main.writer.terminate()
+                self.writer.terminate()
+
         try:
             fc = self.grabber.framecount
             tt = ( time.clock() - self.ts_start )

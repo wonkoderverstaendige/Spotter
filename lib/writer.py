@@ -41,7 +41,8 @@ from docopt import docopt
 
 DEBUG = True
 OVERWRITE = False
-TIMEOUT = 5 #seconds till writer process times out
+ #seconds till writer process times out after having received last alive packet
+TIMEOUT = 10
 
 class Writer:
     codecs = ( ('XVID'), ('DIVX'), ('IYUV') )
@@ -49,73 +50,126 @@ class Writer:
     writer = None
     size = None
     alive = True
+    recording = False
     ts_last = time.clock()
 
-    def __init__( self, dst, fps, size, queue = None , codec='XVID' ):
+    def __init__( self, fps, size, queue, pipe, codec='XVID' ):
+        self.queue = queue
+        self.pipe = pipe
 
-        # check if output file exists
-        self.destination = utils.dst_file_name( dst )
-        if os.path.isfile( self.destination ) and not OVERWRITE:
-            print 'Destination file exists. Exiting.'
-            sys.exit(0)
-
+        self.fps = fps
         # Video Writer takes tuple of INTS, not FLOATS!
-        self.size = tuple( int(i) for i in size )
+        self.size = tuple(int(i) for i in size)
 
         # Explode the string into characters as required by archaic VideoWriter
-        cc = list( codec )
-        print codec
+        self.codec = codec
+        self.cc = list(codec)
+        self.printflush(codec)
 
-        # Proper fps values only important if lower than what camera can provide,
-        # or for video files, which are limited by CPU speed and 1ms min of waitKey()
+        # Only important if lower than what camera can provide, or for videos
         try:
             fps = float( 29.97 if not fps else fps )
         except ValueError:
             fps = 29.97
 
+        self.loop()
+
+    def start(self, dst):
+        self.printflush("START METHOD")
+        # check if output file exists
+        dst = self.time_string() + '.avi'
+        destination = utils.dst_file_name(dst)
+        if os.path.isfile(destination) and not OVERWRITE:
+            self.printflush('Destination file exists, stopped.')
+            return
+        self.destination = destination
+        self.printflush(self.destination)
+
         # VideoWriter object
-        if DEBUG: print 'Writer Init - fps: ' + str( fps ) + '; size: ' + str( size ) + ';'
+        if DEBUG:
+            self.printflush('Writer Init - fps: ' + str(self.fps) + '; size: ' + str(self.size) + ';')
         self.writer = cv2.VideoWriter(
                         self.destination,
-                        cv.CV_FOURCC( cc[0], cc[1], cc[2], cc[3] ),
-                        fps,
+                        cv.CV_FOURCC(self.cc[0], self.cc[1], self.cc[2], self.cc[3]),
+                        self.fps,
                         self.size, 1 )
-        if DEBUG: print str( self.writer ) + ' destination: ' + self.destination
+        if DEBUG:
+            self.printflush(str(self.writer) + ' destination: ' + self.destination)
+        self.recording = True
 
-        if queue:
-            self.write_process( queue )
+    def printflush(self, string):
+        """ Prints a string and flushes the buffered output, so that prints
+        in this sub-process show up in the parent process terminal output."""
+        print string
+        sys.stdout.flush()
 
-    def write( self, frame ):
-        self.writer.write( frame )
+    def stop(self):
+        self.printflush("STOP METHOD")
+        self.destination = None
+        if self.recording:
+            self.close()
+        self.recording = False
 
+    def write(self, frame):
+        self.writer.write(frame)
 
-    def write_process( self, queue ):
-        """ Writes frames from the queue. If alive flag set to
-        false, deletes capture object to allow proper exit"""
-        while self.alive:
+    def loop(self):
+        """
+        Writes frames from the queue. If alive flag set to
+        false, deletes capture object to allow proper exit
+        """
+        while 42 and self.alive:
             # Process should terminate if not being talked to for a while
             if time.clock() - self.ts_last > TIMEOUT:
-                print "Terminating unattended Writer process!"
+                self.printflush("Terminating unattended Writer process!")
+                self.close()
                 sys.exit(0)
 
-            if not queue.empty():
+            try:
+                new_pipe_msg = self.pipe.poll()
+            except:
+                new_pipe_msg = False
+
+            if new_pipe_msg:
+                cmd = self.pipe.recv()
                 self.ts_last = time.clock()
-                item = queue.get()
-                if item == 'terminate':
+                if cmd == 'terminate':
                     self.alive = False
-                    if DEBUG: print 'Writer received termination signal'
-                else:
-                    self.write( item )
+                    if DEBUG:
+                        self.printflush('Writer received termination signal')
+                elif cmd == 'stop':
+                    if DEBUG:
+                        self.printflush('Writer received stop signal')
+                    self.stop()
+                elif cmd == 'start':
+                    if DEBUG:
+                       self.printflush('Writer received start signal')
+                    self.start('test.avi')
+                elif cmd == 'alive':
+                    pass
+#                    if DEBUG:
+#                       self.printflush('Writer received alive signal')
+
+            while not self.queue.empty():
+                item = self.queue.get()
+#                self.printflush("removed item")
+                if self.writer is not None and self.recording:
+                    self.write(item)
+
             # refresh time to keep CPU utilization down
             time.sleep(0.01)
-
         # Close writer upon termination signal
-        if not self.alive: self.close()
+        if not self.alive:
+            self.close()
 
+    def time_string(self):
+        return '_'.join(map(str, time.localtime())[0:6])
 
-    def close( self ):
+    def close(self):
         print 'Closing Writer'
-        del( self.writer )
+        if self.writer is not None:
+            del(self.writer)
+            self.writer = None
 
 
 

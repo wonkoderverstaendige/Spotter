@@ -91,6 +91,10 @@ class Main(QtGui.QMainWindow):
         # Menubar items
         self.connect(self.ui.actionFile, QtCore.SIGNAL('triggered()'), self.file_dialog_video)
 
+
+        # Toolbar items
+        self.connect(self.ui.actionRecord, QtCore.SIGNAL('toggled(bool)'), self.record_video)
+
         # Spotter main class, handles Grabber, Writer, Tracker, Chatter
         self.spotter = Spotter(source, destination, fps, size, gui, serial)
 
@@ -182,6 +186,8 @@ class Main(QtGui.QMainWindow):
         self.glframe.updateWorld()
         self.update_current_tab()
 
+    def record_video(self, state):
+        self.spotter.toggle_video_recording(state)
 
     def mouse_event_to_tab(self, event_type, event):
         """

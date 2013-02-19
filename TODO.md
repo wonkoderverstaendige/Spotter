@@ -4,7 +4,7 @@ TO DO:
 
 Interface:
 ==========
-    - No features/objects at start, except if a standard template is selected
+DONE- No features/objects at start, except if a standard template is selected
     in the settings and marked as auto-track
 
     - no tabs if no spotter. Allow to simply kill and reinstantiate a spotter
@@ -57,7 +57,7 @@ DROP- shift as a modifier could serve as precision placement (diving delta
 General behavior:
 =================
 
-    - benchmark how long it takes to open one frame, vs. 5 frames, etc.
+    - benchmark how long it takes to open one frame, vs. 5 frames, etc. from HD
 
     - if video from disk, keep a frame buffer filled up, otherwise only process
     most recent frame. From disk any access to a slow HD will delay reading
