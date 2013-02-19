@@ -75,7 +75,7 @@ class Writer:
         self.loop()
 
     def start(self, dst):
-        self.printflush("START METHOD")
+#        self.printflush("START METHOD")
         # check if output file exists
         dst = self.time_string() + '.avi'
         destination = utils.dst_file_name(dst)
@@ -104,7 +104,7 @@ class Writer:
         sys.stdout.flush()
 
     def stop(self):
-        self.printflush("STOP METHOD")
+#        self.printflush("STOP METHOD")
         self.destination = None
         if self.recording:
             self.close()

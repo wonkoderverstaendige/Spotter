@@ -294,27 +294,29 @@ class Chatter:
         for y in xrange(0, self.range_xy[1]+1, stepsize):
             t = time.clock()
             for x in xrange(0, self.range_xy[0]+1, stepsize):
-                self.send_analog_state((x, y))
+                data = self.scale_point((x, y))
+                self.serial_device.send_instructions([[1, 0, data[0]], [1, 1, data[1]]])
                 self.read_all()
             print("line: " + str(y) + " t: " + str((time.clock() - t)) + " s")
 
-        self.send_analog_state((0, 0))
+        self.serial_device.send_instructions([[1, 0, 0], [1, 1, 0]])
         self.read_all()
         time.sleep(0.5)
 
         for x in xrange(0, self.range_xy[0]+1, stepsize):
             t = time.clock()
             for y in xrange(0, self.range_xy[1]+1, stepsize):
-                self.send_analog_state((x, y))
-                self.read_all()
+                data = self.scale_point((x, y))
+                self.serial_device.send_instructions([[1, 0, data[0]], [1, 1, data[1]]])
             print("column: " + str(x) + " t: " + str((time.clock() - t)) + " s")
 
+        self.serial_device.send_instructions([[1, 0, 0], [1, 1, 0]])
+        self.read_all()
+        time.sleep(0.5)
 
 #############################################################
 if __name__ == '__main__':
 #############################################################
     chatter = Chatter(sys.argv[1])
-    chatter.test_scan_frame(stepsize = 2)
-    print 'Done'
-#    time.sleep(2)
+    chatter.test_scan_frame(stepsize=2)
     chatter.close()
