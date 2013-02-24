@@ -26,7 +26,7 @@ To do:
     - can never overwrite a file
 
 """
-
+ 
 import sys
 #import serial
 import re
@@ -36,8 +36,13 @@ from random import randint
 
 os_str = platform.system().lower()
 if len(os_str) > 0:
-    is_nix = os_str.find('linux') > -1 or os_str.find('darwin') > -1
-    is_win = os_str.find("win") > -1
+    if os_str.find('linux') > -1 or os_str.find('darwin') > -1:
+        is_nix = True
+        is_win = False
+    else:
+        is_nix = False #os_str.find("win") > -1
+        is_win = True
+    
 if is_nix:
     from serial.tools import list_ports
 elif is_win:
@@ -101,6 +106,8 @@ class Chatter:
                 portlist = [port]
         else:
             portlist = self.list_ports()
+            
+        print portlist
 
         for p in portlist:
             try:
@@ -267,7 +274,7 @@ class Chatter:
         interesting Eli Bendersky, see comment above.
         """
         if is_nix:
-            portlist = [(p, p) for p in list_ports.comports()]
+            portlist = [p for p in list_ports.comports()]
         if is_win:
             portlist = [(p, self.full_port_name(p)) for p in self.enum_win_ports()]
             portlist.reverse()

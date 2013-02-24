@@ -124,7 +124,7 @@ class Tracker:
 
         # finding centroids of best_cnt and draw a circle there
         if not contour == None:
-            M = cv2.moments( contour )
+            M = cv2.moments( contour.astype(int) )
             cx = int( M['m10']/M['m00'] )
             cy = int( M['m01']/M['m00'] )
             l.pos_hist.append( (cx, cy) )
@@ -143,7 +143,7 @@ class Tracker:
         largest_area = 0
         best_cnt = None
         for cnt in contours:
-            area = cv2.contourArea(cnt)
+            area = cv2.contourArea(cnt.astype(int))
             if area >= range_area[0] and area > largest_area:
                 largest_area = area
                 best_cnt = cnt
