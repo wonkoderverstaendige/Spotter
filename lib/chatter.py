@@ -151,6 +151,9 @@ class Chatter:
 
     def update_pins(self, slots):
         """ instr: [type, instr, data, index]"""
+        if not self.connected:
+            return
+            
         instr = []
         for s in slots:
             if s.state_idx == None:
