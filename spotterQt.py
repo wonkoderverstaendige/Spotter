@@ -39,6 +39,7 @@ DEFAULT_TEMPLATE = 'defaults.ini'
 import sys
 import os
 import platform
+import time
 from PyQt4 import QtGui, QtCore
 import logging
 
@@ -368,37 +369,71 @@ class Main(QtGui.QMainWindow):
         print "Pew Pew"
         config = ConfigObj(indent_type='    ')
         if filename is None:
-            config.filename = str(QtGui.QFileDialog.getSaveFileName(self, 'Save Template', directory))
-        
+            filename = str(QtGui.QFileDialog.getSaveFileName(self, 'Save Template', directory))
+            if len(filename):
+                config.filename = filename
+            else:
+                return
+
+
         # General options and comment
-        config['TEMPLATE'] = "key1"
-        config['TEMPLATE'] = "key2"
-        
+        config['TEMPLATE'] = {}
+        config['TEMPLATE']['name'] = "Template Name"
+        config['TEMPLATE']['date'] = '_'.join(map(str, time.localtime())[0:3])
+        config['TEMPLATE']['description'] = 'template writing test'
+
         # Features
         config['FEATURES'] = {}
-        config['FEATURES']['keyword3'] = 3
-        config['FEATURES']['keyword4'] = 4
-        
+        for f in self.spotter.tracker.leds:
+            section = {'type': 'LED',
+                       'range_hue': f.range_hue,
+                       'range_sat': f.range_sat,
+                       'range_val': f.range_val,
+                       'range_area': f.range_area,
+                       'fixed_pos': f.fixed_pos}
+            config['FEATURES'][f.label] = section
+
+
         # Objects
-        section2 = {
-            'keyword5': 5,
-            'keyword6': 6,
-            'sub-section': {
-                'keyword7': 7
-                }
-        }
-        config['OBJECTS'] = section2
-        
+        config['OBJECTS'] = {}
+        for o in self.spotter.tracker.oois:
+            features = [f.label for f in o.linked_leds]
+            analog_out = len(o.magnetic_signals) > 0
+            section = {'features': features,
+                       'analog_out': analog_out}
+            if analog_out:
+                section['analog_signal'] = [s[0] for s in o.magnetic_signals]
+                section['pin_pref'] = [s[1] for s in o.magnetic_signals]
+            section['trace'] = o.traced
+            config['OBJECTS'][o.label] = section
+
         # Shapes
+        #shapelist:
+        shapelist = []
+        rng = (self.glframe.width, self.glframe.height)
+        for r in self.spotter.tracker.rois:
+            for s in r.shapes:
+                if not s in shapelist:
+                    shapelist.append(s)
         config['SHAPES'] = {}
-        config['SHAPES']['keyword 8'] = [8, 9, 10]
-        config['SHAPES']['keyword 9'] = [11, 12, 13]
-        
+        for s in shapelist:
+           section = {'p1': geom.norm_points(s.points[0], rng),
+                      'p2': geom.norm_points(s.points[1], rng),
+                      'type': s.shape}
+           config['SHAPES'][s.label] = section
+
         # Regions
         config['REGIONS'] = {}
-        config['REGIONS']['keyword 8'] = [8, 9, 10]
-        config['REGIONS']['keyword 9'] = [11, 12, 13]
-        #
+        for r in self.spotter.tracker.rois:
+            mo = r.magnetic_objects
+            section = {'shapes': [s.label for s in r.shapes],
+                       'digital_out': True,
+                       'digital_collision': [o[0].label for o in mo],
+                       'pin_pref': [o[1] for o in mo],
+                       'color': r.active_color,
+                       }
+            config['REGIONS'][r.label] = section
+
         config.write()
 
 ###############################################################################
@@ -480,6 +515,7 @@ class Main(QtGui.QMainWindow):
                     features.append(l)
 
         analog_out = template['analog_out']
+#        print analog_out, template['analog_signal']
         if analog_out:
             # Magnetic objects from collision list
             signal_names = template['analog_signal']
