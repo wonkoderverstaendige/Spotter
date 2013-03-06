@@ -90,7 +90,6 @@ class Grabber:
 
         # if source_type is 'device': Otherwise does nothing
         if not self.source_type == 'file':
-            cv2.C
             self.capture.set( cv.CV_CAP_PROP_FPS, float( self.fps_init ) )
             self.capture.set( cv.CV_CAP_PROP_FRAME_WIDTH, float(self.size_init[0]) )
             self.capture.set( cv.CV_CAP_PROP_FRAME_HEIGHT, float(self.size_init[1]) )
