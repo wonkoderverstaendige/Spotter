@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'tab_regionsUi.ui'
 #
-# Created: Tue Mar  5 22:40:01 2013
-#      by: PyQt4 UI code generator 4.9.6
+# Created: Wed Mar 06 14:20:59 2013
+#      by: PyQt4 UI code generator 4.9.5
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,16 +12,7 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    def _fromUtf8(s):
-        return s
-
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-except AttributeError:
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig)
+    _fromUtf8 = lambda s: s
 
 class Ui_tab_regions(object):
     def setupUi(self, tab_regions):
@@ -71,12 +62,20 @@ class Ui_tab_regions(object):
         self.lbl_x.setObjectName(_fromUtf8("lbl_x"))
         self.horizontalLayout.addWidget(self.lbl_x)
         self.spin_shape_x = QtGui.QSpinBox(self.page_regions_overview)
+        self.spin_shape_x.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.spin_shape_x.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
         self.spin_shape_x.setAccelerated(True)
         self.spin_shape_x.setMinimum(-2048)
         self.spin_shape_x.setMaximum(2048)
         self.spin_shape_x.setObjectName(_fromUtf8("spin_shape_x"))
         self.horizontalLayout.addWidget(self.spin_shape_x)
+        self.spin_shape_normx = QtGui.QDoubleSpinBox(self.page_regions_overview)
+        self.spin_shape_normx.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
+        self.spin_shape_normx.setMinimum(-2.0)
+        self.spin_shape_normx.setMaximum(2.0)
+        self.spin_shape_normx.setSingleStep(0.05)
+        self.spin_shape_normx.setObjectName(_fromUtf8("spin_shape_normx"))
+        self.horizontalLayout.addWidget(self.spin_shape_normx)
         self.gridLayout_5.addLayout(self.horizontalLayout, 3, 0, 1, 2)
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
@@ -86,12 +85,20 @@ class Ui_tab_regions(object):
         self.lbl_y.setObjectName(_fromUtf8("lbl_y"))
         self.horizontalLayout_2.addWidget(self.lbl_y)
         self.spin_shape_y = QtGui.QSpinBox(self.page_regions_overview)
+        self.spin_shape_y.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.spin_shape_y.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
         self.spin_shape_y.setAccelerated(True)
         self.spin_shape_y.setMinimum(-2048)
         self.spin_shape_y.setMaximum(2048)
         self.spin_shape_y.setObjectName(_fromUtf8("spin_shape_y"))
         self.horizontalLayout_2.addWidget(self.spin_shape_y)
+        self.spin_shape_normy = QtGui.QDoubleSpinBox(self.page_regions_overview)
+        self.spin_shape_normy.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
+        self.spin_shape_normy.setMinimum(-2.0)
+        self.spin_shape_normy.setMaximum(2.0)
+        self.spin_shape_normy.setSingleStep(0.05)
+        self.spin_shape_normy.setObjectName(_fromUtf8("spin_shape_normy"))
+        self.horizontalLayout_2.addWidget(self.spin_shape_normy)
         self.gridLayout_5.addLayout(self.horizontalLayout_2, 5, 0, 1, 2)
         self.tree_region_shapes = QtGui.QTreeWidget(self.page_regions_overview)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
@@ -180,26 +187,26 @@ class Ui_tab_regions(object):
         QtCore.QMetaObject.connectSlotsByName(tab_regions)
 
     def retranslateUi(self, tab_regions):
-        tab_regions.setWindowTitle(_translate("tab_regions", "Form", None))
-        self.btn_add_shape.setStatusTip(_translate("tab_regions", "Drag: Rectangle. Shift+drag: Line. Ctrl+drag: Circle.", None))
-        self.btn_add_shape.setText(_translate("tab_regions", "&Add", None))
-        self.btn_remove_shape.setText(_translate("tab_regions", "&Remove", None))
-        self.ckb_trigger.setText(_translate("tab_regions", "Digital trigger on collisions", None))
-        self.lbl_x.setText(_translate("tab_regions", "x:", None))
-        self.lbl_y.setText(_translate("tab_regions", "y:", None))
-        self.tree_region_shapes.headerItem().setText(0, _translate("tab_regions", "Shapes", None))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page_regions_overview), _translate("tab_regions", "Shapes", None))
+        tab_regions.setWindowTitle(QtGui.QApplication.translate("tab_regions", "Form", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_add_shape.setStatusTip(QtGui.QApplication.translate("tab_regions", "Drag: Rectangle. Shift+drag: Line. Ctrl+drag: Circle.", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_add_shape.setText(QtGui.QApplication.translate("tab_regions", "&Add", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_remove_shape.setText(QtGui.QApplication.translate("tab_regions", "&Remove", None, QtGui.QApplication.UnicodeUTF8))
+        self.ckb_trigger.setText(QtGui.QApplication.translate("tab_regions", "Trigger", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_x.setText(QtGui.QApplication.translate("tab_regions", "x:", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_y.setText(QtGui.QApplication.translate("tab_regions", "y:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tree_region_shapes.headerItem().setText(0, QtGui.QApplication.translate("tab_regions", "Shapes", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page_regions_overview), QtGui.QApplication.translate("tab_regions", "Shapes", None, QtGui.QApplication.UnicodeUTF8))
         item = self.table_slots.horizontalHeaderItem(0)
-        item.setText(_translate("tab_regions", "Collision", None))
+        item.setText(QtGui.QApplication.translate("tab_regions", "Collision", None, QtGui.QApplication.UnicodeUTF8))
         item = self.table_slots.horizontalHeaderItem(1)
-        item.setText(_translate("tab_regions", "Pin", None))
+        item.setText(QtGui.QApplication.translate("tab_regions", "Pin", None, QtGui.QApplication.UnicodeUTF8))
         item = self.table_slots.horizontalHeaderItem(2)
-        item.setText(_translate("tab_regions", "Logic", None))
-        self.btn_lock_table.setText(_translate("tab_regions", "Unlock", None))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page_regions_collisions), _translate("tab_regions", "Collision Slots", None))
-        self.pushButton_15.setText(_translate("tab_regions", "Open", None))
-        self.pushButton_14.setText(_translate("tab_regions", "Clone", None))
-        self.pushButton_13.setText(_translate("tab_regions", "Delete", None))
-        self.pushButton_12.setText(_translate("tab_regions", "Save", None))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page_regions_IO), _translate("tab_regions", "In/Out", None))
+        item.setText(QtGui.QApplication.translate("tab_regions", "Logic", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_lock_table.setText(QtGui.QApplication.translate("tab_regions", "Unlock", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page_regions_collisions), QtGui.QApplication.translate("tab_regions", "Collision Slots", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_15.setText(QtGui.QApplication.translate("tab_regions", "Open", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_14.setText(QtGui.QApplication.translate("tab_regions", "Clone", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_13.setText(QtGui.QApplication.translate("tab_regions", "Delete", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_12.setText(QtGui.QApplication.translate("tab_regions", "Save", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page_regions_IO), QtGui.QApplication.translate("tab_regions", "In/Out", None, QtGui.QApplication.UnicodeUTF8))
 

@@ -106,7 +106,7 @@
              <item>
               <widget class="QCheckBox" name="ckb_trigger">
                <property name="text">
-                <string>Digital trigger on collisions</string>
+                <string>Trigger</string>
                </property>
                <property name="checked">
                 <bool>true</bool>
@@ -135,6 +135,9 @@
              </item>
              <item>
               <widget class="QSpinBox" name="spin_shape_x">
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
                <property name="buttonSymbols">
                 <enum>QAbstractSpinBox::PlusMinus</enum>
                </property>
@@ -146,6 +149,22 @@
                </property>
                <property name="maximum">
                 <number>2048</number>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="spin_shape_normx">
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::PlusMinus</enum>
+               </property>
+               <property name="minimum">
+                <double>-2.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>2.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.050000000000000</double>
                </property>
               </widget>
              </item>
@@ -175,6 +194,9 @@
              </item>
              <item>
               <widget class="QSpinBox" name="spin_shape_y">
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
                <property name="buttonSymbols">
                 <enum>QAbstractSpinBox::PlusMinus</enum>
                </property>
@@ -186,6 +208,22 @@
                </property>
                <property name="maximum">
                 <number>2048</number>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="spin_shape_normy">
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::PlusMinus</enum>
+               </property>
+               <property name="minimum">
+                <double>-2.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>2.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.050000000000000</double>
                </property>
               </widget>
              </item>

@@ -32,7 +32,7 @@ def middle_point(coord_list):
 
 
 def scale_points(pts, rng):
-    """ Scale points in list of given nromalized (0.0-1.0) points to a range
+    """ Scale points in list of given normalized (0.0-1.0) points to a range
     i.e. 1.0 --> 640 etc.
     """
     try:

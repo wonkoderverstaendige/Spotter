@@ -14,6 +14,9 @@ from PyQt4 import QtGui, QtCore
 sys.path.append('./ui')
 from tab_regionsUi import Ui_tab_regions
 
+sys.path.append('./lib')
+import geometry as geom
+
 tab_type = "region"
 
 class Tab(QtGui.QWidget, Ui_tab_regions):
@@ -62,6 +65,9 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         self.connect(self.spin_shape_x, QtCore.SIGNAL('valueChanged(int)'), self.update_shape_position)
         self.connect(self.spin_shape_y, QtCore.SIGNAL('valueChanged(int)'), self.update_shape_position)
 
+        self.connect(self.spin_shape_normx, QtCore.SIGNAL('valueChanged(double)'), self.update_shape_normposition)
+        self.connect(self.spin_shape_normy, QtCore.SIGNAL('valueChanged(double)'), self.update_shape_normposition)
+
         # if a checkbox or spinbox on a shape in the list is changed
         self.spin_shape = None
         self.connect(self.tree_region_shapes, QtCore.SIGNAL('itemChanged(QTreeWidgetItem *, int)'), self.shape_item_changed)
@@ -73,6 +79,8 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
     def update(self):
         self.refresh_shape_list()
         self.refresh_slot_table()
+        self.update_spin_boxes()
+        self.update_spin_boxes_norm()
 
     def update_spin_boxes(self):
         tree_item = self.tree_region_shapes.selectedItems()
@@ -83,10 +91,21 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
             if not self.spin_shape_y.value() == tree_item.shape.points[0][1]:
                 self.spin_shape_y.setValue(tree_item.shape.points[0][1])
 
+    def update_spin_boxes_norm(self):
+        tree_item = self.tree_region_shapes.selectedItems()
+        if tree_item:
+            tree_item = tree_item[0]
+            width = self.parent.glframe.width
+            height = self.parent.glframe.height
+            p1 = tree_item.shape.points[0]
+            p1_norm = geom.norm_points(p1, (width, height))
+            if not self.spin_shape_normx.value() == p1_norm[0]:
+                self.spin_shape_normx.setValue(p1_norm[0])
+            if not self.spin_shape_normy.value() == p1_norm[1]:
+                self.spin_shape_normy.setValue(p1_norm[1])
 
     def accept_selection(self, state):
         self.event_add_selection = state
-
 
     def process_event(self, event_type, event):
         modifiers = QtGui.QApplication.keyboardModifiers()
@@ -198,6 +217,32 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
             dx = self.spin_shape_x.value() - self.region.shapes[idx].points[0][0]
             dy = self.spin_shape_y.value() - self.region.shapes[idx].points[0][1]
             self.move_shape(dx, dy)
+            self.update_spin_boxes_norm()
+        else:
+            self.spin_shape = self.tree_region_shapes.currentItem().shape
+            return
+
+    def update_shape_normposition(self):
+        """
+        Update position of the shape if the values in the spin boxes with 
+        normalized values, representing the top right corner of the shape,
+        is changed. Requires checking if the spin box update is caused by just
+        switching to a different shape in the shape tree list!
+        """
+        if not self.tree_region_shapes.currentItem():
+            return
+
+        if self.tree_region_shapes.currentItem().shape == self.spin_shape:
+            # find the shape in the shape list of the ROI
+            idx = self.region.shapes.index(self.tree_region_shapes.currentItem().shape)
+            width = self.parent.glframe.width
+            height = self.parent.glframe.height
+            p1_norm = (self.spin_shape_normx.value(),self.spin_shape_normy.value())
+            p1 = geom.scale_points(p1_norm, (width, height))
+            dx = p1[0] - self.region.shapes[idx].points[0][0]
+            dy = p1[1] - self.region.shapes[idx].points[0][1]
+            self.move_shape(dx, dy)
+            self.update_spin_boxes()
         else:
             self.spin_shape = self.tree_region_shapes.currentItem().shape
             return
