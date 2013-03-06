@@ -25,8 +25,8 @@ Options:
 #    - check if codec on list of known working ones.
 #    - if destination exists, offer file name change
 
-import cv
 import cv2
+import cv2.cv as cv
 import os
 import sys
 import time
