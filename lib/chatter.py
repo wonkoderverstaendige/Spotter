@@ -106,8 +106,8 @@ class Chatter:
                 portlist = [port]
         else:
             portlist = self.list_ports()
-            
-        print portlist
+#            
+#        print portlist
 
         for p in portlist:
             try:
@@ -186,7 +186,6 @@ class Chatter:
         xc = int(xc * self.factor_dac + self.offset_dac)
         yc = int(yc * self.factor_dac + self.offset_dac)
         return (xc, yc)
-
 
     def read_all(self):
         if not self.serial_device:
@@ -274,13 +273,25 @@ class Chatter:
         seems to reliable miss the Serial port of the Arduinos. Not sure why,
         it seems to be widely used in examples. Maybe I am not using the
         iterator correctly. So for Windows, I'm using code from the always
-        interesting Eli Bendersky, see comment above.
+        interesting Eli Bendersky, see above.
         """
         if is_nix:
             portlist = [p for p in list_ports.comports()]
         if is_win:
             portlist = [(p, self.full_port_name(p)) for p in self.enum_win_ports()]
+        return self.clean_portlist(portlist)
+
+    def clean_portlist(self, portlist):
+        """
+        Remove unlikely ports like Bluetooth modems etc. and sort in descending
+        likelihood of usefulness.
+        """
+        if is_nix:
+            for p in portlist:
+                print p
+        else:
             portlist.reverse()
+            
         return portlist
 
     def close(self):
@@ -293,12 +304,10 @@ class Chatter:
             print 'Closing Serial'
             self.serial_device.close()
 
-
-
     def test_scan_frame(self, stepsize=4):
         """
         scan through all points in frame size and give their coordinates
-        as analog values via DACs, Stepsize to keep it at a reasonable
+        as analog values via DACs, Stepsize to keep it in a reasonable
         time frame...
         """
         for y in xrange(0, self.range_xy[1]+1, stepsize):

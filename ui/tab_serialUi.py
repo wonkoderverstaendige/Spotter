@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'tab_serialUi.ui'
 #
-# Created: Tue Feb 19 06:09:56 2013
-#      by: PyQt4 UI code generator 4.9.5
+# Created: Tue Mar  5 22:40:02 2013
+#      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_tab_serial(object):
     def setupUi(self, tab_serial):
@@ -147,16 +156,16 @@ class Ui_tab_serial(object):
         QtCore.QMetaObject.connectSlotsByName(tab_serial)
 
     def retranslateUi(self, tab_serial):
-        tab_serial.setWindowTitle(QtGui.QApplication.translate("tab_serial", "Form", None, QtGui.QApplication.UnicodeUTF8))
-        self.lbl_serial_port.setText(QtGui.QApplication.translate("tab_serial", "Available Serial Ports:", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_serial_refresh.setText(QtGui.QApplication.translate("tab_serial", "Refresh", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_serial_connect.setText(QtGui.QApplication.translate("tab_serial", "Connect", None, QtGui.QApplication.UnicodeUTF8))
-        self.lbl_tx.setText(QtGui.QApplication.translate("tab_serial", "transferred:", None, QtGui.QApplication.UnicodeUTF8))
-        self.lbl_rx.setText(QtGui.QApplication.translate("tab_serial", "received:", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page_serial_connection), QtGui.QApplication.translate("tab_serial", "Connection", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_8.setText(QtGui.QApplication.translate("tab_serial", "Save", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_9.setText(QtGui.QApplication.translate("tab_serial", "Open", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_4.setText(QtGui.QApplication.translate("tab_serial", "Clone", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_5.setText(QtGui.QApplication.translate("tab_serial", "Delete", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page_objects_IO), QtGui.QApplication.translate("tab_serial", "In/Out", None, QtGui.QApplication.UnicodeUTF8))
+        tab_serial.setWindowTitle(_translate("tab_serial", "Form", None))
+        self.lbl_serial_port.setText(_translate("tab_serial", "Available Serial Ports:", None))
+        self.btn_serial_refresh.setText(_translate("tab_serial", "Refresh", None))
+        self.btn_serial_connect.setText(_translate("tab_serial", "Connect", None))
+        self.lbl_tx.setText(_translate("tab_serial", "transferred:", None))
+        self.lbl_rx.setText(_translate("tab_serial", "received:", None))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page_serial_connection), _translate("tab_serial", "Connection", None))
+        self.pushButton_8.setText(_translate("tab_serial", "Save", None))
+        self.pushButton_9.setText(_translate("tab_serial", "Open", None))
+        self.pushButton_4.setText(_translate("tab_serial", "Clone", None))
+        self.pushButton_5.setText(_translate("tab_serial", "Delete", None))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page_objects_IO), _translate("tab_serial", "In/Out", None))
 

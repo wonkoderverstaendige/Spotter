@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'tab_regionsUi.ui'
 #
-# Created: Tue Feb 19 06:09:56 2013
-#      by: PyQt4 UI code generator 4.9.5
+# Created: Tue Mar  5 22:40:01 2013
+#      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_tab_regions(object):
     def setupUi(self, tab_regions):
@@ -171,26 +180,26 @@ class Ui_tab_regions(object):
         QtCore.QMetaObject.connectSlotsByName(tab_regions)
 
     def retranslateUi(self, tab_regions):
-        tab_regions.setWindowTitle(QtGui.QApplication.translate("tab_regions", "Form", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_add_shape.setStatusTip(QtGui.QApplication.translate("tab_regions", "Drag: Rectangle. Shift+drag: Line. Ctrl+drag: Circle.", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_add_shape.setText(QtGui.QApplication.translate("tab_regions", "&Add", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_remove_shape.setText(QtGui.QApplication.translate("tab_regions", "&Remove", None, QtGui.QApplication.UnicodeUTF8))
-        self.ckb_trigger.setText(QtGui.QApplication.translate("tab_regions", "Digital trigger on collisions", None, QtGui.QApplication.UnicodeUTF8))
-        self.lbl_x.setText(QtGui.QApplication.translate("tab_regions", "x:", None, QtGui.QApplication.UnicodeUTF8))
-        self.lbl_y.setText(QtGui.QApplication.translate("tab_regions", "y:", None, QtGui.QApplication.UnicodeUTF8))
-        self.tree_region_shapes.headerItem().setText(0, QtGui.QApplication.translate("tab_regions", "Shapes", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page_regions_overview), QtGui.QApplication.translate("tab_regions", "Shapes", None, QtGui.QApplication.UnicodeUTF8))
+        tab_regions.setWindowTitle(_translate("tab_regions", "Form", None))
+        self.btn_add_shape.setStatusTip(_translate("tab_regions", "Drag: Rectangle. Shift+drag: Line. Ctrl+drag: Circle.", None))
+        self.btn_add_shape.setText(_translate("tab_regions", "&Add", None))
+        self.btn_remove_shape.setText(_translate("tab_regions", "&Remove", None))
+        self.ckb_trigger.setText(_translate("tab_regions", "Digital trigger on collisions", None))
+        self.lbl_x.setText(_translate("tab_regions", "x:", None))
+        self.lbl_y.setText(_translate("tab_regions", "y:", None))
+        self.tree_region_shapes.headerItem().setText(0, _translate("tab_regions", "Shapes", None))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page_regions_overview), _translate("tab_regions", "Shapes", None))
         item = self.table_slots.horizontalHeaderItem(0)
-        item.setText(QtGui.QApplication.translate("tab_regions", "Collision", None, QtGui.QApplication.UnicodeUTF8))
+        item.setText(_translate("tab_regions", "Collision", None))
         item = self.table_slots.horizontalHeaderItem(1)
-        item.setText(QtGui.QApplication.translate("tab_regions", "Pin", None, QtGui.QApplication.UnicodeUTF8))
+        item.setText(_translate("tab_regions", "Pin", None))
         item = self.table_slots.horizontalHeaderItem(2)
-        item.setText(QtGui.QApplication.translate("tab_regions", "Logic", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_lock_table.setText(QtGui.QApplication.translate("tab_regions", "Unlock", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page_regions_collisions), QtGui.QApplication.translate("tab_regions", "Collision Slots", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_15.setText(QtGui.QApplication.translate("tab_regions", "Open", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_14.setText(QtGui.QApplication.translate("tab_regions", "Clone", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_13.setText(QtGui.QApplication.translate("tab_regions", "Delete", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_12.setText(QtGui.QApplication.translate("tab_regions", "Save", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page_regions_IO), QtGui.QApplication.translate("tab_regions", "In/Out", None, QtGui.QApplication.UnicodeUTF8))
+        item.setText(_translate("tab_regions", "Logic", None))
+        self.btn_lock_table.setText(_translate("tab_regions", "Unlock", None))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page_regions_collisions), _translate("tab_regions", "Collision Slots", None))
+        self.pushButton_15.setText(_translate("tab_regions", "Open", None))
+        self.pushButton_14.setText(_translate("tab_regions", "Clone", None))
+        self.pushButton_13.setText(_translate("tab_regions", "Delete", None))
+        self.pushButton_12.setText(_translate("tab_regions", "Save", None))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page_regions_IO), _translate("tab_regions", "In/Out", None))
 

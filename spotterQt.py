@@ -116,6 +116,7 @@ class Main(QtGui.QMainWindow):
         self.template_default = self.parse_file_template(default_path, True)
 
         self.connect(self.ui.btn_load_template, QtCore.SIGNAL('clicked()'), self.load_template)
+        self.connect(self.ui.btn_save_template, QtCore.SIGNAL('clicked()'), self.save_template)
         self.connect(self.ui.btn_template_file, QtCore.SIGNAL('clicked()'), self.template_from_file)
         self.connect(self.ui.btn_feature_template, QtCore.SIGNAL('clicked()'), self.load_template)
         self.connect(self.ui.btn_object_template, QtCore.SIGNAL('clicked()'), self.load_template)
@@ -362,6 +363,43 @@ class Main(QtGui.QMainWindow):
             for r_key, r_val in tObj['REGIONS'].items():
                 self.add_region(r_val, r_key, shapes=tObj['SHAPES'], focus_new=False)
 
+
+    def save_template(self, filename = None, directory = DIR_TEMPLATES):
+        print "Pew Pew"
+        config = ConfigObj(indent_type='    ')
+        if filename is None:
+            config.filename = str(QtGui.QFileDialog.getSaveFileName(self, 'Save Template', directory))
+        
+        # General options and comment
+        config['TEMPLATE'] = "key1"
+        config['TEMPLATE'] = "key2"
+        
+        # Features
+        config['FEATURES'] = {}
+        config['FEATURES']['keyword3'] = 3
+        config['FEATURES']['keyword4'] = 4
+        
+        # Objects
+        section2 = {
+            'keyword5': 5,
+            'keyword6': 6,
+            'sub-section': {
+                'keyword7': 7
+                }
+        }
+        config['OBJECTS'] = section2
+        
+        # Shapes
+        config['SHAPES'] = {}
+        config['SHAPES']['keyword 8'] = [8, 9, 10]
+        config['SHAPES']['keyword 9'] = [11, 12, 13]
+        
+        # Regions
+        config['REGIONS'] = {}
+        config['REGIONS']['keyword 8'] = [8, 9, 10]
+        config['REGIONS']['keyword 9'] = [11, 12, 13]
+        #
+        config.write()
 
 ###############################################################################
 ##  FEATURES Tab Updates

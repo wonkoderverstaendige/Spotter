@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Tue Feb 19 06:09:55 2013
-#      by: PyQt4 UI code generator 4.9.5
+# Created: Tue Mar  5 22:40:00 2013
+#      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,12 +12,21 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
-        MainWindow.resize(752, 375)
+        MainWindow.resize(752, 388)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -64,16 +73,6 @@ class Ui_MainWindow(object):
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
         self.gridLayout_3 = QtGui.QGridLayout()
         self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
-        spacerItem1 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.gridLayout_3.addItem(spacerItem1, 4, 0, 1, 1)
-        self.btn_load_template = QtGui.QPushButton(self.widget_settings)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.btn_load_template.sizePolicy().hasHeightForWidth())
-        self.btn_load_template.setSizePolicy(sizePolicy)
-        self.btn_load_template.setObjectName(_fromUtf8("btn_load_template"))
-        self.gridLayout_3.addWidget(self.btn_load_template, 1, 0, 1, 1)
         self.btn_template_file = QtGui.QPushButton(self.widget_settings)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -90,6 +89,19 @@ class Ui_MainWindow(object):
         self.combo_templates.setSizePolicy(sizePolicy)
         self.combo_templates.setObjectName(_fromUtf8("combo_templates"))
         self.gridLayout_3.addWidget(self.combo_templates, 0, 0, 1, 1)
+        self.btn_load_template = QtGui.QPushButton(self.widget_settings)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.btn_load_template.sizePolicy().hasHeightForWidth())
+        self.btn_load_template.setSizePolicy(sizePolicy)
+        self.btn_load_template.setObjectName(_fromUtf8("btn_load_template"))
+        self.gridLayout_3.addWidget(self.btn_load_template, 1, 0, 1, 1)
+        spacerItem1 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.gridLayout_3.addItem(spacerItem1, 5, 0, 1, 1)
+        self.btn_save_template = QtGui.QPushButton(self.widget_settings)
+        self.btn_save_template.setObjectName(_fromUtf8("btn_save_template"))
+        self.gridLayout_3.addWidget(self.btn_save_template, 4, 0, 1, 1)
         self.gridLayout_2.addLayout(self.gridLayout_3, 1, 0, 1, 1)
         self.tab_parameters.addTab(self.widget_settings, _fromUtf8(""))
         self.widget_features = QtGui.QWidget()
@@ -192,7 +204,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addLayout(self.frame_parameters)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 752, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 752, 22))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menu_File = QtGui.QMenu(self.menubar)
         self.menu_File.setObjectName(_fromUtf8("menu_File"))
@@ -261,38 +273,39 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Spotter", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_load_template.setText(QtGui.QApplication.translate("MainWindow", "Load Template", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_template_file.setText(QtGui.QApplication.translate("MainWindow", "Open Template File", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_parameters.setTabText(self.tab_parameters.indexOf(self.widget_settings), QtGui.QApplication.translate("MainWindow", "Settings", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_new_feature_tab.setText(QtGui.QApplication.translate("MainWindow", "Add LED/Feature", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_feature_template.setText(QtGui.QApplication.translate("MainWindow", "Quickload Feature template", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_features.setTabText(self.tab_features.indexOf(self.tab_features_newTab), QtGui.QApplication.translate("MainWindow", "+", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_parameters.setTabText(self.tab_parameters.indexOf(self.widget_features), QtGui.QApplication.translate("MainWindow", "Features", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_new_object_tab.setText(QtGui.QApplication.translate("MainWindow", "Add Object", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_object_template.setText(QtGui.QApplication.translate("MainWindow", "Quickload object template", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_objects.setTabText(self.tab_objects.indexOf(self.tab_object_newTab), QtGui.QApplication.translate("MainWindow", "+", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_parameters.setTabText(self.tab_parameters.indexOf(self.widget_objects), QtGui.QApplication.translate("MainWindow", "Objects", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_new_region_tab.setText(QtGui.QApplication.translate("MainWindow", "New Region", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_region_template.setText(QtGui.QApplication.translate("MainWindow", "Quickload region template", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_regions.setTabText(self.tab_regions.indexOf(self.tab_regions_newTab), QtGui.QApplication.translate("MainWindow", "+", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_parameters.setTabText(self.tab_parameters.indexOf(self.widget_regions), QtGui.QApplication.translate("MainWindow", "ROIs", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab_parameters.setTabText(self.tab_parameters.indexOf(self.widget_serial), QtGui.QApplication.translate("MainWindow", "Serial", None, QtGui.QApplication.UnicodeUTF8))
-        self.menu_File.setTitle(QtGui.QApplication.translate("MainWindow", "&File", None, QtGui.QApplication.UnicodeUTF8))
-        self.menu_Open.setTitle(QtGui.QApplication.translate("MainWindow", "&Open", None, QtGui.QApplication.UnicodeUTF8))
-        self.menu_Save.setTitle(QtGui.QApplication.translate("MainWindow", "&Save", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuLoad.setTitle(QtGui.QApplication.translate("MainWindow", "Load", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuHelp.setTitle(QtGui.QApplication.translate("MainWindow", "&Help", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionE_xit.setText(QtGui.QApplication.translate("MainWindow", "E&xit", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionDevice.setText(QtGui.QApplication.translate("MainWindow", "&Device", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionFile.setText(QtGui.QApplication.translate("MainWindow", "&File", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionSave.setText(QtGui.QApplication.translate("MainWindow", "&Transcode", None, QtGui.QApplication.UnicodeUTF8))
-        self.action_Parameters.setText(QtGui.QApplication.translate("MainWindow", "&Parameters", None, QtGui.QApplication.UnicodeUTF8))
-        self.action_Transcode_Video.setText(QtGui.QApplication.translate("MainWindow", "&Transcode Video", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionParameters.setText(QtGui.QApplication.translate("MainWindow", "Parameters", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionAbout.setText(QtGui.QApplication.translate("MainWindow", "&About", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionRecord.setText(QtGui.QApplication.translate("MainWindow", "Record", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionRecord.setToolTip(QtGui.QApplication.translate("MainWindow", "Record Video", None, QtGui.QApplication.UnicodeUTF8))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Spotter", None))
+        self.btn_template_file.setText(_translate("MainWindow", "Open Template File", None))
+        self.btn_load_template.setText(_translate("MainWindow", "Load Template", None))
+        self.btn_save_template.setText(_translate("MainWindow", "Save Template File", None))
+        self.tab_parameters.setTabText(self.tab_parameters.indexOf(self.widget_settings), _translate("MainWindow", "Settings", None))
+        self.btn_new_feature_tab.setText(_translate("MainWindow", "Add LED/Feature", None))
+        self.btn_feature_template.setText(_translate("MainWindow", "Quickload Feature template", None))
+        self.tab_features.setTabText(self.tab_features.indexOf(self.tab_features_newTab), _translate("MainWindow", "+", None))
+        self.tab_parameters.setTabText(self.tab_parameters.indexOf(self.widget_features), _translate("MainWindow", "Features", None))
+        self.btn_new_object_tab.setText(_translate("MainWindow", "Add Object", None))
+        self.btn_object_template.setText(_translate("MainWindow", "Quickload object template", None))
+        self.tab_objects.setTabText(self.tab_objects.indexOf(self.tab_object_newTab), _translate("MainWindow", "+", None))
+        self.tab_parameters.setTabText(self.tab_parameters.indexOf(self.widget_objects), _translate("MainWindow", "Objects", None))
+        self.btn_new_region_tab.setText(_translate("MainWindow", "New Region", None))
+        self.btn_region_template.setText(_translate("MainWindow", "Quickload region template", None))
+        self.tab_regions.setTabText(self.tab_regions.indexOf(self.tab_regions_newTab), _translate("MainWindow", "+", None))
+        self.tab_parameters.setTabText(self.tab_parameters.indexOf(self.widget_regions), _translate("MainWindow", "ROIs", None))
+        self.tab_parameters.setTabText(self.tab_parameters.indexOf(self.widget_serial), _translate("MainWindow", "Serial", None))
+        self.menu_File.setTitle(_translate("MainWindow", "&File", None))
+        self.menu_Open.setTitle(_translate("MainWindow", "&Open", None))
+        self.menu_Save.setTitle(_translate("MainWindow", "&Save", None))
+        self.menuLoad.setTitle(_translate("MainWindow", "Load", None))
+        self.menuHelp.setTitle(_translate("MainWindow", "&Help", None))
+        self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar", None))
+        self.actionE_xit.setText(_translate("MainWindow", "E&xit", None))
+        self.actionDevice.setText(_translate("MainWindow", "&Device", None))
+        self.actionFile.setText(_translate("MainWindow", "&File", None))
+        self.actionSave.setText(_translate("MainWindow", "&Transcode", None))
+        self.action_Parameters.setText(_translate("MainWindow", "&Parameters", None))
+        self.action_Transcode_Video.setText(_translate("MainWindow", "&Transcode Video", None))
+        self.actionParameters.setText(_translate("MainWindow", "Parameters", None))
+        self.actionAbout.setText(_translate("MainWindow", "&About", None))
+        self.actionRecord.setText(_translate("MainWindow", "Record", None))
+        self.actionRecord.setToolTip(_translate("MainWindow", "Record Video", None))
 
 import icons_rc
