@@ -2037,10 +2037,12 @@ class ConfigObj(Section):
                 out.append(line)
                 
         indent_string = self.indent_type * section.depth
-        for entry in (section.scalars + section.sections):
+        for i, entry in enumerate((section.scalars + section.sections)):
             if entry in section.defaults:
                 # don't write out default values
                 continue
+            if i != 0 and entry in section.sections and (section.comments[entry] == [] or section.comments[entry][0] != ''):
+                out.append('')
             for comment_line in section.comments[entry]:
                 comment_line = self._decode_element(comment_line.lstrip())
                 if comment_line and not comment_line.startswith(cs):
