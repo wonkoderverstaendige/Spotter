@@ -26,7 +26,7 @@ To do:
     - can never overwrite a file
 
 """
- 
+
 import sys
 #import serial
 import re
@@ -42,7 +42,7 @@ if len(os_str) > 0:
     else:
         is_nix = False #os_str.find("win") > -1
         is_win = True
-    
+
 if is_nix:
     from serial.tools import list_ports
 elif is_win:
@@ -88,6 +88,8 @@ class Chatter:
 #        print ('DAC offset: ' + str(self.offset_dac))
         self.range_dac = (dr, dr)
 
+        self.auto = auto
+
         if port or auto:
             #CHECK ALL AVAILABLE PORTS FOR CONNECTION?
             # --> ON WINDOWS ALL, ON LINUX ONLY IF CANDIDATE!
@@ -106,7 +108,7 @@ class Chatter:
                 portlist = [port]
         else:
             portlist = self.list_ports()
-#            
+#
 #        print portlist
 
         for p in portlist:
@@ -153,7 +155,7 @@ class Chatter:
         """ instr: [type, instr, data, index]"""
         if not self.connected:
             return
-            
+
         instr = []
         for s in slots:
             if s.state_idx == None:
@@ -291,7 +293,7 @@ class Chatter:
                 print p
         else:
             portlist.reverse()
-            
+
         return portlist
 
     def close(self):

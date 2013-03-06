@@ -364,9 +364,7 @@ class Main(QtGui.QMainWindow):
             for r_key, r_val in tObj['REGIONS'].items():
                 self.add_region(r_val, r_key, shapes=tObj['SHAPES'], focus_new=False)
 
-
     def save_template(self, filename = None, directory = DIR_TEMPLATES):
-        print "Pew Pew"
         config = ConfigObj(indent_type='    ')
         if filename is None:
             filename = str(QtGui.QFileDialog.getSaveFileName(self, 'Save Template', directory))
@@ -375,12 +373,11 @@ class Main(QtGui.QMainWindow):
             else:
                 return
 
-
         # General options and comment
         config['TEMPLATE'] = {}
-        config['TEMPLATE']['name'] = "Template Name"
+        config['TEMPLATE']['name'] = filename
         config['TEMPLATE']['date'] = '_'.join(map(str, time.localtime())[0:3])
-        config['TEMPLATE']['description'] = 'template writing test'
+        config['TEMPLATE']['description'] = 'new template'
 
         # Features
         config['FEATURES'] = {}
@@ -392,7 +389,6 @@ class Main(QtGui.QMainWindow):
                        'range_area': f.range_area,
                        'fixed_pos': f.fixed_pos}
             config['FEATURES'][f.label] = section
-
 
         # Objects
         config['OBJECTS'] = {}
@@ -433,6 +429,10 @@ class Main(QtGui.QMainWindow):
                        'color': r.active_color,
                        }
             config['REGIONS'][r.label] = section
+
+        config['SERIAL'] = {}
+        config['SERIAL']['auto'] = self.spotter.chatter.auto
+        config['SERIAL']['last_port'] = self.spotter.chatter.serial_port
 
         config.write()
 

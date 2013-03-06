@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'tab_featuresUi.ui'
 #
-# Created: Tue Mar  5 22:40:01 2013
-#      by: PyQt4 UI code generator 4.9.6
+# Created: Wed Mar 06 14:20:59 2013
+#      by: PyQt4 UI code generator 4.9.5
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,16 +12,7 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    def _fromUtf8(s):
-        return s
-
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-except AttributeError:
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig)
+    _fromUtf8 = lambda s: s
 
 class Ui_tab_features(object):
     def setupUi(self, tab_features):
@@ -264,28 +255,28 @@ class Ui_tab_features(object):
         QtCore.QMetaObject.connectSlotsByName(tab_features)
 
     def retranslateUi(self, tab_features):
-        tab_features.setWindowTitle(_translate("tab_features", "Form", None))
-        self.lbl_hue.setText(_translate("tab_features", "Hue", None))
-        self.lbl_val.setText(_translate("tab_features", "Val", None))
-        self.lbl_sat.setText(_translate("tab_features", "Sat", None))
-        self.lbl_min.setText(_translate("tab_features", "Min", None))
-        self.lbl_max.setText(_translate("tab_features", "Max", None))
-        self.btn_pick_color.setToolTip(_translate("tab_features", "Pick thresholds from image by dragging frame around the spot of interest", None))
-        self.btn_pick_color.setStatusTip(_translate("tab_features", "Pick range from image", None))
-        self.btn_pick_color.setText(_translate("tab_features", "&Pick", None))
-        self.lbl_min_area.setText(_translate("tab_features", "area", None))
-        self.ckb_marker.setText(_translate("tab_features", "Show Marker", None))
-        self.lbl_y_lbl.setText(_translate("tab_features", "y:", None))
-        self.lbl_xlbl.setText(_translate("tab_features", "x:", None))
-        self.lbl_x.setText(_translate("tab_features", "---", None))
-        self.lbl_y.setText(_translate("tab_features", "---", None))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page_feature_detection), _translate("tab_features", "Detection", None))
-        self.ckb_track.setText(_translate("tab_features", "Detection Active", None))
-        self.ckb_fixed_pos.setText(_translate("tab_features", "Fixed Position", None))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page_feature_restriction), _translate("tab_features", "Restrictions", None))
-        self.pushButton_12.setText(_translate("tab_features", "Save", None))
-        self.pushButton_13.setText(_translate("tab_features", "Delete", None))
-        self.pushButton_14.setText(_translate("tab_features", "Clone", None))
-        self.pushButton_15.setText(_translate("tab_features", "Open", None))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page_feature_IO), _translate("tab_features", "In/Out", None))
+        tab_features.setWindowTitle(QtGui.QApplication.translate("tab_features", "Form", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_hue.setText(QtGui.QApplication.translate("tab_features", "Hue", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_val.setText(QtGui.QApplication.translate("tab_features", "Val", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_sat.setText(QtGui.QApplication.translate("tab_features", "Sat", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_min.setText(QtGui.QApplication.translate("tab_features", "Min", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_max.setText(QtGui.QApplication.translate("tab_features", "Max", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_pick_color.setToolTip(QtGui.QApplication.translate("tab_features", "Pick thresholds from image by dragging frame around the spot of interest", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_pick_color.setStatusTip(QtGui.QApplication.translate("tab_features", "Pick range from image", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_pick_color.setText(QtGui.QApplication.translate("tab_features", "&Pick", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_min_area.setText(QtGui.QApplication.translate("tab_features", "area", None, QtGui.QApplication.UnicodeUTF8))
+        self.ckb_marker.setText(QtGui.QApplication.translate("tab_features", "Show Marker", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_y_lbl.setText(QtGui.QApplication.translate("tab_features", "y:", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_xlbl.setText(QtGui.QApplication.translate("tab_features", "x:", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_x.setText(QtGui.QApplication.translate("tab_features", "---", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_y.setText(QtGui.QApplication.translate("tab_features", "---", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page_feature_detection), QtGui.QApplication.translate("tab_features", "Detection", None, QtGui.QApplication.UnicodeUTF8))
+        self.ckb_track.setText(QtGui.QApplication.translate("tab_features", "Detection Active", None, QtGui.QApplication.UnicodeUTF8))
+        self.ckb_fixed_pos.setText(QtGui.QApplication.translate("tab_features", "Fixed Position", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page_feature_restriction), QtGui.QApplication.translate("tab_features", "Restrictions", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_12.setText(QtGui.QApplication.translate("tab_features", "Save", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_13.setText(QtGui.QApplication.translate("tab_features", "Delete", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_14.setText(QtGui.QApplication.translate("tab_features", "Clone", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_15.setText(QtGui.QApplication.translate("tab_features", "Open", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page_feature_IO), QtGui.QApplication.translate("tab_features", "In/Out", None, QtGui.QApplication.UnicodeUTF8))
 

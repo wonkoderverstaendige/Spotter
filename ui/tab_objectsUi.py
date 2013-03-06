@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'tab_objectsUi.ui'
 #
-# Created: Tue Mar  5 22:40:01 2013
-#      by: PyQt4 UI code generator 4.9.6
+# Created: Wed Mar 06 14:20:59 2013
+#      by: PyQt4 UI code generator 4.9.5
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,16 +12,7 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    def _fromUtf8(s):
-        return s
-
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-except AttributeError:
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig)
+    _fromUtf8 = lambda s: s
 
 class Ui_tab_objects(object):
     def setupUi(self, tab_objects):
@@ -200,29 +191,29 @@ class Ui_tab_objects(object):
         QtCore.QMetaObject.connectSlotsByName(tab_objects)
 
     def retranslateUi(self, tab_objects):
-        tab_objects.setWindowTitle(_translate("tab_objects", "Form", None))
-        self.lbl_speed.setText(_translate("tab_objects", "---", None))
-        self.lbl_xlbl.setText(_translate("tab_objects", "x:", None))
-        self.lbl_y.setText(_translate("tab_objects", "---", None))
-        self.ckb_track.setText(_translate("tab_objects", "Track", None))
-        self.lbl_speed_lbl.setText(_translate("tab_objects", "v:", None))
-        self.lbl_y_lbl.setText(_translate("tab_objects", "y:", None))
-        self.tree_link_features.headerItem().setText(0, _translate("tab_objects", "Features", None))
-        self.ckb_trace.setText(_translate("tab_objects", "Show Trace", None))
-        self.ckb_analog_pos.setText(_translate("tab_objects", "Analog out", None))
-        self.lbl_x.setText(_translate("tab_objects", "---", None))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page_objects_tracking), _translate("tab_objects", "Tracking", None))
+        tab_objects.setWindowTitle(QtGui.QApplication.translate("tab_objects", "Form", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_speed.setText(QtGui.QApplication.translate("tab_objects", "---", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_xlbl.setText(QtGui.QApplication.translate("tab_objects", "x:", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_y.setText(QtGui.QApplication.translate("tab_objects", "---", None, QtGui.QApplication.UnicodeUTF8))
+        self.ckb_track.setText(QtGui.QApplication.translate("tab_objects", "Track", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_speed_lbl.setText(QtGui.QApplication.translate("tab_objects", "v:", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_y_lbl.setText(QtGui.QApplication.translate("tab_objects", "y:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tree_link_features.headerItem().setText(0, QtGui.QApplication.translate("tab_objects", "Features", None, QtGui.QApplication.UnicodeUTF8))
+        self.ckb_trace.setText(QtGui.QApplication.translate("tab_objects", "Show Trace", None, QtGui.QApplication.UnicodeUTF8))
+        self.ckb_analog_pos.setText(QtGui.QApplication.translate("tab_objects", "Analog out", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_x.setText(QtGui.QApplication.translate("tab_objects", "---", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page_objects_tracking), QtGui.QApplication.translate("tab_objects", "Tracking", None, QtGui.QApplication.UnicodeUTF8))
         item = self.table_slots.horizontalHeaderItem(0)
-        item.setText(_translate("tab_objects", "Property", None))
+        item.setText(QtGui.QApplication.translate("tab_objects", "Property", None, QtGui.QApplication.UnicodeUTF8))
         item = self.table_slots.horizontalHeaderItem(1)
-        item.setText(_translate("tab_objects", "Pin", None))
+        item.setText(QtGui.QApplication.translate("tab_objects", "Pin", None, QtGui.QApplication.UnicodeUTF8))
         item = self.table_slots.horizontalHeaderItem(2)
-        item.setText(_translate("tab_objects", "Logic", None))
-        self.btn_lock_table.setText(_translate("tab_objects", "Unlock", None))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page_objects_slots), _translate("tab_objects", "Analog Out Slots", None))
-        self.pushButton_8.setText(_translate("tab_objects", "Save", None))
-        self.pushButton_5.setText(_translate("tab_objects", "Delete", None))
-        self.pushButton_4.setText(_translate("tab_objects", "Clone", None))
-        self.pushButton_9.setText(_translate("tab_objects", "Open", None))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page_objects_IO), _translate("tab_objects", "In/Out", None))
+        item.setText(QtGui.QApplication.translate("tab_objects", "Logic", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_lock_table.setText(QtGui.QApplication.translate("tab_objects", "Unlock", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page_objects_slots), QtGui.QApplication.translate("tab_objects", "Analog Out Slots", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_8.setText(QtGui.QApplication.translate("tab_objects", "Save", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_5.setText(QtGui.QApplication.translate("tab_objects", "Delete", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_4.setText(QtGui.QApplication.translate("tab_objects", "Clone", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_9.setText(QtGui.QApplication.translate("tab_objects", "Open", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page_objects_IO), QtGui.QApplication.translate("tab_objects", "In/Out", None, QtGui.QApplication.UnicodeUTF8))
 
