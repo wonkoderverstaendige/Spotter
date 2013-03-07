@@ -246,7 +246,8 @@ class Chatter:
         try:
             key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, path)
         except WindowsError:
-            raise IterationError
+            return
+#            raise EnvironmentError
 
         for i in itertools.count():
             try:
