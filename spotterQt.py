@@ -388,7 +388,7 @@ class Main(QtGui.QMainWindow):
                        'range_val': f.range_val,
                        'range_area': f.range_area,
                        'fixed_pos': f.fixed_pos}
-            config['FEATURES'][f.label] = section
+            config['FEATURES'][str(f.label)] = section
 
         # Objects
         config['OBJECTS'] = {}
@@ -401,7 +401,7 @@ class Main(QtGui.QMainWindow):
                 section['analog_signal'] = [s[0] for s in o.magnetic_signals]
                 section['pin_pref'] = [s[1] for s in o.magnetic_signals]
             section['trace'] = o.traced
-            config['OBJECTS'][o.label] = section
+            config['OBJECTS'][str(o.label)] = section
 
         # Shapes
         #shapelist:
@@ -416,7 +416,7 @@ class Main(QtGui.QMainWindow):
            section = {'p1': geom.norm_points(s.points[0], rng),
                       'p2': geom.norm_points(s.points[1], rng),
                       'type': s.shape}
-           config['SHAPES'][s.label] = section
+           config['SHAPES'][str(s.label)] = section
 
         # Regions
         config['REGIONS'] = {}
@@ -428,7 +428,7 @@ class Main(QtGui.QMainWindow):
                        'pin_pref': [o[1] for o in mo],
                        'color': r.active_color,
                        }
-            config['REGIONS'][r.label] = section
+            config['REGIONS'][str(r.label)] = section
 
         config['SERIAL'] = {}
         config['SERIAL']['auto'] = self.spotter.chatter.auto
@@ -515,22 +515,23 @@ class Main(QtGui.QMainWindow):
                     features.append(l)
 
         analog_out = template['analog_out']
-#        print analog_out, template['analog_signal']
         if analog_out:
             # Magnetic objects from collision list
             signal_names = template['analog_signal']
             pin_prefs = template['pin_pref']
+            if pin_prefs is None:
+                pin_prefs = []
             magnetic_signals = []
-            if (template['pin_pref_strict'] and
-               (pin_prefs is None or not len(pin_prefs) > 0)):
+            if template['pin_pref_strict']:
                 # If pin preference is strict but no/not enough pins given,
                 # reject all/those without given pin preference
-                signal_names = []
-            elif (not template['pin_pref_strict'] and
-                  len(pin_prefs) < len(signal_names)):
+                if len(pin_prefs) == 0:
+                    signal_names = []
+            else:
                 # if not strict but also not enough given, fill 'em up with -1
                 # which sets those objects to being indifferent in their pin pref
-                pin_prefs[-(len(signal_names)-len(pin_prefs))] = -1
+                if len(pin_prefs) < len(signal_names):
+                    pin_prefs[-(len(signal_names)-len(pin_prefs))] = -1
 
             # Reject all objects that still don't have a corresponding pin pref
             signal_names = signal_names[0:min(len(pin_prefs), len(signal_names))]
@@ -615,17 +616,20 @@ class Main(QtGui.QMainWindow):
         # Magnetic objects from collision list
         obj_names = template['digital_collision']
         pin_prefs = template['pin_pref']
+        if pin_prefs is None:
+            pin_prefs = []
         magnetic_objects = []
-        if (template['pin_pref_strict'] and
-           (pin_prefs is None or not len(pin_prefs) > 0)):
+        if template['pin_pref_strict']:
+            # TODO:
             # If pin preference is strict but no/not enough pins given,
             # reject all/those without given pin preference
-            obj_names = []
-        elif (not template['pin_pref_strict'] and
-              len(pin_prefs) < len(obj_names)):
+            if len(pin_prefs) == 0:
+                obj_names = []
+        else:
             # if not strict but also not enough given, fill 'em up with -1
             # which sets those objects to being indifferent in their pin pref
-            pin_prefs[-(len(obj_names)-len(pin_prefs))] = -1
+            if len(pin_prefs) < len(obj_names):            
+                pin_prefs[-(len(obj_names)-len(pin_prefs))] = -1
 
         # Reject all objects that still don't have a corresponding pin pref
         obj_names = obj_names[0:min(len(pin_prefs), len(obj_names))]
