@@ -102,7 +102,7 @@ class Main(QtGui.QMainWindow):
         # OpenGL frame
         self.glframe = GLFrame()
         self.ui.frame_video.addWidget(self.glframe)
-        self.glframe.setSizePolicy( QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding )
+        self.glframe.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
 
         # handling mouse events by the tabs for selection of regions etc.
         self.glframe.sig_event.connect(self.mouse_event_to_tab)
@@ -157,7 +157,7 @@ class Main(QtGui.QMainWindow):
 
     def refresh(self):
         self.spotter.update()
-        self.glframe.frame = self.spotter.newest_frame
+        self.glframe.frame = self.spotter.newest_frame.img
 
         # Append Object tracking markers to the list of things that have
         # to be drawn onto the GL frame

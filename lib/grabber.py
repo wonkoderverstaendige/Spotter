@@ -38,6 +38,14 @@ from docopt import docopt
 
 DEBUG = True
 
+class Frame:
+    img = None
+    def __init__(self, index, img, source_type, timestamp):
+        self.index = index
+        self.img = img
+        self.source_type = source_type
+        self.timestamp = timestamp
+
 class Grabber:
     capture = None          # Capture object to frame source
     fourcc = None           # Source frame coding
@@ -48,32 +56,33 @@ class Grabber:
     size_init = None
     size = None
 
-    framecount = 0          # Frames received so far
+    frame_count = -1         # Frames received so far
+    
     ts_last_frame = None    # Timestamp of most recent frame
     ts_first = None         # Timestamp of first frame, BUGGY!
     source_type = None      # File, stream, device; changes behavior of GUI
-    framebuffer = deque( maxlen=256 )
+#    framebuffer = deque( maxlen=256 )
 
-    def __init__( self, source, fps=0, size=(0, 0) ):
+    def __init__(self, source, fps=0, size=(0, 0)):
         """ source - Integer DeviceID or path to source file
             fps    - Float, frames per second of replay/capture
             size   - list of floats (width, height)
         """
-
         # Integer: Devide ID. Else, grabber will use as path and look for file
         try:
-            source = int( source )
+            source = int(source)
             self.source_type = 'device'
         except ValueError:
-            self.source_type = 'file'
-            if not os.path.isfile( source ):
+            if os.path.isfile(source):
+                self.source_type = 'file'
+            else:
                 print 'Source file ' + source + ' does not exist.'
                 sys.exit(0)
 
         # Creating capture handle object
-        if DEBUG: print 'Attempting to open source "' + str( source ) + '" of type ' + self.source_type +  ' as capture... '
+        if DEBUG: print 'Attempting to open source "' + str(source) + '" of type ' + self.source_type +  ' as capture... '
         try:
-            self.capture = cv2.VideoCapture( source )
+            self.capture = cv2.VideoCapture(source)
         except:
             print '!!! Unable to open VideoCapture!'
         if DEBUG: print '   --> ' + str( self.capture ) + ' returned.'
@@ -81,7 +90,7 @@ class Grabber:
         # Proper fps values only important if lower than what camera can provide,
         # or for video files, which are limited by CPU speed/1ms min of waitKey()
         try:
-            self.fps_init = float( 29.97 if not fps else fps )
+            self.fps_init = float(29.97 if not fps else fps)
         except ValueError:
             self.fps_init = 29.97
 
@@ -90,46 +99,51 @@ class Grabber:
 
         # if source_type is 'device': Otherwise does nothing
         if not self.source_type == 'file':
-            self.capture.set( cv.CV_CAP_PROP_FPS, float( self.fps_init ) )
-            self.capture.set( cv.CV_CAP_PROP_FRAME_WIDTH, float(self.size_init[0]) )
-            self.capture.set( cv.CV_CAP_PROP_FRAME_HEIGHT, float(self.size_init[1]) )
+            self.capture.set(cv.CV_CAP_PROP_FPS, float(self.fps_init))
+            self.capture.set(cv.CV_CAP_PROP_FRAME_WIDTH, float(self.size_init[0]))
+            self.capture.set(cv.CV_CAP_PROP_FRAME_HEIGHT, float(self.size_init[1]))
 
         # Grab first frame, don't append to framebuffer
         # TODO: Thats nasty for video file, losing first frame! I.e. transcoding
         # would be lossy!
         self.grab_first()
 
-
     def grab_first( self ):
         """ Grabs first frame to get source image parameters. """
         # Possibly eternal loop until first frame returned
-        rv = False
-        while not rv:
+        for n in xrange(1000):
             rv, img = self.capture.read()
+            if rv:
+                print "Tries before getting first frame:", n+1
+                break
+            time.sleep(0.02)
 
         # get source parameters
-        self.size = tuple( [int( self.capture.get(3) ), int( self.capture.get(4) )] )
-        self.fps = int( self.capture.get(5) )
+        self.size = tuple([int(self.capture.get(3)), int(self.capture.get(4))])
+        self.fps = self.capture.get(5)
         self.fourcc = self.capture.get(6)
 
         if DEBUG: print 'First frame grab - fps: ' + str(self.fps) + '; size: ' + str(self.size) + ';'
-
 
     def grab_next( self ):
         """Grabs a new frame from the source and appends it to framebuffer."""
         rv, img = self.capture.read()
         if rv:
+            self.ts_last_frame = time.time()
             # time of first 'real' frame
-            if self.framecount == 0:
-                self.ts_first = time.clock()
+            if self.frame_count == 0:
+                self.ts_first = time.time()
+            self.frame_count += 1
 
-            self.framecount += 1
-            self.ts_last_frame = time.clock()
-            self.framebuffer.appendleft(img)
-        return rv
+            return Frame(index=self.frame_count,
+                         img=img, 
+                         source_type=self.source_type, 
+                         timestamp=time.time())
+#            self.framebuffer.appendleft(frame)
+        else:
+            return None
 
-
-    def close( self ):
+    def close(self):
         if DEBUG: print 'Closing Grabber'
         self.capture.release()
 
@@ -154,7 +168,7 @@ if __name__ == "__main__":
     # Requirements for main loop
     if DEBUG: print 'fps: ' + str( main.fps )
     if main.fps:
-        t = int( 1000/main.fps )
+        t = int(1000/main.fps)
     else:
         t = 1
 

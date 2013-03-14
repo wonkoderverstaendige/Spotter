@@ -36,6 +36,7 @@ import sys
 import time
 import multiprocessing
 import logging
+import copy
 
 #project libraries
 sys.path.append('./lib')
@@ -105,13 +106,14 @@ class Spotter:
 
     def update(self):
         # Get new frame
-#        print "updating"
-        if not self.paused and self.grabber.grab_next():
-            self.newest_frame = self.grabber.framebuffer.pop()
+        # if not self.paused and
+        self.newest_frame = self.grabber.grab_next()
+        if self.newest_frame is not None:
+#            self.newest_frame = self.grabber.framebuffer.pop()
 
             # Find and update position of tracked object
-            self.hsv_frame = cv2.cvtColor( self.newest_frame, cv2.COLOR_BGR2HSV )
-            self.tracker.trackLeds( self.hsv_frame, method = 'hsv_thresh' )
+            self.hsv_frame = cv2.cvtColor(self.newest_frame.img, cv2.COLOR_BGR2HSV)
+            self.tracker.trackLeds(self.hsv_frame, method = 'hsv_thresh')
 
             slots = []
             # Update positions of all objects
@@ -119,6 +121,7 @@ class Spotter:
                 o.update_slots(self.chatter)
                 o.update_state()
                 slots.extend(o.linked_slots())
+            # Check Object-Region collisions
             for r in self.tracker.rois:
                 r.update_slots(self.chatter)
                 r.update_state()
@@ -126,15 +129,29 @@ class Spotter:
 
             self.chatter.update_pins(slots)
 
+            if self.newest_frame.source_type == 'device':
+                t = self.newest_frame.timestamp
+                time_text = time.strftime("%d-%b-%y %H:%M:%S", time.localtime(t))
+                ms = "{0:02d}".format(int((t-int(t))*100))
+                time_text = ".".join([time_text, ms])
+                cv2.putText(img=self.newest_frame.img,
+                        text=time_text,
+                        org=(3,12),
+                        fontFace=cv2.FONT_HERSHEY_PLAIN,
+                        fontScale=0.8,
+                        color=(255, 255, 255),
+                        thickness=1,
+                        lineType=cv2.CV_AA)
+
             # Check if writer process is still alive
             # Otherwise might lose data without knowing!
-            # Copy numpy array, otherwise queue references same object
+            # Copy object, or referece deleted before written out
 #            print self.writer_pipe.recv()
             if self.check_writer():
                 self.writer_pipe.send('alive')
-                self.writer_queue.put(self.newest_frame.copy())
+                self.writer_queue.put(copy.deepcopy(self.newest_frame))
                 # required, or may crash?
-                time.sleep(0.001)
+#                time.sleep(0.001)
 
         else:
             print 'No new frame returned!!! What does it mean??? We are going to die! Eventually!!!'

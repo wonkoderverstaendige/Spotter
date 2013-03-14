@@ -111,7 +111,19 @@ class Writer:
         self.recording = False
 
     def write(self, frame):
-        self.writer.write(frame)
+#        t = frame.timestamp
+#        ms = "{0:03d}".format(int((t-int(t))*100))
+#        time_text = time.strftime("%d-%b-%y %H:%M:%S", time.localtime(t))
+#        time_text = ".".join([time_text, ms])
+#        cv2.putText(img=frame.img,
+#                text=time_text,
+#                org=(3,12),
+#                fontFace=cv2.FONT_HERSHEY_PLAIN,
+#                fontScale=0.8,
+#                color=(255, 255, 255),
+#                thickness=1,
+#                lineType=cv2.CV_AA)
+        self.writer.write(frame.img)
 
     def loop(self):
         """
@@ -147,8 +159,6 @@ class Writer:
                     self.start('test.avi')
                 elif cmd == 'alive':
                     pass
-#                    if DEBUG:
-#                       self.printflush('Writer received alive signal')
 
             while not self.queue.empty():
                 item = self.queue.get()
@@ -163,7 +173,8 @@ class Writer:
             self.close()
 
     def time_string(self):
-        return '_'.join(map(str, time.localtime())[0:6])
+        return time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
+#        return '_'.join(map(str, time.localtime())[0:6])
 
     def close(self):
         print 'Closing Writer'
