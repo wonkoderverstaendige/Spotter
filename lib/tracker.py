@@ -40,6 +40,9 @@ DEBUG = True
 class Tracker:
     """ Performs tracking and returns positions of found LEDs """
     frame = None
+    
+    # scale the detection frame, scale<1 reduces load
+    scale = 1.0
 
     def __init__( self ):
         self.oois = []
@@ -73,61 +76,84 @@ class Tracker:
         self.rois.append(roi)
         return roi
 
-    def trackLeds( self, frame, method = 'hsv_thresh' ):
-        """ Intermediate method selecting tracking method and seperating those
-            tracking methods from the frames stored in the instantiatd Tracker
+    def track_feature(self, frame, method = 'hsv_thresh', scale=1.0):
+        """ 
+        Intermediate method selecting tracking method and seperating those
+        tracking methods from the frames stored in the instantiatd Tracker
+
+        :param:scale
+            Resizes frame before tracking, computation decreases scale^2.
         """
+        self.scale = scale*1.0 #float
+        if self.scale > 1.0:
+            self.scale = 1.0
+            
         # dilate bright spots
-#        kernel = np.ones( (3,3), 'uint8' )
-#        # conversion to HSV before dilation causes artifacts
-#        dilatedframe = cv2.cvtColor( self.frame, cv2.COLOR_BGR2HSV )
+#        kernel = np.ones((3,3), 'uint8')
+#        # conversion to HSV before dilation causes artifacts!
         if method == 'hsv_thresh':
-            self.frame = frame
+            if self.scale >= 1.0:
+                self.frame = cv2.cvtColor(frame.img, cv2.COLOR_BGR2HSV)
+            else:
+                self.frame = cv2.cvtColor(cv2.resize(frame.img,
+                                                 (0, 0),
+                                                 fx=self.scale,
+                                                 fy=self.scale,
+                                                 interpolation=cv2.INTER_LINEAR),
+                                     cv2.COLOR_BGR2HSV)
+
             for led in self.leds:
                 if led.detection_active:
-                    self.threshTrack( self.frame, led )
+                    self.track_thresholds(self.frame, led)
                 else:
                     led.pos_hist.append(None)
 
-    def threshTrack( self, hsv_frame, l ):
-        """ Tracks LEDs from a list in a HSV frame by thresholding
-            hue, saturation, followed by thresholding for each LEDs hue.
-            Large enough contours will have coords returned, or None
+    def track_thresholds(self, hsv_frame, l):
+        """ 
+        Tracks LEDs from a list in a HSV frame by thresholding
+        hue, saturation, followed by thresholding for each LEDs hue.
+        Large enough contours will have coords returned, or None
+        
         """
+        r_hue = l.range_hue
+        r_sat = l.range_sat
+        r_val = l.range_val
+        r_area = (l.range_area[0]*self.scale**2,
+                  l.range_area[1]*self.scale**2)
 
         # if range[0] > range[1], i.e., color is red and wraps around,
         # invert range and perform NOT on result
-        invert_range = False if not l.range_hue[0] > l.range_hue[1] else True
+        invert_range = False if not r_hue[0] > r_hue[1] else True
 
         # All colors except red
         if not invert_range:
-            lowerBound = np.array( [l.range_hue[0], l.range_sat[0], l.range_val[0]], np.uint8 )
-            upperBound = np.array( [l.range_hue[1], 255, 255], np.uint8 )
-            ranged_frame = cv2.inRange( hsv_frame, lowerBound, upperBound )
+            lowerBound = np.array( [r_hue[0], r_sat[0], r_val[0]], np.uint8)
+            upperBound = np.array( [r_hue[1], 255, 255], np.uint8 )
+            ranged_frame = cv2.inRange( hsv_frame, lowerBound, upperBound)
 
         # Red hue requires double thresholding due to wraparound in hue domain
         else:
             # min-180 (or, 255)
-            lowerBound = np.array( [l.range_hue[0], l.range_sat[0], l.range_val[0]], np.uint8 )
-            upperBound = np.array( [179, 255, 253], np.uint8 )
-            ranged_frame = cv2.inRange( hsv_frame, lowerBound, upperBound )
+            lowerBound = np.array([r_hue[0], r_sat[0], r_val[0]], np.uint8)
+            upperBound = np.array([179, 255, 253], np.uint8)
+            ranged_frame = cv2.inRange(hsv_frame, lowerBound, upperBound)
             # 0-max (or, 255)
-            lowerBound = np.array( [0, l.range_sat[0], l.range_val[0]], np.uint8 )
-            upperBound = np.array( [l.range_hue[1], 255, 253], np.uint8 )
-            redrange = cv2.inRange( hsv_frame, lowerBound, upperBound )
+            lowerBound = np.array([0, r_sat[0], r_val[0]], np.uint8)
+            upperBound = np.array([r_hue[1], 255, 253], np.uint8)
+            redrange = cv2.inRange(hsv_frame, lowerBound, upperBound)
             # combine both ends for complete mask
-            ranged_frame = cv2.bitwise_or( ranged_frame, redrange )
+            ranged_frame = cv2.bitwise_or(ranged_frame, redrange)
 
         # find largest contour that is >= than minimum area
-        ranged_frame = cv2.dilate( ranged_frame, np.ones( (3,3), 'uint8' ) )
-        contour_area, contour = self.findContour(ranged_frame, l.range_area)
+        ranged_frame = cv2.dilate( ranged_frame, np.ones((3,3), 'uint8'))
+        contour_area, contour = self.findContour(ranged_frame, r_area)
 
         # finding centroids of best_cnt and draw a circle there
         if not contour == None:
             M = cv2.moments( contour.astype(int) )
-            cx = int( M['m10']/M['m00'] )
-            cy = int( M['m01']/M['m00'] )
-            l.pos_hist.append( (cx, cy) )
+            cx = M['m10']/M['m00']
+            cy = M['m01']/M['m00']
+            l.pos_hist.append((cx/self.scale, cy/self.scale))
         else:
             # Couldn't find a good enough spot
             l.pos_hist.append(None)
@@ -150,17 +176,15 @@ class Tracker:
 
         return largest_area, best_cnt
 
-    def camshiftTrack( self, hsv_frame, led_list ):
+    def track_camshift( self, hsv_frame, led_list ):
         """ camshifting shifty histograms
         """
         kernel = np.ones( (3,3), 'uint8' )
         dilatedframe = cv2.dilate( hsv_frame, kernel )
         h, s, v = cv2.split(dilatedframe)
-
         rv, st = cv2.threshold(s, self.min_sat, 1, cv2.THRESH_BINARY)
-
-        ledpos = ( 100, 100 )
-        return ledpos
+        pos = (100, 100)
+        return pos
 
     def close( self ):
         """ Nothing to do here as of moving chatter to spotter. """

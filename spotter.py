@@ -71,7 +71,9 @@ class Spotter:
     ts_start = None
 
     paused = False
-
+    
+    scale_resize = 1.0
+    scale_tracking = 1.0
 
     def __init__(self, source, destination, fps, size, gui, serial=None):
         # Setup frame grabber object, fills framebuffer
@@ -103,17 +105,27 @@ class Spotter:
         # histogram instance required to do... nothing for now?
 #        self.hist = utils.HSVHist()
 
-
     def update(self):
         # Get new frame
-        # if not self.paused and
-        self.newest_frame = self.grabber.grab_next()
-        if self.newest_frame is not None:
+#       if not self.paused and
 #            self.newest_frame = self.grabber.framebuffer.pop()
-
+        self.newest_frame = self.grabber.grab_next()
+        if self.newest_frame is None:
+            print 'No new frame returned!!! What does it mean??? We are going to die! Eventually!!!'
+            return None
+        else:
+            # resize frame if necessary
+            if self.scale_resize < 1.0:
+                self.newest_frame.img = cv2.resize(self.newest_frame.img,
+                                                  (0, 0),
+                                                  fx=self.scale_resize,
+                                                  fy=self.scale_resize,
+                                                  interpolation=cv2.INTER_LINEAR)
+                
             # Find and update position of tracked object
-            self.hsv_frame = cv2.cvtColor(self.newest_frame.img, cv2.COLOR_BGR2HSV)
-            self.tracker.trackLeds(self.hsv_frame, method = 'hsv_thresh')
+            self.tracker.track_feature(self.newest_frame,
+                                       method = 'hsv_thresh',
+                                       scale=self.scale_tracking*self.scale_resize)
 
             slots = []
             # Update positions of all objects
@@ -129,6 +141,7 @@ class Spotter:
 
             self.chatter.update_pins(slots)
 
+            # Add timestamp to image if from a live source
             if self.newest_frame.source_type == 'device':
                 t = self.newest_frame.timestamp
                 time_text = time.strftime("%d-%b-%y %H:%M:%S", time.localtime(t))
@@ -143,10 +156,8 @@ class Spotter:
                         thickness=1,
                         lineType=cv2.CV_AA)
 
-            # Check if writer process is still alive
-            # Otherwise might lose data without knowing!
+            # Check on writer process to prevent data loss
             # Copy object, or referece deleted before written out
-#            print self.writer_pipe.recv()
             if self.check_writer():
                 self.writer_pipe.send('alive')
                 self.writer_queue.put(copy.deepcopy(self.newest_frame))
@@ -154,15 +165,11 @@ class Spotter:
 #                time.sleep(0.001)
             return True
 
-        else:
-            print 'No new frame returned!!! What does it mean??? We are going to die! Eventually!!!'
-            return None
-
-        total_elapsed = ( time.clock() - self.grabber.ts_last_frame ) * 1000
-        t = int( 1000/self.grabber.fps - total_elapsed ) - 1
-        if t <= 0:
-#            log.info('Missed next frame by: ' + str( t * -1. ) + ' ms')
-            t = 1
+#        total_elapsed = (time.clock() - self.grabber.ts_last_frame) * 1000
+#        t = int(1000/self.grabber.fps - total_elapsed) - 1
+#        if t <= 0:
+##            log.info('Missed next frame by: ' + str( t * -1. ) + ' ms')
+#            t = 1
 
     def toggle_video_recording(self, state):
         if state:
@@ -182,7 +189,7 @@ class Spotter:
 #        else:
 #            return True
 
-    def exitMain( self ):
+    def exitMain(self):
         """ Graceful exit. Ha. Ha. Ha. Bottle of root beer anyone? """
         # closing grabber is straight forward, will release capture object
         if self.grabber is not None:
@@ -195,7 +202,7 @@ class Spotter:
             self.chatter.close()
         # writer is a bit trickier, may have frames left to stow away
         if self.writer is not None and self.writer.is_alive():
-            self.writer_pipe.send( 'terminate' )
+            self.writer_pipe.send('terminate')
             # gives the child process one second to finish up
             self.writer.join(1)
             # will be terminated otherwise
@@ -203,9 +210,9 @@ class Spotter:
                 self.writer.terminate()
 
         try:
-            fc = self.grabber.framecount
-            tt = ( time.clock() - self.ts_start )
-            log.info('Done! Grabbed ' + str( fc ) + ' frames in ' + str( tt ) + 's, with ' + str( fc / tt ) + ' fps')
+            fc = self.grabber.frame_count
+            tt = (time.clock() - self.ts_start)
+            log.info('Done! Grabbed ' + str(fc) + ' frames in ' + str(tt) + 's, with ' + str(fc/tt) + ' fps')
         except:
             pass
         sys.exit( 0 )
