@@ -152,9 +152,11 @@ class Spotter:
                 self.writer_queue.put(copy.deepcopy(self.newest_frame))
                 # required, or may crash?
 #                time.sleep(0.001)
+            return True
 
         else:
             print 'No new frame returned!!! What does it mean??? We are going to die! Eventually!!!'
+            return None
 
         total_elapsed = ( time.clock() - self.grabber.ts_last_frame ) * 1000
         t = int( 1000/self.grabber.fps - total_elapsed ) - 1

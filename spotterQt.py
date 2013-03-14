@@ -154,9 +154,11 @@ class Main(QtGui.QMainWindow):
         self.timer.timeout.connect(self.serial_check)
         self.serial_timer.start(10)
 
-
     def refresh(self):
-        self.spotter.update()
+        if self.spotter.update() is None:
+            self.spotter.exitMain()
+            self.close()
+            
         self.glframe.frame = self.spotter.newest_frame.img
 
         # Append Object tracking markers to the list of things that have
