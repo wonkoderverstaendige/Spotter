@@ -1,6 +1,9 @@
 <RCC>
   <qresource prefix="/">
+    <file>arduino_off.svg</file>
     <file>icon64.svg</file>
+    <file>record_on.png</file>
+    <file>arduino.svg</file>
     <file>record_active.svg</file>
   </qresource>
 </RCC>

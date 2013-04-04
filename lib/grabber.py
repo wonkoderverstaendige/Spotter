@@ -57,7 +57,7 @@ class Grabber:
     size = None
 
     frame_count = -1         # Frames received so far
-    
+
     ts_last_frame = None    # Timestamp of most recent frame
     ts_first = None         # Timestamp of first frame, BUGGY!
     source_type = None      # File, stream, device; changes behavior of GUI
@@ -116,6 +116,8 @@ class Grabber:
             if rv:
                 print "Tries before getting first frame:", n+1
                 break
+            else:
+                print "Frame retrieval failed!"
             time.sleep(0.02)
 
         # get source parameters
@@ -136,8 +138,8 @@ class Grabber:
             self.frame_count += 1
 
             return Frame(index=self.frame_count,
-                         img=img, 
-                         source_type=self.source_type, 
+                         img=img,
+                         source_type=self.source_type,
                          timestamp=time.time())
 #            self.framebuffer.appendleft(frame)
         else:

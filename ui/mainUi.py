@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Wed Mar 06 14:20:58 2013
+# Created: Thu Apr 04 05:48:34 2013
 #      by: PyQt4 UI code generator 4.9.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -195,7 +195,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addLayout(self.frame_parameters)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 752, 22))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 752, 21))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menu_File = QtGui.QMenu(self.menubar)
         self.menu_File.setObjectName(_fromUtf8("menu_File"))
@@ -236,9 +236,15 @@ class Ui_MainWindow(object):
         self.actionRecord = QtGui.QAction(MainWindow)
         self.actionRecord.setCheckable(True)
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(_fromUtf8(":/record_active.svg")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap(_fromUtf8(":/record_on.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionRecord.setIcon(icon1)
         self.actionRecord.setObjectName(_fromUtf8("actionRecord"))
+        self.actionArduino = QtGui.QAction(MainWindow)
+        self.actionArduino.setEnabled(False)
+        icon2 = QtGui.QIcon()
+        icon2.addPixmap(QtGui.QPixmap(_fromUtf8(":/arduino_off.svg")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionArduino.setIcon(icon2)
+        self.actionArduino.setObjectName(_fromUtf8("actionArduino"))
         self.menu_Open.addAction(self.actionFile)
         self.menu_Open.addAction(self.actionDevice)
         self.menu_Save.addAction(self.action_Transcode_Video)
@@ -253,8 +259,6 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menu_File.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
         self.toolBar.addAction(self.actionRecord)
-        self.toolBar.addSeparator()
-        self.toolBar.addAction(self.actionAbout)
 
         self.retranslateUi(MainWindow)
         self.tab_parameters.setCurrentIndex(0)
@@ -267,7 +271,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Spotter", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_template_file.setText(QtGui.QApplication.translate("MainWindow", "Open Template File", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_load_template.setText(QtGui.QApplication.translate("MainWindow", "Load Template", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_save_template.setText(QtGui.QApplication.translate("MainWindow", "Save Template File", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_save_template.setText(QtGui.QApplication.translate("MainWindow", "Save Template as ...", None, QtGui.QApplication.UnicodeUTF8))
         self.tab_parameters.setTabText(self.tab_parameters.indexOf(self.widget_settings), QtGui.QApplication.translate("MainWindow", "Settings", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_new_feature_tab.setText(QtGui.QApplication.translate("MainWindow", "Add LED/Feature", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_feature_template.setText(QtGui.QApplication.translate("MainWindow", "Quickload Feature template", None, QtGui.QApplication.UnicodeUTF8))
@@ -298,5 +302,7 @@ class Ui_MainWindow(object):
         self.actionAbout.setText(QtGui.QApplication.translate("MainWindow", "&About", None, QtGui.QApplication.UnicodeUTF8))
         self.actionRecord.setText(QtGui.QApplication.translate("MainWindow", "Record", None, QtGui.QApplication.UnicodeUTF8))
         self.actionRecord.setToolTip(QtGui.QApplication.translate("MainWindow", "Record Video", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionArduino.setText(QtGui.QApplication.translate("MainWindow", "Arduino", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionArduino.setToolTip(QtGui.QApplication.translate("MainWindow", "Arduino State", None, QtGui.QApplication.UnicodeUTF8))
 
 import icons_rc

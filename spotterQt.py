@@ -63,6 +63,7 @@ import TabFeatures
 import TabObjects
 import TabRegions
 import TabSerial
+from SerialIndicator import SerialIndicator
 
 #command line handling
 sys.path.append('./lib/docopt')
@@ -142,6 +143,12 @@ class Main(QtGui.QMainWindow):
         self.serial_tabs = []
         self.add_serial(self.spotter.chatter)
 
+#        self.iconOff = QtGui.QIcon('ui/arduino_off.svg')
+#        self.iconOn = QtGui.QIcon('ui/arduino.svg')
+        self.arduino_indicator = SerialIndicator(self.spotter.chatter)
+        self.ui.toolBar.addWidget(self.arduino_indicator)
+#        self.ui.actionArduino.setIcon(self.iconOn)
+
 
         # Starts main frame grabber loop
         self.timer = QtCore.QTimer(self)
@@ -158,7 +165,7 @@ class Main(QtGui.QMainWindow):
         if self.spotter.update() is None:
             self.spotter.exitMain()
             self.close()
-            
+
         self.glframe.frame = self.spotter.newest_frame.img
 
         # Append Object tracking markers to the list of things that have
@@ -630,7 +637,7 @@ class Main(QtGui.QMainWindow):
         else:
             # if not strict but also not enough given, fill 'em up with -1
             # which sets those objects to being indifferent in their pin pref
-            if len(pin_prefs) < len(obj_names):            
+            if len(pin_prefs) < len(obj_names):
                 pin_prefs[-(len(obj_names)-len(pin_prefs))] = -1
 
         # Reject all objects that still don't have a corresponding pin pref
