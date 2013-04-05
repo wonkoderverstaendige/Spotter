@@ -215,7 +215,7 @@ class GLFrame(QtOpenGL.QGLWidget):
         glRectf(points[0][0]*1.0/self.width, points[0][1]*1.0/self.height, points[1][0]*1.0/self.width, points[1][1]*1.0/self.height)
 
 
-    def drawCircle(self, points, color, num_segments = 16):
+    def drawCircle(self, points, color, filled=True, num_segments=16):
         """ Quickly draw approximate circle. Algorithm from:
             http://slabode.exofire.net/circle_draw.shtml
         """
@@ -226,22 +226,31 @@ class GLFrame(QtOpenGL.QGLWidget):
         dx = abs(cx1 - cx2)
         dy = abs(cy1 - cy2)
         r = dx if dx>dy else dy
-        theta = 2 * math.pi / float(num_segments)
-        c = math.cos(theta) # pre-calculate cosine
-        s = math.sin(theta) # and sine
-        t = 0
-        x = r # we start at angle = 0
-        y = 0
 
-        glColor(*color)
-        glBegin(GL_LINE_LOOP)
-        for ii in range(num_segments):
-            # Circle requires correction for aspect ratio
-            glVertex2f((x/self.aratio + cx1), (y + cy1))    # output vertex
-            t = x
-            x = c * x - s * y
-            y = s * t + c * y
-        glEnd()
+        if filled:
+            glBegin(GL_TRIANGLE_FAN)
+            glColor4f(*color)
+            for i in xrange(0, num_segments):
+                angle = i * math.pi * 2.0 / num_segments
+                glVertex2f(cx1 + r/self.aratio * math.cos(angle), cy1 + r * math.sin(angle))
+            glEnd()
+        else:
+            theta = 2 * math.pi / float(num_segments)
+            c = math.cos(theta) # pre-calculate cosine
+            s = math.sin(theta) # and sine
+            t = 0
+            x = r # we start at angle = 0
+            y = 0
+
+            glColor(*color)
+            glBegin(GL_LINE_LOOP)
+            for ii in xrange(num_segments):
+                # Circle requires correction for aspect ratio
+                glVertex2f((x/self.aratio + cx1), (y + cy1))    # output vertex
+                t = x
+                x = c * x - s * y
+                y = s * t + c * y
+            glEnd()
 
 
     def drawTrace(self, points, color = (1.0, 1.0, 1.0, 1.0)): #array
@@ -252,8 +261,6 @@ class GLFrame(QtOpenGL.QGLWidget):
         glColor(*color)
         glVertexPointerf(points)
         glDrawArrays(GL_LINE_STRIP, 0, len(points))
-
-
 
     def resizeFrame(self):
         """ Locks video frame widget size to raster size, won't show

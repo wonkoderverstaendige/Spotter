@@ -157,6 +157,9 @@
                <property name="buttonSymbols">
                 <enum>QAbstractSpinBox::PlusMinus</enum>
                </property>
+               <property name="decimals">
+                <number>3</number>
+               </property>
                <property name="minimum">
                 <double>-2.000000000000000</double>
                </property>
@@ -215,6 +218,9 @@
               <widget class="QDoubleSpinBox" name="spin_shape_normy">
                <property name="buttonSymbols">
                 <enum>QAbstractSpinBox::PlusMinus</enum>
+               </property>
+               <property name="decimals">
+                <number>3</number>
                </property>
                <property name="minimum">
                 <double>-2.000000000000000</double>

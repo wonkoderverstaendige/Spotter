@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'tab_regionsUi.ui'
 #
-# Created: Thu Apr 04 05:48:34 2013
+# Created: Fri Apr 05 04:04:45 2013
 #      by: PyQt4 UI code generator 4.9.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -71,6 +71,7 @@ class Ui_tab_regions(object):
         self.horizontalLayout.addWidget(self.spin_shape_x)
         self.spin_shape_normx = QtGui.QDoubleSpinBox(self.page_regions_overview)
         self.spin_shape_normx.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
+        self.spin_shape_normx.setDecimals(3)
         self.spin_shape_normx.setMinimum(-2.0)
         self.spin_shape_normx.setMaximum(2.0)
         self.spin_shape_normx.setSingleStep(0.05)
@@ -94,6 +95,7 @@ class Ui_tab_regions(object):
         self.horizontalLayout_2.addWidget(self.spin_shape_y)
         self.spin_shape_normy = QtGui.QDoubleSpinBox(self.page_regions_overview)
         self.spin_shape_normy.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
+        self.spin_shape_normy.setDecimals(3)
         self.spin_shape_normy.setMinimum(-2.0)
         self.spin_shape_normy.setMaximum(2.0)
         self.spin_shape_normy.setSingleStep(0.05)

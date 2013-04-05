@@ -26,15 +26,14 @@ class Shape:
 
     def __init__(self, shape, points, label):
         self.shape = shape.lower()
-        self.points = points
         self.label = label
 
         if shape == 'circle':
-            dx = abs(points[0][0] - points[1][0])
-            dy = abs(points[0][1] - points[1][1])
-            self.radius = max(dx, dy)
+            self.radius_update(points)
+            self.points = [points[0], (int(points[0][0]), points[0][1]+self.radius)]
             self.collision_check = self.collision_check_circle
         elif shape == 'rectangle':
+            self.points = points
             self.collision_check = self.collision_check_rectangle
 
 
@@ -43,7 +42,9 @@ class Shape:
         collision by comparing distance between center and point of object with
         radius.
         """
-        if self.active and (geom.distance(self.points[0], point) <= self.radius):
+        distance = geom.distance(self.points[0], point)
+        if self.active and (distance <= self.radius):
+#            print("Hit circle!", self.radius, distance, self.points, point)
             return True
         else:
             return False
@@ -51,6 +52,13 @@ class Shape:
     def move(self, dx, dy):
         for i, p in enumerate(self.points):
             self.points[i] = (p[0] + dx, p[1] + dy)
+        if self.shape == 'circle':
+            self.radius_update()
+
+    def radius_update(self, points=None):
+        if points is None:
+            points = self.points
+        self.radius = geom.distance(points[0], points[1])
 
     def collision_check_rectangle(self, point):
         """ Circle points: center point, one point on the circle. Test for
