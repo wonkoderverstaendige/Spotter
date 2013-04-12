@@ -10,6 +10,7 @@ from PyQt4 import QtGui, QtCore, QtOpenGL
 from OpenGL.GL import *
 import math
 import numpy as np
+import geometry as geom
 
 class GLFrame(QtOpenGL.QGLWidget):
 
@@ -66,7 +67,9 @@ class GLFrame(QtOpenGL.QGLWidget):
 
             modifiers = QtGui.QApplication.keyboardModifiers()
             if modifiers == QtCore.Qt.ShiftModifier:
-                self.drawCircle((p1, p2), color, 16)
+                radius = geom.distance(p1, p2)
+                p2_c = (int(p1[0]), p1[1]+radius)
+                self.drawCircle((p1, p2_c), color, 16)
             elif modifiers == QtCore.Qt.ControlModifier:
                 self.drawLine((p1, p2), color)
             else:
