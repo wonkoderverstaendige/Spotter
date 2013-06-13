@@ -30,6 +30,7 @@ import cv2.cv as cv
 import os
 import sys
 import time
+import logging
 
 #project libraries
 sys.path.append('./lib')
@@ -48,6 +49,7 @@ class Writer:
     codecs = ( ('XVID'), ('DIVX'), ('IYUV') )
     destination = None
     writer = None
+    logger = None
     size = None
     alive = True
     recording = False
@@ -74,55 +76,57 @@ class Writer:
 
         self.loop()
 
-    def start(self, dst):
-#        self.printflush("START METHOD")
+    def start(self, dst=None):
         # check if output file exists
         dst = self.time_string() + '.avi'
         destination = utils.dst_file_name(dst)
         if os.path.isfile(destination) and not OVERWRITE:
-            self.printflush('Destination file exists, stopped.')
+            self.printflush('Destination file exists, stopped.', True)
             return
         self.destination = destination
         self.printflush(self.destination)
 
         # VideoWriter object
-        if DEBUG:
-            self.printflush('Writer Init - fps: ' + str(self.fps) + '; size: ' + str(self.size) + ';')
+        self.printflush('Writer Init - fps: ' + str(self.fps) + '; size: ' + str(self.size) + ';')
+
         self.writer = cv2.VideoWriter(
                         self.destination,
                         cv.CV_FOURCC(self.cc[0], self.cc[1], self.cc[2], self.cc[3]),
                         self.fps,
                         self.size, 1 )
-        if DEBUG:
-            self.printflush(str(self.writer) + ' destination: ' + self.destination)
+
+        self.logger = logging.getLogger(destination)
+        loghandler = logging.FileHandler(''.join([destination, '.log']))#logging.StreamHandler()
+#        formatter = logging.Formatter('%(asctime)-15s %(levelname)-8s %(message)s') #%(name)-5s %(levelname)-8s IP: %(ip)-15s User: %(user)-8s %(message)s
+#        loghandler.setFormatter(formatter)
+        self.logger.addHandler(loghandler)
+        self.logger.setLevel(logging.INFO)
+
+        self.printflush(str(self.writer) + ' destination: ' + self.destination)
         self.recording = True
 
-    def printflush(self, string):
+    def printflush(self, string, override = False):
         """ Prints a string and flushes the buffered output, so that prints
         in this sub-process show up in the parent process terminal output."""
-        print string
-        sys.stdout.flush()
+        if DEBUG or override:
+            print string
+            sys.stdout.flush()
 
     def stop(self):
 #        self.printflush("STOP METHOD")
         self.destination = None
+        self.logger = None
+
         if self.recording:
             self.close()
         self.recording = False
 
-    def write(self, frame):
-#        t = frame.timestamp
-#        ms = "{0:03d}".format(int((t-int(t))*100))
-#        time_text = time.strftime("%d-%b-%y %H:%M:%S", time.localtime(t))
-#        time_text = ".".join([time_text, ms])
-#        cv2.putText(img=frame.img,
-#                text=time_text,
-#                org=(3,12),
-#                fontFace=cv2.FONT_HERSHEY_PLAIN,
-#                fontScale=0.8,
-#                color=(255, 255, 255),
-#                thickness=1,
-#                lineType=cv2.CV_AA)
+    def write(self, item):
+        frame = item[0]
+        messages = item[1]
+
+        for m in messages:
+            self.logger.info(m)
         self.writer.write(frame.img)
 
     def loop(self):
@@ -143,20 +147,19 @@ class Writer:
                 new_pipe_msg = False
 
             if new_pipe_msg:
+                # any command in the pipe will keep the process alive
                 cmd = self.pipe.recv()
                 self.ts_last = time.clock()
                 if cmd == 'terminate':
+                    self.printflush('Writer received termination signal')
+                    # don't close yet, first empty buffer!
                     self.alive = False
-                    if DEBUG:
-                        self.printflush('Writer received termination signal')
                 elif cmd == 'stop':
-                    if DEBUG:
-                        self.printflush('Writer received stop signal')
+                    self.printflush('Writer received stop signal')
                     self.stop()
                 elif cmd == 'start':
-                    if DEBUG:
-                       self.printflush('Writer received start signal')
-                    self.start('test.avi')
+                    self.printflush('Writer received start signal')
+                    self.start()
                 elif cmd == 'alive':
                     pass
 

@@ -197,8 +197,11 @@ class Main(QtGui.QMainWindow):
         self.glframe.updateWorld()
         self.update_current_tab()
 
-    def record_video(self, state):
-        self.spotter.toggle_video_recording(state)
+    def record_video(self, state, filename=None):
+        if state:
+            self.spotter.start_writer()
+        else:
+            self.spotter.stop_writer()
 
     def mouse_event_to_tab(self, event_type, event):
         """

@@ -71,7 +71,8 @@ class Spotter:
     ts_start = None
 
     paused = False
-    
+    recording = False
+
     scale_resize = 1.0
     scale_tracking = 1.0
 
@@ -114,6 +115,11 @@ class Spotter:
             print 'No new frame returned!!! What does it mean??? We are going to die! Eventually!!!'
             return None
         else:
+            t = self.newest_frame.timestamp
+            time_text = time.strftime("%d-%b-%y %H:%M:%S", time.localtime(t))
+            ms = "{0:03d}".format(int((t-int(t))*1000))
+            time_text = ".".join([time_text, ms])
+
             # resize frame if necessary
             if self.scale_resize < 1.0:
                 self.newest_frame.img = cv2.resize(self.newest_frame.img,
@@ -121,18 +127,25 @@ class Spotter:
                                                   fx=self.scale_resize,
                                                   fy=self.scale_resize,
                                                   interpolation=cv2.INTER_LINEAR)
-                
+
             # Find and update position of tracked object
             self.tracker.track_feature(self.newest_frame,
                                        method = 'hsv_thresh',
                                        scale=self.scale_tracking*self.scale_resize)
 
             slots = []
+            messages = []
+
             # Update positions of all objects
             for o in self.tracker.oois:
                 o.update_slots(self.chatter)
                 o.update_state()
                 slots.extend(o.linked_slots())
+                messages.append('\t'.join([time_text, str(o.label), str(o.position)]))
+
+            for l in self.tracker.leds:
+                messages.append('\t'.join([time_text, str(l.label), str(l.position())]))
+
             # Check Object-Region collisions
             for r in self.tracker.rois:
                 r.update_slots(self.chatter)
@@ -143,10 +156,6 @@ class Spotter:
 
             # Add timestamp to image if from a live source
             if self.newest_frame.source_type == 'device':
-                t = self.newest_frame.timestamp
-                time_text = time.strftime("%d-%b-%y %H:%M:%S", time.localtime(t))
-                ms = "{0:02d}".format(int((t-int(t))*100))
-                time_text = ".".join([time_text, ms])
                 cv2.putText(img=self.newest_frame.img,
                         text=time_text,
                         org=(3,12),
@@ -159,8 +168,13 @@ class Spotter:
             # Check on writer process to prevent data loss
             # Copy object, or referece deleted before written out
             if self.check_writer():
-                self.writer_pipe.send('alive')
-                self.writer_queue.put(copy.deepcopy(self.newest_frame))
+                if self.recording:
+                    self.writer_pipe.send('record')
+                    item = (copy.deepcopy(self.newest_frame),
+                            copy.deepcopy(messages))
+                    self.writer_queue.put(item)
+                else:
+                    self.writer_pipe.send('alive')
                 # required, or may crash?
 #                time.sleep(0.001)
             return True
@@ -170,12 +184,6 @@ class Spotter:
 #        if t <= 0:
 ##            log.info('Missed next frame by: ' + str( t * -1. ) + ' ms')
 #            t = 1
-
-    def toggle_video_recording(self, state):
-        if state:
-            self.writer_pipe.send('start')
-        else:
-            self.writer_pipe.send('stop')
 
     def check_writer(self):
         """ True if alive """
@@ -188,6 +196,15 @@ class Spotter:
 #            self.exitMain()
 #        else:
 #            return True
+
+    def start_writer(self):
+        self.writer_pipe.send('start')
+        self.recording = True
+
+    def stop_writer(self):
+        self.writer_pipe.send('stop')
+        self.recording = False
+
 
     def exitMain(self):
         """ Graceful exit. Ha. Ha. Ha. Bottle of root beer anyone? """

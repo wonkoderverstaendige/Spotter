@@ -121,6 +121,12 @@ class LED:
     def updateHistory( self, coords):
         pass
 
+    def position(self):
+        if len(self.pos_hist):
+            return self.pos_hist[-1]
+        else:
+            return None
+
 
 class Slot:
     def __init__(self, label, type_, state=None, state_idx=None, ref=None):
