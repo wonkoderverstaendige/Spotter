@@ -171,7 +171,13 @@ void interpretCommand() {
     report(addr, inData);
     break;
   case TYPE_SPI_DAC:
-    setDAC(addr, inData);
+  //////////////// TO GO BACK TO THE DAC SIGNAL, COMMENT THE LINES WITH //////s
+  for (byte i=0; i<3; i++) { ////////////////
+      setDAC(addr, inData);
+      delay(1);////////////////
+      setDAC(addr, 0);////////////////
+      delay(1);////////////////
+    }////////////////
     break;
   case TYPE_DIGITAL:
     setDigital(addr, inData);
