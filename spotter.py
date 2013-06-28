@@ -37,6 +37,7 @@ import time
 import multiprocessing
 import logging
 import copy
+import pickle
 
 #project libraries
 sys.path.append('./lib')
@@ -46,6 +47,10 @@ from tracker import Tracker
 from chatter import Chatter
 #from GUI import GUI
 import utilities as utils
+from timerclass import Timer
+
+#misc
+
 
 
 #command line handling
@@ -74,7 +79,7 @@ class Spotter:
     recording = False
 
     scale_resize = 1.0
-    scale_tracking = 1.0
+    scale_tracking = 0.5
 
     def __init__(self, source, destination, fps, size, gui, serial=None):
         # Setup frame grabber object, fills framebuffer
@@ -98,6 +103,7 @@ class Spotter:
 
         # chatter handles serial communication
         self.chatter = Chatter(serial, auto=True)
+        self.timings = []
 
         # GUI other than Qt currently not available. We apologize for any
         # inconvinience. << NOT TRUE ANYMORE! HOORAY!
@@ -129,9 +135,13 @@ class Spotter:
                                                   interpolation=cv2.INTER_LINEAR)
 
             # Find and update position of tracked object
-            self.tracker.track_feature(self.newest_frame,
-                                       method = 'hsv_thresh',
-                                       scale=self.scale_tracking*self.scale_resize)
+            with Timer(False) as t:
+                self.tracker.track_feature(self.newest_frame,
+                                           method = 'hsv_thresh',
+                                           scale=self.scale_tracking*self.scale_resize)
+            self.timings.append(t.msecs)
+
+#            print "=> elapsed tracking: %s ms" % t.secs*1000
 
             slots = []
             messages = []
@@ -225,13 +235,15 @@ class Spotter:
             # will be terminated otherwise
             if self.writer.is_alive():
                 self.writer.terminate()
-
         try:
             fc = self.grabber.frame_count
             tt = (time.clock() - self.ts_start)
             log.info('Done! Grabbed ' + str(fc) + ' frames in ' + str(tt) + 's, with ' + str(fc/tt) + ' fps')
         except:
             pass
+        outfile = open("save.p", "wb" )
+        pickle.dump(self.timings, outfile)
+
         sys.exit( 0 )
 
 
