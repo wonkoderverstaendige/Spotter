@@ -139,7 +139,7 @@ class Writer:
             if time.clock() - self.ts_last > TIMEOUT:
                 self.printflush("Terminating unattended Writer process!")
                 self.close()
-                sys.exit(0)
+                sys.exit(1)
 
             try:
                 new_pipe_msg = self.pipe.poll()

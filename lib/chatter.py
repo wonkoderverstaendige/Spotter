@@ -81,7 +81,7 @@ class Chatter:
     def __init__(self, port, frame_size=(639, 359), max_dac=4095, auto=False):
         self.range_xy = frame_size
 
-        self.factor_dac = (4095 - 256.0) / max(frame_size)
+        self.factor_dac = (max_dac - 256.0) / max(frame_size)
         self.offset_dac = max_dac - self.factor_dac * max(frame_size)
         dr = int(self.factor_dac) * max(frame_size)
 #        print ('DAC factor: ' + str(self.factor_dac))

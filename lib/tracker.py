@@ -40,21 +40,24 @@ DEBUG = True
 class Tracker:
     """ Performs tracking and returns positions of found LEDs """
     frame = None
-    
-    # scale the detection frame, scale<1 reduces load
-    scale = 1.0
 
-    def __init__( self ):
+    def __init__(self, adaptive_tracking=False):
         self.oois = []
         self.rois = []
         self.leds = []
+        self.adaptive_tracking = adaptive_tracking
 
     def addLED(self, label, range_hue, min_area=5, fixed_pos=False, linked_to=None):
+        if self.adaptive_tracking:
+            roi = trkbl.Shape('rectangle', None, None)
+        else:
+            roi = trkbl.Shape('rectangle', None, None)
         led = trkbl.LED(label,
                         range_hue,
                         min_area,
                         fixed_pos,
-                        linked_to)
+                        linked_to,
+                        roi)
         self.leds.append(led)
         return led
 
@@ -77,7 +80,7 @@ class Tracker:
         return roi
 
     def track_feature(self, frame, method = 'hsv_thresh', scale=1.0):
-        """ 
+        """
         Intermediate method selecting tracking method and seperating those
         tracking methods from the frames stored in the instantiatd Tracker
 
@@ -87,7 +90,7 @@ class Tracker:
         self.scale = scale*1.0 #float
         if self.scale > 1.0:
             self.scale = 1.0
-            
+
         # dilate bright spots
 #        kernel = np.ones((3,3), 'uint8')
 #        # conversion to HSV before dilation causes artifacts!
@@ -109,11 +112,11 @@ class Tracker:
                     led.pos_hist.append(None)
 
     def track_thresholds(self, hsv_frame, l):
-        """ 
+        """
         Tracks LEDs from a list in a HSV frame by thresholding
         hue, saturation, followed by thresholding for each LEDs hue.
         Large enough contours will have coords returned, or None
-        
+
         """
         r_hue = l.range_hue
         r_sat = l.range_sat
@@ -121,26 +124,53 @@ class Tracker:
         r_area = (l.range_area[0]*self.scale**2,
                   l.range_area[1]*self.scale**2)
 
-        # if range[0] > range[1], i.e., color is red and wraps around,
-        # invert range and perform NOT on result
+        # determine array slices if adaptive tracking is used
+        if (l.adaptive_tracking and self.adaptive_tracking) \
+            and l.search_roi is not None and l.search_roi.points is not None:
+            (ax, ay), (bx, by) = l.search_roi.points
+            ax *= self.scale
+            bx *= self.scale
+            ay *= self.scale
+            by *= self.scale
+            h, w = hsv_frame.shape[0:2]
+
+            # check if box is too far left or right:
+            # Esther says to do it the stoopid way
+            if ax < 0:
+                ax = 0
+            if bx >= w-1:
+                bx = w-1
+
+            if ay < 0:
+                ay = 0
+            if by >= h-1:
+                by = h-1
+
+            frame = hsv_frame[ay:by, ax:bx, :]
+            frame_offset = True
+        else:
+            frame_offset = False
+            frame = hsv_frame
+
+        # if range[0] > range[1], i.e., color is red and wraps around
         invert_range = False if not r_hue[0] > r_hue[1] else True
 
         # All colors except red
         if not invert_range:
             lowerBound = np.array( [r_hue[0], r_sat[0], r_val[0]], np.uint8)
-            upperBound = np.array( [r_hue[1], 255, 255], np.uint8 )
-            ranged_frame = cv2.inRange( hsv_frame, lowerBound, upperBound)
+            upperBound = np.array( [r_hue[1], r_sat[1], r_val[1]], np.uint8 )
+            ranged_frame = cv2.inRange(frame, lowerBound, upperBound)
 
         # Red hue requires double thresholding due to wraparound in hue domain
         else:
             # min-180 (or, 255)
             lowerBound = np.array([r_hue[0], r_sat[0], r_val[0]], np.uint8)
-            upperBound = np.array([179, 255, 253], np.uint8)
-            ranged_frame = cv2.inRange(hsv_frame, lowerBound, upperBound)
+            upperBound = np.array([179, r_sat[1], r_val[1]], np.uint8)
+            ranged_frame = cv2.inRange(frame, lowerBound, upperBound)
             # 0-max (or, 255)
             lowerBound = np.array([0, r_sat[0], r_val[0]], np.uint8)
-            upperBound = np.array([r_hue[1], 255, 253], np.uint8)
-            redrange = cv2.inRange(hsv_frame, lowerBound, upperBound)
+            upperBound = np.array([r_hue[1], r_sat[1], r_val[1]], np.uint8)
+            redrange = cv2.inRange(frame, lowerBound, upperBound)
             # combine both ends for complete mask
             ranged_frame = cv2.bitwise_or(ranged_frame, redrange)
 
@@ -148,11 +178,14 @@ class Tracker:
         ranged_frame = cv2.dilate( ranged_frame, np.ones((3,3), 'uint8'))
         contour_area, contour = self.findContour(ranged_frame, r_area)
 
-        # finding centroids of best_cnt and draw a circle there
-        if not contour == None:
-            M = cv2.moments( contour.astype(int) )
+        # find centroids of the contour returned
+        if contour is not None:
+            M = cv2.moments(contour.astype(int))
             cx = M['m10']/M['m00']
             cy = M['m01']/M['m00']
+            if frame_offset:
+                cx += ax
+                cy += ay
             l.pos_hist.append((cx/self.scale, cy/self.scale))
         else:
             # Couldn't find a good enough spot

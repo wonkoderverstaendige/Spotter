@@ -30,6 +30,9 @@ To do:
     --source 0 --outfile test.avi --size=320x200 --fps=30
 
 """
+# ../Spotter_Tests/LisaCheeseMaze.avi
+# media/vid/r52r2f107.avi
+
 
 NO_EXIT_CONFIRMATION = False
 DIR_TEMPLATES = './config'
@@ -70,7 +73,7 @@ sys.path.append('./lib/docopt')
 from docopt import docopt
 
 
-__version__ = 0.3
+__version__ = 0.4
 
 class Main(QtGui.QMainWindow):
 
@@ -159,8 +162,11 @@ class Main(QtGui.QMainWindow):
 
         self.serial_timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.serial_check)
-        self.serial_timer.start(10)
+        self.serial_timer.start(1000)
 
+###############################################################################
+##  FRAME REFRESH
+###############################################################################
     def refresh(self):
         if self.spotter.update() is None:
             self.spotter.exitMain()
@@ -170,20 +176,39 @@ class Main(QtGui.QMainWindow):
 
         # Append Object tracking markers to the list of things that have
         # to be drawn onto the GL frame
+
+        # draw crosses
         for l in self.spotter.tracker.leds:
             if not l.pos_hist[-1] == None and l.marker_visible:
-                self.glframe.jobs.append([self.glframe.drawCross, l.pos_hist[-1], 14, l.lblcolor])
+                self.glframe.jobs.append([self.glframe.drawCross,
+                                          l.pos_hist[-1], 14, l.lblcolor])
 
+        # draw search windows if adaptive tracking is used:
+        if self.spotter.tracker.adaptive_tracking:
+            for l in self.spotter.tracker.leds:
+                if l.adaptive_tracking and l.search_roi is not None:
+                    self.glframe.jobs.append([self.glframe.drawBox,
+                                              l.search_roi.points,
+                                              (l.lblcolor[0],
+                                               l.lblcolor[1],
+                                               l.lblcolor[2],
+                                               0.25)])
+
+        # draw crosses and traces for objects
         for o in self.spotter.tracker.oois:
-            if not o.position == None:
-                self.glframe.jobs.append([self.glframe.drawCross, o.position, 8, (1.0, 1.0, 1.0, 1.0), 7, True])
+            if o.position is not None:
+                self.glframe.jobs.append([self.glframe.drawCross,
+                                          o.position, 8,
+                                          (1.0, 1.0, 1.0, 1.0), 7, True])
                 if o.traced:
                     points = []
                     for n in xrange(min(len(o.pos_hist), 100)):
-                        if not o.pos_hist[-n-1] == None:
-                            points.append([o.pos_hist[-n-1][0]*1.0/self.glframe.width, o.pos_hist[-n-1][1]*1.0/self.glframe.height])
+                        if o.pos_hist[-n-1] is not None:
+                            points.append([o.pos_hist[-n-1][0]*1.0/self.glframe.width,
+                                           o.pos_hist[-n-1][1]*1.0/self.glframe.height])
                     self.glframe.jobs.append([self.glframe.drawTrace, points])
 
+        # draw shapes of active ROIs
         for r in self.spotter.tracker.rois:
             color = (r.normal_color[0], r.normal_color[1], r.normal_color[2], r.alpha)
             for s in r.shapes:
@@ -194,6 +219,7 @@ class Main(QtGui.QMainWindow):
                         self.glframe.jobs.append([self.glframe.drawCircle, s.points, color])
                     elif s.shape == "line":
                         self.glframe.jobs.append([self.glframe.drawLine, s.points, color])
+
         self.glframe.updateWorld()
         self.update_current_tab()
 
@@ -217,7 +243,7 @@ class Main(QtGui.QMainWindow):
         QtGui.QMessageBox.about(self, "About",
                 """<b>Spotter</b> v%s
                <p>Copyright &#169; 2012-2013 <a href=mailto:ronny.eichler@gmail.com>Ronny Eichler</a>.
-               <p>This application can and will be used for funs.
+               <p>This application is under heavy development. Use on your own risk.
                <p>Python %s -  PyQt4 version %s - on %s""" % (__version__,
                 platform.python_version(), QtCore.QT_VERSION_STR, platform.system()))
 

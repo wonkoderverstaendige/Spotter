@@ -9,8 +9,9 @@ Created on Fri Jun 28 15:48:27 2013
 import time
 
 class Timer(object):
-    def __init__(self, verbose=False):
+    def __init__(self, verbose=False, timelog=None):
         self.verbose = verbose
+        self.timelog = timelog
 
     def __enter__(self):
         self.start = time.time()
@@ -22,3 +23,5 @@ class Timer(object):
         self.msecs = self.secs * 1000  # millisecs
         if self.verbose:
             print 'elapsed time: %f ms' % self.msecs
+        if self.timelog is not None:
+            self.timelog.append(self.msecs)

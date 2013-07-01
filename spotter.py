@@ -47,7 +47,8 @@ from tracker import Tracker
 from chatter import Chatter
 #from GUI import GUI
 import utilities as utils
-from timerclass import Timer
+import timerclass
+timingfname = 'tracking_3LEDs.p'
 
 #misc
 
@@ -79,7 +80,7 @@ class Spotter:
     recording = False
 
     scale_resize = 1.0
-    scale_tracking = 0.5
+    scale_tracking = 1.0
 
     def __init__(self, source, destination, fps, size, gui, serial=None):
         # Setup frame grabber object, fills framebuffer
@@ -99,15 +100,11 @@ class Spotter:
         self.writer.start()
 
         # tracker object finds LEDs in frames
-        self.tracker = Tracker()
+        self.tracker = Tracker(adaptive_tracking=True)
 
         # chatter handles serial communication
         self.chatter = Chatter(serial, auto=True)
         self.timings = []
-
-        # GUI other than Qt currently not available. We apologize for any
-        # inconvinience. << NOT TRUE ANYMORE! HOORAY!
-#        self.gui = GUI( self, gui, "Spotter", size )
 
         # histogram instance required to do... nothing for now?
 #        self.hist = utils.HSVHist()
@@ -135,17 +132,13 @@ class Spotter:
                                                   interpolation=cv2.INTER_LINEAR)
 
             # Find and update position of tracked object
-            with Timer(False) as t:
+            with timerclass.Timer(False, self.timings) as t:
                 self.tracker.track_feature(self.newest_frame,
                                            method = 'hsv_thresh',
                                            scale=self.scale_tracking*self.scale_resize)
-            self.timings.append(t.msecs)
-
-#            print "=> elapsed tracking: %s ms" % t.secs*1000
 
             slots = []
             messages = []
-
             # Update positions of all objects
             for o in self.tracker.oois:
                 o.update_slots(self.chatter)
@@ -241,10 +234,10 @@ class Spotter:
             log.info('Done! Grabbed ' + str(fc) + ' frames in ' + str(tt) + 's, with ' + str(fc/tt) + ' fps')
         except:
             pass
-        outfile = open("save.p", "wb" )
+        outfile = open(timingfname, "wb" )
         pickle.dump(self.timings, outfile)
 
-        sys.exit( 0 )
+        sys.exit(1)
 
 
 #############################################################

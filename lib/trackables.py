@@ -19,23 +19,42 @@ class Shape:
     points: list of points defining the shape. Two for rectangle and circle,
     TODO: n-poly
     """
-    active = True
-    selected = False
+    def __init__(self, shape, points=None, label=None):
+        self.active = True
+        self.selected = False
 
-    collision_check = None
+        self.collision_check = None
 
-    def __init__(self, shape, points, label):
         self.shape = shape.lower()
         self.label = label
 
         if shape == 'circle':
+            # calculate the radius as distance of the points
             self.radius_update(points)
+            # normalize the point positions based on radius,
+            # second point is always to the right of the center
             self.points = [points[0], (int(points[0][0]), points[0][1]+self.radius)]
             self.collision_check = self.collision_check_circle
         elif shape == 'rectangle':
             self.points = points
             self.collision_check = self.collision_check_rectangle
 
+    def move(self, dx, dy):
+        """ Move the shape relative to current position. """
+        for i, p in enumerate(self.points):
+            self.points[i] = (p[0] + dx, p[1] + dy)
+        if self.shape == 'circle':
+            self.radius_update()
+
+    def move_to(self, points):
+        """ Move the shape to a new absolute position. """
+        self.points = points
+
+    def radius_update(self, points=None):
+        """ (Re-)calculate the radius of the circle. """
+        if points is None:
+            points = self.points
+        self.radius = geom.distance(points[0], points[1])
 
     def collision_check_circle(self, point):
         """ Circle points: center point, one point on the circle. Test for
@@ -44,21 +63,9 @@ class Shape:
         """
         distance = geom.distance(self.points[0], point)
         if self.active and (distance <= self.radius):
-#            print("Hit circle!", self.radius, distance, self.points, point)
             return True
         else:
             return False
-
-    def move(self, dx, dy):
-        for i, p in enumerate(self.points):
-            self.points[i] = (p[0] + dx, p[1] + dy)
-        if self.shape == 'circle':
-            self.radius_update()
-
-    def radius_update(self, points=None):
-        if points is None:
-            points = self.points
-        self.radius = geom.distance(points[0], points[1])
 
     def collision_check_rectangle(self, point):
         """ Circle points: center point, one point on the circle. Test for
@@ -75,50 +82,44 @@ class Shape:
         else:
             return False
 
-    def shape_to_array(self):
-        """ Return shape as numpy array for overlaying into the total
-        collision detection array. """
-        pass
-
 
 class LED:
-    """ Each instance is a spot to track in the image. Holds histogram to do
-    camshift with plus ROI/Mask"""
+    """ Each instance is a spot to track in the image. """
 
     hue_hist = None
-    range_hue = None # np.array uint8 of (lowerBound, higherBound), red: 170,10
-    range_sat = None
-    range_val = None
-    range_area = None
 
-    label = None
-    pos_hist = None
-    mean_hue = None    # mean color of range for labels/markers etc.
-    lblcolor =  None
-
-    def __init__( self, label, range_hue, range_area, fixed_pos, linked_to ):
+    def __init__(self, label, range_hue, range_area, fixed_pos, linked_to, roi=None):
         self.label = label
-        self.fixed_pos = fixed_pos
         self.detection_active = True
         self.marker_visible = True
 
+        # feature description ranges
+        # np.array uint8 of (lowerBound, higherBound)
         self.range_hue = range_hue
-        self.range_sat = (150, 255)
-        self.range_val = (90, 255)
+        self.range_sat = (150, 253)
+        self.range_val = (90, 253)
         self.range_area = range_area
-        self.linked_to = linked_to  # List of linked features, used as constraint
 
+        # mean color of range for labels/markers etc.
         self.mean_hue = utils.mean_hue(self.range_hue)
         self.lblcolor = utils.HSVpix2RGB((self.mean_hue, 255, 255))
         self.pos_hist = []
 
-    def updateHistogram( self, led_hist ):
+        # Restrict tracking to a search window?
+        self.adaptive_tracking = (roi is not None)
+        # if so, where and which window?
+        self.fixed_pos = fixed_pos
+        self.search_roi = roi
+        # List of linked features, can be used for further constraints
+        self.linked_to = linked_to
+
+    def updateHistogram(self, led_hist):
         pass
 
-    def gethistory( ):
+    def gethistory(self):
         pass
 
-    def updateHistory( self, coords):
+    def updateHistory(self, coords):
         pass
 
     def position(self):
@@ -136,7 +137,7 @@ class Slot:
         self.pin_pref = None
         self.state = state          # reference to output value
         self.state_idx = state_idx  # index of output value if iterable
-        self.ref = ref                 # reference to object representing slot
+        self.ref = ref              # reference to object representing slot
 
     def attach_pin(self, pin):
         if self.pin and self.pin.slot:
@@ -165,9 +166,6 @@ class OOI:
     position = None
     angle = None
 
-    lookahead_roi = None # region pos will likely be in next frame, limit search
-                         # of all linked features to this mask
-
     analog_pos = False
     analog_dir = False
     analog_spd = False
@@ -195,12 +193,30 @@ class OOI:
 
     def update_state(self):
         """
-        Calculate position, direction and speed of object. Based on these,
-        try to predict a region to look for the object in the next frame.
+        Calculate position, direction and speed of object.
+
+        Update feature search windows!
         """
         self.position = self._position()
         self.angle = self.direction()
-        self.lookahead_roi = None
+
+        uidx = 0
+        minstep = 25
+        # go back max. n frames to find last position, else search full frame
+        for p in range(0, min(len(self.pos_hist), 10)):
+            if self.pos_hist[-p-1] is not None:
+                uidx = (p+1) * minstep
+                pos = map(int, self.pos_hist[-p-1])
+                roi = [(pos[0]-uidx, pos[1]-uidx), (pos[0]+uidx, pos[1]+uidx)]
+                break
+        else:
+            roi = [(0, 0), (2000, 2000)]
+
+        for l in self.linked_leds:
+            if l.fixed_pos:
+                l.search_roi.move_to([(0, 259), (100, 359)])#[(0, 259), (100, 359)]
+            else:
+                l.search_roi.move_to(roi)
 
     def update_slots(self, chatter):
         for s in self.slots:
