@@ -12,6 +12,9 @@ from PyQt4 import QtGui, QtCore
 sys.path.append('./ui')
 from tab_featuresUi import Ui_tab_features
 
+sys.path.append('./lib')
+import utilities as utils
+
 tab_type = "newLED"
 
 class Tab(QtGui.QWidget, Ui_tab_features):
@@ -30,6 +33,8 @@ class Tab(QtGui.QWidget, Ui_tab_features):
 
         super(QtGui.QWidget, self).__init__(parent)
         self.setupUi(self)
+
+        self.parent = parent
 
         self.combo_label.setEditText(self.label)
 
@@ -95,4 +100,10 @@ class Tab(QtGui.QWidget, Ui_tab_features):
         self.accept_events = state
 
     def process_event(self, event_type, event):
-        print event_type
+        #print event_type
+        if event_type == 'mousePress':
+            x = int(event.x())
+            y = int(event.y())
+            pixel = self.parent.spotter.newest_frame.img[y, x, :]
+            #print pixel
+            print "[X,Y][B G R](H, S, V):", [x, y], pixel, utils.BGRpix2HSV(pixel)
