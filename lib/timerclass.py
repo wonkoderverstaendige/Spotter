@@ -5,13 +5,13 @@ Created on Fri Jun 28 15:48:27 2013
 @author: <Ronny Eichler> ronny.eichler@gmail.com
 
 """
-
 import time
 
+
 class Timer(object):
-    def __init__(self, verbose=False, timelog=None):
+    def __init__(self, verbose=False, time_log=None):
         self.verbose = verbose
-        self.timelog = timelog
+        self.time_log = time_log
 
     def __enter__(self):
         self.start = time.time()
@@ -20,8 +20,8 @@ class Timer(object):
     def __exit__(self, *args):
         self.end = time.time()
         self.secs = self.end - self.start
-        self.msecs = self.secs * 1000  # millisecs
+        self.msecs = self.secs * 1000  # milliseconds
         if self.verbose:
             print 'elapsed time: %f ms' % self.msecs
-        if self.timelog is not None:
-            self.timelog.append(self.msecs)
+        if self.time_log is not None:
+            self.time_log.append(self.msecs)

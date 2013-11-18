@@ -72,7 +72,7 @@ class Spotter:
 
     newest_frame = None  # fresh from the frame source; to be processed/written
     still_frame = None   # frame shown in GUI, may be an older one
-    hsv_frame = None     # converted into HSV colorspace for tracking
+    hsv_frame = None     # converted into HSV color space for tracking
 
     ts_start = None
 
@@ -86,7 +86,7 @@ class Spotter:
         # Setup frame grabber object, fills framebuffer
         self.grabber = Grabber(source, fps, size)
 
-        # Writer writes frames from buffer to video file in a seperate process.
+        # Writer writes frames from buffer to video file in a separate process.
 #        print str(multiprocessing.cpu_count()) + ' CPUs found'
         self.writer_queue = multiprocessing.Queue(16)
         self.writer_pipe, child_pipe = multiprocessing.Pipe()

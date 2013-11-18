@@ -33,7 +33,6 @@ To do:
 # ../Spotter_Tests/LisaCheeseMaze.avi
 # media/vid/r52r2f107.avi
 
-
 NO_EXIT_CONFIRMATION = False
 DIR_TEMPLATES = './config'
 DIR_SPECIFICATION = './config/template_specification.ini'
@@ -75,8 +74,8 @@ from docopt import docopt
 
 __version__ = 0.4
 
-class Main(QtGui.QMainWindow):
 
+class Main(QtGui.QMainWindow):
     def __init__(self, source, destination, fps, size, gui, serial):
         QtGui.QMainWindow.__init__(self)
 
@@ -146,12 +145,11 @@ class Main(QtGui.QMainWindow):
         self.serial_tabs = []
         self.add_serial(self.spotter.chatter)
 
-#        self.iconOff = QtGui.QIcon('ui/arduino_off.svg')
-#        self.iconOn = QtGui.QIcon('ui/arduino.svg')
+        # self.iconOff = QtGui.QIcon('ui/arduino_off.svg')
+        # self.iconOn = QtGui.QIcon('ui/arduino.svg')
         self.arduino_indicator = SerialIndicator(self.spotter.chatter)
         self.ui.toolBar.addWidget(self.arduino_indicator)
-#        self.ui.actionArduino.setIcon(self.iconOn)
-
+        # self.ui.actionArduino.setIcon(self.iconOn)
 
         # Starts main frame grabber loop
         self.timer = QtCore.QTimer(self)
@@ -164,9 +162,9 @@ class Main(QtGui.QMainWindow):
         self.timer.timeout.connect(self.serial_check)
         self.serial_timer.start(1000)
 
-###############################################################################
-##  FRAME REFRESH
-###############################################################################
+    ###############################################################################
+    ##  FRAME REFRESH
+    ###############################################################################
     def refresh(self):
         if self.spotter.update() is None:
             self.spotter.exitMain()
@@ -179,7 +177,7 @@ class Main(QtGui.QMainWindow):
 
         # draw crosses
         for l in self.spotter.tracker.leds:
-            if not l.pos_hist[-1] == None and l.marker_visible:
+            if l.pos_hist[-1] is not None and l.marker_visible:
                 self.glframe.jobs.append([self.glframe.drawCross,
                                           l.pos_hist[-1], 14, l.lblcolor])
 
@@ -203,9 +201,9 @@ class Main(QtGui.QMainWindow):
                 if o.traced:
                     points = []
                     for n in xrange(min(len(o.pos_hist), 100)):
-                        if o.pos_hist[-n-1] is not None:
-                            points.append([o.pos_hist[-n-1][0]*1.0/self.glframe.width,
-                                           o.pos_hist[-n-1][1]*1.0/self.glframe.height])
+                        if o.pos_hist[-n - 1] is not None:
+                            points.append([o.pos_hist[-n - 1][0] * 1.0 / self.glframe.width,
+                                           o.pos_hist[-n - 1][1] * 1.0 / self.glframe.height])
                     self.glframe.jobs.append([self.glframe.drawTrace, points])
 
         # draw shapes of active ROIs
@@ -241,33 +239,34 @@ class Main(QtGui.QMainWindow):
     def about(self):
         """ About message box. Credits. Links. Jokes. """
         QtGui.QMessageBox.about(self, "About",
-                """<b>Spotter</b> v%s
-               <p>Copyright &#169; 2012-2013 <a href=mailto:ronny.eichler@gmail.com>Ronny Eichler</a>.
-               <p>This application is under heavy development. Use on your own risk.
-               <p>Python %s -  PyQt4 version %s - on %s""" % (__version__,
-                platform.python_version(), QtCore.QT_VERSION_STR, platform.system()))
+                                """<b>Spotter</b> v%s
+                   <p>Copyright &#169; 2012-2013 <a href=mailto:ronny.eichler@gmail.com>Ronny Eichler</a>.
+                   <p>This application is under heavy development. Use on your own risk.
+                   <p>Python %s -  PyQt4 version %s - on %s""" % (__version__,
+                                                                  platform.python_version(), QtCore.QT_VERSION_STR,
+                                                                  platform.system()))
 
     def centerWindow(self):
         """ Centers main window on screen."""
         screen = QtGui.QDesktopWidget().screenGeometry()
         size = self.geometry()
-        self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
+        self.move((screen.width() - size.width()) / 2, (screen.height() - size.height()) / 2)
 
-    def add_tab(self, tabwidget, newTabClass, tab_equivalent, focus_new = True):
+    def add_tab(self, tab_widget, new_tab_class, tab_equivalent, focus_new=True):
         """
         Add new tab with Widget newTabClass and switches to it. The
         tab_equivalent is the object that is being represented by the tab,
         for example an LED or Object.
         """
-        new_tab = newTabClass.Tab(self, tab_equivalent)
-        tabwidget.insertTab(tabwidget.count() - 1, new_tab, new_tab.label)
+        new_tab = new_tab_class.Tab(self, tab_equivalent)
+        tab_widget.insertTab(tab_widget.count() - 1, new_tab, new_tab.label)
         if focus_new:
-            tabwidget.setCurrentIndex(tabwidget.count()-2)
+            tab_widget.setCurrentIndex(tab_widget.count() - 2)
         else:
-            tabwidget.setCurrentIndex(0) #tabwidget.count()-2
+            tab_widget.setCurrentIndex(0)  # tab_widget.count()-2
         return new_tab
 
-    def remove_tab(self, tabwidget, tab):
+    def remove_tab(self, tab_widget, tab):
         """
         Removing is trickier, as it has to delete the features/objects
         from the tracker!
@@ -310,8 +309,8 @@ class Main(QtGui.QMainWindow):
         event or introduce some selectivity, i.e. only update affected tabs as
         far as one can tell.
         """
-        for tablist in [self.feature_tabs, self.object_tabs, self.region_tabs]:
-            for t in tablist:
+        for tab_list in [self.feature_tabs, self.object_tabs, self.region_tabs]:
+            for t in tab_list:
                 t.update()
 
     def file_dialog_video(self):
@@ -328,7 +327,6 @@ class Main(QtGui.QMainWindow):
         filename = QtGui.QFileDialog.getOpenFileName(self, 'Open Video', path)
         print filename
 
-
     def closeEvent(self, event):
         """
         Exiting the interface has to kill the spotter class and subclasses
@@ -342,17 +340,17 @@ class Main(QtGui.QMainWindow):
                                                'Exiting...',
                                                'Are you sure?',
                                                QtGui.QMessageBox.Yes,
-                                               QtGui.QMessageBox.No )
+                                               QtGui.QMessageBox.No)
         if reply == QtGui.QMessageBox.Yes:
             self.spotter.exitMain()
             event.accept()
         else:
             event.ignore()
 
+        ###############################################################################
+        ##  TEMPLATES handling
+        ###############################################################################
 
-###############################################################################
-##  TEMPLATES handling
-###############################################################################
     def load_template(self):
         """
         Loads and creates all LEDs and Objects from templates. This will
@@ -365,7 +363,7 @@ class Main(QtGui.QMainWindow):
                                 str(self.ui.combo_templates.currentText()))
             self.template_from_file(path)
 
-    def template_from_file(self, filename = None, directory = DIR_TEMPLATES):
+    def template_from_file(self, filename=None, directory=DIR_TEMPLATES):
         """
         Opens file dialog to choose template file and starts parsing of it
         """
@@ -381,7 +379,7 @@ class Main(QtGui.QMainWindow):
         if validate:
             validator = Validator()
             results = template.validate(validator)
-            if not results == True:
+            if not results is True:
                 print "Template error in file ", path
                 for (section_list, key, _) in flatten_errors(template, results):
                     if key is not None:
@@ -391,18 +389,18 @@ class Main(QtGui.QMainWindow):
                 return None
         return template
 
-    def template_to_spotter(self, tObj):
+    def template_to_spotter(self, template_object):
         # which tab are we loading a template for?
         active_top_tab_label = self.get_top_tab_label()
         if active_top_tab_label == "Settings":
-            for f_key, f_val in tObj['FEATURES'].items():
+            for f_key, f_val in template_object['FEATURES'].items():
                 self.add_feature(f_val, f_key, focus_new=False)
-            for o_key, o_val in tObj['OBJECTS'].items():
+            for o_key, o_val in template_object['OBJECTS'].items():
                 self.add_object(o_val, o_key, focus_new=False)
-            for r_key, r_val in tObj['REGIONS'].items():
-                self.add_region(r_val, r_key, shapes=tObj['SHAPES'], focus_new=False)
+            for r_key, r_val in template_object['REGIONS'].items():
+                self.add_region(r_val, r_key, shapes=template_object['SHAPES'], focus_new=False)
 
-    def save_template(self, filename = None, directory = DIR_TEMPLATES):
+    def save_template(self, filename=None, directory=DIR_TEMPLATES):
         config = ConfigObj(indent_type='    ')
         if filename is None:
             filename = str(QtGui.QFileDialog.getSaveFileName(self, 'Save Template', directory))
@@ -451,10 +449,10 @@ class Main(QtGui.QMainWindow):
                     shapelist.append(s)
         config['SHAPES'] = {}
         for s in shapelist:
-           section = {'p1': geom.norm_points(s.points[0], rng),
-                      'p2': geom.norm_points(s.points[1], rng),
-                      'type': s.shape}
-           config['SHAPES'][str(s.label)] = section
+            section = {'p1': geom.norm_points(s.points[0], rng),
+                       'p2': geom.norm_points(s.points[1], rng),
+                       'type': s.shape}
+            config['SHAPES'][str(s.label)] = section
 
         # Regions
         config['REGIONS'] = {}
@@ -465,7 +463,7 @@ class Main(QtGui.QMainWindow):
                        'digital_collision': [o[0].label for o in mo],
                        'pin_pref': [o[1] for o in mo],
                        'color': r.active_color,
-                       }
+            }
             config['REGIONS'][str(r.label)] = section
 
         config['SERIAL'] = {}
@@ -474,24 +472,22 @@ class Main(QtGui.QMainWindow):
 
         config.write()
 
-###############################################################################
-##  FEATURES Tab Updates
-###############################################################################
-
-    def tab_features_switch(self, idx_tab = 0):
+    ###############################################################################
+    ##  FEATURES Tab Updates
+    ###############################################################################
+    def tab_features_switch(self, idx_tab=0):
         """
         Switch to selected tab or create a new tab if the selected tab is
         the last, which should be the "+" tab. Switching through the tabs with
         the mousewheel can cause to create a lot of tabs unfortunately.
         TODO: Mousewheel handling.
         """
-#        if idx_tab == self.ui.tab_features.count() - 1:
-#            self.add_feature()
-#        else:
+        #        if idx_tab == self.ui.tab_features.count() - 1:
+        #            self.add_feature()
+        #        else:
         self.ui.tab_features.setCurrentIndex(idx_tab)
 
-
-    def add_feature(self, template = None, label = None, focus_new = True):
+    def add_feature(self, template=None, label=None, focus_new=True):
         """
         Create a feature from trackables and add a corresponding tab to
         the tab widget, which is linked to show and edit feature properties.
@@ -501,7 +497,7 @@ class Main(QtGui.QMainWindow):
         if not template:
             key = self.template_default['FEATURES'].iterkeys().next()
             template = self.template_default['FEATURES'][key]
-            label = 'LED_'+str(len(self.spotter.tracker.leds))
+            label = 'LED_' + str(len(self.spotter.tracker.leds))
 
         if not template['type'].lower() == 'led':
             return
@@ -516,25 +512,22 @@ class Main(QtGui.QMainWindow):
         new_tab = self.add_tab(self.ui.tab_features, TabFeatures, feature, focus_new)
         self.feature_tabs.append(new_tab)
 
-
-###############################################################################
-##  OBJECTS Tab Updates
-###############################################################################
-
-    def tab_objects_switch(self, idx_tab = 0):
+    ###############################################################################
+    ##  OBJECTS Tab Updates
+    ###############################################################################
+    def tab_objects_switch(self, idx_tab=0):
         """
         Switch to selected tab or create a new tab if the selected tab is
         the last, which should be the "+" tab. Switching through the tabs with
         the mousewheel can cause to create a lot of tabs unfortunately.
         TODO: Mousewheel handling.
         """
-#        if idx_tab == self.ui.tab_objects.count() - 1:
-#            self.add_object()
-#        else:
+        #        if idx_tab == self.ui.tab_objects.count() - 1:
+        #            self.add_object()
+        #        else:
         self.ui.tab_objects.setCurrentIndex(idx_tab)
 
-
-    def add_object(self, template = None, label = None, focus_new = True):
+    def add_object(self, template=None, label=None, focus_new=True):
         """
         Create a new object that will be linked to LEDs and/r ROIs to
         track and trigger events.
@@ -569,7 +562,7 @@ class Main(QtGui.QMainWindow):
                 # if not strict but also not enough given, fill 'em up with -1
                 # which sets those objects to being indifferent in their pin pref
                 if len(pin_prefs) < len(signal_names):
-                    pin_prefs[-(len(signal_names)-len(pin_prefs))] = -1
+                    pin_prefs[-(len(signal_names) - len(pin_prefs))] = -1
 
             # Reject all objects that still don't have a corresponding pin pref
             signal_names = signal_names[0:min(len(pin_prefs), len(signal_names))]
@@ -577,11 +570,11 @@ class Main(QtGui.QMainWindow):
             # Those still in the race, assemble into
             # List of [object label, object, pin preference]
             for isig, sn in enumerate(signal_names):
-                # Does an object with this name exist? If so, link its reference!
-#                obj = None
-#                for o in self.spotter.tracker.oois:
-#                    if o.label == on:
-#                        obj = o
+            # Does an object with this name exist? If so, link its reference!
+            #                obj = None
+            #                for o in self.spotter.tracker.oois:
+            #                    if o.label == on:
+            #                        obj = o
                 magnetic_signals.append([sn, pin_prefs[isig]])
         else:
             magnetic_signals = None
@@ -609,11 +602,9 @@ class Main(QtGui.QMainWindow):
         new_tab = self.add_tab(self.ui.tab_objects, TabObjects, object_, focus_new)
         self.object_tabs.append(new_tab)
 
-
-###############################################################################
-##  REGIONS Tab Updates
-###############################################################################
-
+    ###############################################################################
+    ##  REGIONS Tab Updates
+    ###############################################################################
     def tab_regions_switch(self, idx_tab=0):
         """
         Switch to selected tab or create a new tab if the selected tab is
@@ -621,9 +612,9 @@ class Main(QtGui.QMainWindow):
         the mousewheel can cause to create a lot of tabs unfortunately.
         TODO: Mousewheel handling.
         """
-#        if idx_tab == self.ui.tab_regions.count() - 1:
-#            self.add_region()
-#        else:
+        #        if idx_tab == self.ui.tab_regions.count() - 1:
+        #            self.add_region()
+        #        else:
         self.ui.tab_regions.setCurrentIndex(idx_tab)
 
     def add_region(self, template=None, label=None, shapes=None, focus_new=True):
@@ -636,7 +627,7 @@ class Main(QtGui.QMainWindow):
         if not template:
             key = self.template_default['REGIONS'].iterkeys().next()
             template = self.template_default['REGIONS'][key]
-            label =  'ROI_' + str(len(self.spotter.tracker.rois))
+            label = 'ROI_' + str(len(self.spotter.tracker.rois))
         if not shapes:
             shapes = self.template_default['SHAPES']
 
@@ -658,7 +649,6 @@ class Main(QtGui.QMainWindow):
             pin_prefs = []
         magnetic_objects = []
         if template['pin_pref_strict']:
-            # TODO:
             # If pin preference is strict but no/not enough pins given,
             # reject all/those without given pin preference
             if len(pin_prefs) == 0:
@@ -667,7 +657,7 @@ class Main(QtGui.QMainWindow):
             # if not strict but also not enough given, fill 'em up with -1
             # which sets those objects to being indifferent in their pin pref
             if len(pin_prefs) < len(obj_names):
-                pin_prefs[-(len(obj_names)-len(pin_prefs))] = -1
+                pin_prefs[-(len(obj_names) - len(pin_prefs))] = -1
 
         # Reject all objects that still don't have a corresponding pin pref
         obj_names = obj_names[0:min(len(pin_prefs), len(obj_names))]
@@ -694,17 +684,16 @@ class Main(QtGui.QMainWindow):
                                focus_new)
         self.region_tabs.append(new_tab)
 
-
-###############################################################################
-##  SERIAL Tab Updates
-###############################################################################
+    ###############################################################################
+    ##  SERIAL Tab Updates
+    ###############################################################################
     def serial_check(self):
         if self.spotter.chatter.is_open():
             self.spotter.chatter.read_all()
 
     def add_serial(self, serial_object, label=None):
         """
-        Serial object tab. Probably an Arduino comatible board linked to it.
+        Serial object tab. Probably an Arduino compatible board linked to it.
         """
         new_tab = self.add_tab(self.ui.tab_serial, TabSerial, serial_object)
         self.serial_tabs.append(new_tab)
@@ -715,38 +704,40 @@ def main(source, destination, fps, size, gui, serial):
     app = QtGui.QApplication([])
     window = Main(source, destination, fps, size, gui, serial)
     window.show()
-    window.raise_() # needed on OSX?
+    window.raise_()  # needed on OSX?
 
     sys.exit(app.exec_())
+
 
 if __name__ == "__main__":                                  #
 #############################################################
 
     # Command line parsing
-    ARGDICT = docopt( __doc__, version=None )
-    DEBUG   = ARGDICT['--DEBUG']
-    if DEBUG: print( ARGDICT )
+    ARGDICT = docopt(__doc__, version=None)
+    DEBUG = ARGDICT['--DEBUG']
+    if DEBUG:
+        print(ARGDICT)
 
     # Debug logging
     log = logging.getLogger('ledtrack')
-    loghdl = logging.StreamHandler()#logging.FileHandler('ledtrack.log')
-    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s') #
-    loghdl.setFormatter( formatter )
-    log.addHandler( loghdl )
+    log_handle = logging.StreamHandler()  # logging.FileHandler('ledtrack.log')
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    log_handle.setFormatter(formatter)
+    log.addHandler(log_handle)
     if DEBUG:
-        log.setLevel( logging.INFO ) #INFOERROR
+        log.setLevel(logging.INFO)  # INFOERROR
     else:
-        log.setLevel( logging.ERROR ) #INFOERROR
+        log.setLevel(logging.ERROR)  # INFOERROR
 
-    # Frame size parameter string 'WIDTHxHEIGHT' to size tupple (WIDTH, HEIGHT)
-    size = (0, 0) if not ARGDICT['--dims'] else tuple( ARGDICT['--dims'].split('x') )
+    # Frame size parameter string 'WIDTHxHEIGHT' to size tuple (WIDTH, HEIGHT)
+    size = (0, 0) if not ARGDICT['--dims'] else tuple(ARGDICT['--dims'].split('x'))
 
     gui = 'Qt' if not ARGDICT['--Headless'] else ARGDICT['--Headless']
 
     # Qt main window which instantiates spotter class with all parameters
-    main(source    = ARGDICT['--source'],
-         destination = utils.dst_file_name( ARGDICT['--outfile'] ),
-         fps         = ARGDICT['--fps'],
-         size        = size,
-         gui         = gui,
-         serial      = ARGDICT['--Serial'])
+    main(source=ARGDICT['--source'],
+         destination=utils.dst_file_name(ARGDICT['--outfile']),
+         fps=ARGDICT['--fps'],
+         size=size,
+         gui=gui,
+         serial=ARGDICT['--Serial'])

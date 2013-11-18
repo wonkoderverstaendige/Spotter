@@ -18,7 +18,6 @@ Options:
     -S --Serial      Serial port to uC [default: None]
     -d --dims DIMS   Frame size [default: 320x200]
     -D --DEBUG       Verbose debug output
-
 """
 
 import cv2
@@ -27,6 +26,7 @@ import time
 import os
 import sys
 from collections import deque
+print cv2.__version__
 
 #project libraries
 sys.path.append('./lib')
@@ -35,16 +35,18 @@ sys.path.append('./lib')
 sys.path.append('./lib/docopt')
 from docopt import docopt
 
-
 DEBUG = True
+
 
 class Frame:
     img = None
+
     def __init__(self, index, img, source_type, timestamp):
         self.index = index
         self.img = img
         self.source_type = source_type
         self.timestamp = timestamp
+
 
 class Grabber:
     capture = None          # Capture object to frame source
@@ -68,7 +70,7 @@ class Grabber:
             fps    - Float, frames per second of replay/capture
             size   - list of floats (width, height)
         """
-        # Integer: Devide ID. Else, grabber will use as path and look for file
+        # Integer: Device ID. Else, grabber will use as path and look for file
         try:
             source = int(source)
             self.source_type = 'device'
@@ -80,12 +82,14 @@ class Grabber:
                 sys.exit(0)
 
         # Creating capture handle object
-        if DEBUG: print 'Attempting to open source "' + str(source) + '" of type ' + self.source_type +  ' as capture... '
+        if DEBUG:
+            print 'Attempting to open source "' + str(source) + '" of type ' + self.source_type + ' as capture... '
         try:
             self.capture = cv2.VideoCapture(source)
         except:
             print '!!! Unable to open VideoCapture!'
-        if DEBUG: print '   --> ' + str( self.capture ) + ' returned.'
+        if DEBUG:
+            print '   --> ' + str(self.capture) + ' returned.'
 
         # Proper fps values only important if lower than what camera can provide,
         # or for video files, which are limited by CPU speed/1ms min of waitKey()
@@ -104,30 +108,31 @@ class Grabber:
             self.capture.set(cv.CV_CAP_PROP_FRAME_HEIGHT, float(self.size_init[1]))
 
         # Grab first frame, don't append to framebuffer
-        # TODO: Thats nasty for video file, losing first frame! I.e. transcoding
-        # would be lossy!
+        # TODO: That's nasty for video file, losing first frame! I.e. transcoding
         self.grab_first()
 
-    def grab_first( self ):
+    def grab_first(self):
         """ Grabs first frame to get source image parameters. """
         # Possibly eternal loop until first frame returned
-        for n in xrange(1000):
+        for n in xrange(100):
             rv, img = self.capture.read()
             if rv:
                 print "Tries before getting first frame:", n+1
+                time.sleep(0.02)
                 break
-            else:
-                print "Frame retrieval failed!"
-            time.sleep(0.02)
+        else:
+            print "Frame retrieval failed!"
+            return None
 
         # get source parameters
         self.size = tuple([int(self.capture.get(3)), int(self.capture.get(4))])
         self.fps = self.capture.get(5)
         self.fourcc = self.capture.get(6)
 
-        if DEBUG: print 'First frame grab - fps: ' + str(self.fps) + '; size: ' + str(self.size) + ';'
+        if DEBUG:
+            print 'First frame grab - fps: ' + str(self.fps) + '; size: ' + str(self.size) + ';'
 
-    def grab_next( self ):
+    def grab_next(self):
         """Grabs a new frame from the source and appends it to framebuffer."""
         rv, img = self.capture.read()
         if rv:
@@ -146,7 +151,8 @@ class Grabber:
             return None
 
     def close(self):
-        if DEBUG: print 'Closing Grabber'
+        if DEBUG:
+            print 'Closing Grabber'
         self.capture.release()
 
 
@@ -154,21 +160,21 @@ class Grabber:
 if __name__ == "__main__":
 
     # Parsing arguments
-    ARGDICT = docopt(__doc__, version=None)
-    DEBUG = ARGDICT['--DEBUG']
-    if DEBUG: print( ARGDICT )
+    arg_dict = docopt(__doc__, version=None)
+    DEBUG = arg_dict['--DEBUG']
+    if DEBUG:
+        print(arg_dict)
 
     # Width and height; WWWxHHH to tuple of ints; cv2 set requires floats
-    size = (0, 0) if not ARGDICT['--dims'] else tuple( ARGDICT['--dims'].split('x') )
-
+    size = (0, 0) if not arg_dict['--dims'] else tuple(arg_dict['--dims'].split('x'))
 
     # instantiate main class
-    main = Grabber( source = ARGDICT['--source'],
-                    fps    = ARGDICT['--fps'],
-                    size   = size )
+    main = Grabber(source=arg_dict['--source'],
+                   fps=arg_dict['--fps'],
+                   size=size)
 
     # Requirements for main loop
-    if DEBUG: print 'fps: ' + str( main.fps )
+    if DEBUG: print 'fps: ' + str(main.fps)
     if main.fps:
         t = int(1000/main.fps)
     else:
@@ -177,10 +183,10 @@ if __name__ == "__main__":
     # Main loop
     key = 0
     while True:
-        if not main.grab_next() or ( key % 0x100 == 27 ):
+        if not main.grab_next() or (key % 0x100 == 27):
             main.close()
             cv2.destroyAllWindows()
-            sys.exit( 0 )
+            sys.exit(0)
         else:
-            cv2.imshow( 'Grabber', main.framebuffer.pop() )
-            key = cv2.waitKey( t )
+            cv2.imshow('Grabber', main.framebuffer.pop())
+            key = cv2.waitKey(t)
