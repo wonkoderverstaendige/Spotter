@@ -514,10 +514,14 @@ class Main(QtGui.QMainWindow):
             return
         else:
             range_hue = map(int, template['range_hue'])
+            range_sat = map(int, template['range_sat'])
+            range_val = map(int, template['range_val'])
             range_area = map(int, template['range_area'])
             fixed_pos = template.as_bool('fixed_pos')
             feature = self.spotter.tracker.addLED(label,
                                                   range_hue,
+                                                  range_sat,
+                                                  range_val,
                                                   range_area,
                                                   fixed_pos)
         new_tab = self.add_tab(self.ui.tab_features, TabFeatures, feature, focus_new)

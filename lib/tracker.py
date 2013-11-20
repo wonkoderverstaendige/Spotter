@@ -47,13 +47,15 @@ class Tracker:
         self.leds = []
         self.adaptive_tracking = adaptive_tracking
 
-    def addLED(self, label, range_hue, min_area=5, fixed_pos=False, linked_to=None):
+    def addLED(self, label, range_hue, range_sat, range_val, min_area=5, fixed_pos=False, linked_to=None):
         if self.adaptive_tracking:
             roi = trkbl.Shape('rectangle', None, None)
         else:
             roi = trkbl.Shape('rectangle', None, None)
         led = trkbl.LED(label,
                         range_hue,
+                        range_sat,
+                        range_val,
                         min_area,
                         fixed_pos,
                         linked_to,

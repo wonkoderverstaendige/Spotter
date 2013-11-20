@@ -88,7 +88,7 @@ class LED:
 
     hue_hist = None
 
-    def __init__(self, label, range_hue, range_area, fixed_pos, linked_to, roi=None):
+    def __init__(self, label, range_hue, range_sat, range_val, range_area, fixed_pos, linked_to, roi=None):
         self.label = label
         self.detection_active = True
         self.marker_visible = True
@@ -96,8 +96,8 @@ class LED:
         # feature description ranges
         # np.array uint8 of (lowerBound, higherBound)
         self.range_hue = range_hue
-        self.range_sat = (150, 253)
-        self.range_val = (90, 253)
+        self.range_sat = range_sat
+        self.range_val = range_val
         self.range_area = range_area
 
         # mean color of range for labels/markers etc.
