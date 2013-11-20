@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'arduino_indicator_widget.ui'
 #
-# Created: Thu Apr 04 05:48:35 2013
-#      by: PyQt4 UI code generator 4.9.5
+# Created: Wed Nov 20 05:21:10 2013
+#      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_indicator(object):
     def setupUi(self, indicator):
@@ -41,7 +50,7 @@ class Ui_indicator(object):
         QtCore.QMetaObject.connectSlotsByName(indicator)
 
     def retranslateUi(self, indicator):
-        indicator.setWindowTitle(QtGui.QApplication.translate("indicator", "Form", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionArduino.setText(QtGui.QApplication.translate("indicator", "Arduino", None, QtGui.QApplication.UnicodeUTF8))
+        indicator.setWindowTitle(_translate("indicator", "Form", None))
+        self.actionArduino.setText(_translate("indicator", "Arduino", None))
 
 import icons_rc

@@ -16,6 +16,7 @@ from arduino_indicator_widget import Ui_indicator
 ON_PATH = "./ui/arduino_on.png"
 OFF_PATH = "./ui/arduino_off_warning.png"
 
+
 class SerialIndicator(QtGui.QWidget, Ui_indicator):
 
     connected = False

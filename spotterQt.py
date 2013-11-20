@@ -33,7 +33,9 @@ To do:
 # ../Spotter_Tests/LisaCheeseMaze.avi
 # media/vid/r52r2f107.avi
 
-NO_EXIT_CONFIRMATION = False
+__version__ = 0.4
+
+NO_EXIT_CONFIRMATION = True
 DIR_TEMPLATES = './config'
 DIR_SPECIFICATION = './config/template_specification.ini'
 DEFAULT_TEMPLATE = 'defaults.ini'
@@ -72,29 +74,29 @@ sys.path.append('./lib/docopt')
 from docopt import docopt
 
 
-__version__ = 0.4
-
-
 class Main(QtGui.QMainWindow):
     def __init__(self, source, destination, fps, size, gui, serial):
         QtGui.QMainWindow.__init__(self)
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.center_window()
 
         # Exit Signals
         self.ui.actionE_xit.setShortcut('Ctrl+Q')
         self.ui.actionE_xit.setStatusTip('Exit Spotter')
         self.connect(self.ui.actionE_xit, QtCore.SIGNAL('triggered()'), QtCore.SLOT('close()'))
 
-        self.centerWindow()
-
         # About window
         self.connect(self.ui.actionAbout, QtCore.SIGNAL('triggered()'), self.about)
 
         # Menubar items
+        #   File
         self.connect(self.ui.actionFile, QtCore.SIGNAL('triggered()'), self.file_dialog_video)
-
+        #   Configuration
+        self.connect(self.ui.actionLoadConfig, QtCore.SIGNAL('triggered()'), self.load_config)
+        self.connect(self.ui.actionSaveConfig, QtCore.SIGNAL('triggered()'), self.save_config)
+        self.connect(self.ui.actionResetConfig, QtCore.SIGNAL('triggered()'), self.reset_config)
 
         # Toolbar items
         self.connect(self.ui.actionRecord, QtCore.SIGNAL('toggled(bool)'), self.record_video)
@@ -111,20 +113,15 @@ class Main(QtGui.QMainWindow):
         self.glframe.sig_event.connect(self.mouse_event_to_tab)
 
         # Loading template list in folder
-        list_of_files = [file for file in os.listdir(DIR_TEMPLATES) if file.lower().endswith('ini')]
-        for f in list_of_files:
-            if not f == DEFAULT_TEMPLATE:
-                self.ui.combo_templates.addItem(f)
-
         default_path = os.path.join(os.path.abspath(DIR_TEMPLATES), DEFAULT_TEMPLATE)
-        self.template_default = self.parse_file_template(default_path, True)
-
-        self.connect(self.ui.btn_load_template, QtCore.SIGNAL('clicked()'), self.load_template)
-        self.connect(self.ui.btn_save_template, QtCore.SIGNAL('clicked()'), self.save_template)
-        self.connect(self.ui.btn_template_file, QtCore.SIGNAL('clicked()'), self.template_from_file)
-        self.connect(self.ui.btn_feature_template, QtCore.SIGNAL('clicked()'), self.load_template)
-        self.connect(self.ui.btn_object_template, QtCore.SIGNAL('clicked()'), self.load_template)
-        self.connect(self.ui.btn_region_template, QtCore.SIGNAL('clicked()'), self.load_template)
+        self.template_default = self.parse_config(default_path, True)
+        #list_of_files = [f for f in os.listdir(DIR_TEMPLATES) if f.lower().endswith('ini')]
+        #for f in list_of_files:
+        #    if not f == DEFAULT_TEMPLATE:
+        #        self.ui.combo_templates.addItem(f)
+        #self.connect(self.ui.btn_feature_template, QtCore.SIGNAL('clicked()'), self.load_template)
+        #self.connect(self.ui.btn_object_template, QtCore.SIGNAL('clicked()'), self.load_template)
+        #self.connect(self.ui.btn_region_template, QtCore.SIGNAL('clicked()'), self.load_template)
 
         # Features tab widget
         self.feature_tabs = []
@@ -145,11 +142,12 @@ class Main(QtGui.QMainWindow):
         self.serial_tabs = []
         self.add_serial(self.spotter.chatter)
 
-        # self.iconOff = QtGui.QIcon('ui/arduino_off.svg')
-        # self.iconOn = QtGui.QIcon('ui/arduino.svg')
+        # Serial/Arduino Connection status indicator
         self.arduino_indicator = SerialIndicator(self.spotter.chatter)
         self.ui.toolBar.addWidget(self.arduino_indicator)
-        # self.ui.actionArduino.setIcon(self.iconOn)
+        self.serial_timer = QtCore.QTimer(self)
+        self.serial_timer.timeout.connect(self.serial_check)
+        self.serial_timer.start(1000)
 
         # Starts main frame grabber loop
         self.timer = QtCore.QTimer(self)
@@ -158,22 +156,19 @@ class Main(QtGui.QMainWindow):
         self.glframe.resizeFrame()
         self.timer.start(30)
 
-        self.serial_timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self.serial_check)
-        self.serial_timer.start(1000)
-
     ###############################################################################
     ##  FRAME REFRESH
     ###############################################################################
     def refresh(self):
-        if self.spotter.update() is None:
+        rv = self.spotter.update()
+        if rv is None:
             self.spotter.exitMain()
             self.close()
-
-        self.glframe.frame = self.spotter.newest_frame.img
+            return
 
         # Append Object tracking markers to the list of things that have
         # to be drawn onto the GL frame
+        self.glframe.frame = self.spotter.newest_frame.img
 
         # draw crosses
         for l in self.spotter.tracker.leds:
@@ -222,6 +217,10 @@ class Main(QtGui.QMainWindow):
         self.update_current_tab()
 
     def record_video(self, state, filename=None):
+        """
+        Control recording of grabbed video.
+        TODO: Select output video file name.
+        """
         if state:
             self.spotter.start_writer()
         else:
@@ -246,11 +245,15 @@ class Main(QtGui.QMainWindow):
                                                                   platform.python_version(), QtCore.QT_VERSION_STR,
                                                                   platform.system()))
 
-    def centerWindow(self):
-        """ Centers main window on screen."""
+    def center_window(self):
+        """
+        Centers main window on screen.
+        Doesn't quite work on multi-monitor setups, as the whole screen-area is taken. But as long as the window ends
+        up in a predictable position...
+        """
         screen = QtGui.QDesktopWidget().screenGeometry()
-        size = self.geometry()
-        self.move((screen.width() - size.width()) / 2, (screen.height() - size.height()) / 2)
+        window_size = self.geometry()
+        self.move((screen.width() - window_size.width()) / 2, (screen.height() - window_size.height()) / 2)
 
     def add_tab(self, tab_widget, new_tab_class, tab_equivalent, focus_new=True):
         """
@@ -263,7 +266,7 @@ class Main(QtGui.QMainWindow):
         if focus_new:
             tab_widget.setCurrentIndex(tab_widget.count() - 2)
         else:
-            tab_widget.setCurrentIndex(0)  # tab_widget.count()-2
+            tab_widget.setCurrentIndex(0)
         return new_tab
 
     def remove_tab(self, tab_widget, tab):
@@ -347,33 +350,13 @@ class Main(QtGui.QMainWindow):
         else:
             event.ignore()
 
-        ###############################################################################
-        ##  TEMPLATES handling
-        ###############################################################################
-
-    def load_template(self):
+    ###############################################################################
+    ##  TEMPLATES handling
+    ###############################################################################
+    def parse_config(self, path, validate=True):
         """
-        Loads and creates all LEDs and Objects from templates. This will
-        probably be the place later the standard set of features/objects/ROIs
-        etc. will be handled on startup.
+        Template parsing and validation.
         """
-        active_top_tab_label = self.get_top_tab_label()
-        if active_top_tab_label == "Settings":
-            path = os.path.join(DIR_TEMPLATES,
-                                str(self.ui.combo_templates.currentText()))
-            self.template_from_file(path)
-
-    def template_from_file(self, filename=None, directory=DIR_TEMPLATES):
-        """
-        Opens file dialog to choose template file and starts parsing of it
-        """
-        if filename is None:
-            filename = str(QtGui.QFileDialog.getOpenFileName(self, 'Open Template', directory))
-        template = self.parse_file_template(filename)
-        if template is not None:
-            self.template_to_spotter(template)
-
-    def parse_file_template(self, path, validate=True):
         template = ConfigObj(path, file_error=True, stringify=True,
                              configspec=DIR_SPECIFICATION)
         if validate:
@@ -389,18 +372,23 @@ class Main(QtGui.QMainWindow):
                 return None
         return template
 
-    def template_to_spotter(self, template_object):
-        # which tab are we loading a template for?
-        active_top_tab_label = self.get_top_tab_label()
-        if active_top_tab_label == "Settings":
-            for f_key, f_val in template_object['FEATURES'].items():
+    def load_config(self, filename=None, directory=DIR_TEMPLATES):
+        """
+        Opens file dialog to choose template file and starts parsing of it
+        """
+        if filename is None:
+            filename = str(QtGui.QFileDialog.getOpenFileName(self, 'Open Template', directory))
+        print "Opening template", filename
+        template = self.parse_config(filename)
+        if template is not None:
+            for f_key, f_val in template['FEATURES'].items():
                 self.add_feature(f_val, f_key, focus_new=False)
-            for o_key, o_val in template_object['OBJECTS'].items():
+            for o_key, o_val in template['OBJECTS'].items():
                 self.add_object(o_val, o_key, focus_new=False)
-            for r_key, r_val in template_object['REGIONS'].items():
-                self.add_region(r_val, r_key, shapes=template_object['SHAPES'], focus_new=False)
+            for r_key, r_val in template['REGIONS'].items():
+                self.add_region(r_val, r_key, shapes=template['SHAPES'], focus_new=False)
 
-    def save_template(self, filename=None, directory=DIR_TEMPLATES):
+    def save_config(self, filename=None, directory=DIR_TEMPLATES):
         config = ConfigObj(indent_type='    ')
         if filename is None:
             filename = str(QtGui.QFileDialog.getSaveFileName(self, 'Save Template', directory))
@@ -440,7 +428,6 @@ class Main(QtGui.QMainWindow):
             config['OBJECTS'][str(o.label)] = section
 
         # Shapes
-        #shapelist:
         shapelist = []
         rng = (self.glframe.width, self.glframe.height)
         for r in self.spotter.tracker.rois:
@@ -462,8 +449,7 @@ class Main(QtGui.QMainWindow):
                        'digital_out': True,
                        'digital_collision': [o[0].label for o in mo],
                        'pin_pref': [o[1] for o in mo],
-                       'color': r.active_color,
-            }
+                       'color': r.active_color}
             config['REGIONS'][str(r.label)] = section
 
         config['SERIAL'] = {}
@@ -471,6 +457,9 @@ class Main(QtGui.QMainWindow):
         config['SERIAL']['last_port'] = self.spotter.chatter.serial_port
 
         config.write()
+
+    def reset_config(self):
+        pass
 
     ###############################################################################
     ##  FEATURES Tab Updates
@@ -492,7 +481,7 @@ class Main(QtGui.QMainWindow):
         Create a feature from trackables and add a corresponding tab to
         the tab widget, which is linked to show and edit feature properties.
         TODO: Create new templates when running out by fitting them into
-        the colorspace somehow.
+        the color space somehow.
         """
         if not template:
             key = self.template_default['FEATURES'].iterkeys().next()
@@ -589,15 +578,14 @@ class Main(QtGui.QMainWindow):
 
         if analog_out:
             if any(template['analog_signal']):
-                analog_signal = template['analog_signal']
-            if 'x position' in analog_signal:
-                object_.analog_pos = True
-            if 'y position' in analog_signal:
-                object_.analog_pos = True
-            if 'speed' in analog_signal:
-                object_.analog_spd = True
-            if 'direction' in analog_signal:
-                object_.analog_dir = True
+                if 'x position' in template['analog_signal']:
+                    object_.analog_pos = True
+                if 'y position' in template['analog_signal']:
+                    object_.analog_pos = True
+                if 'speed' in template['analog_signal']:
+                    object_.analog_spd = True
+                if 'direction' in template['analog_signal']:
+                    object_.analog_dir = True
 
         new_tab = self.add_tab(self.ui.tab_objects, TabObjects, object_, focus_new)
         self.object_tabs.append(new_tab)
