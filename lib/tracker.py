@@ -176,7 +176,7 @@ class Tracker:
             ranged_frame = cv2.bitwise_or(ranged_frame, redrange)
 
         # find largest contour that is >= than minimum area
-        ranged_frame = cv2.dilate(ranged_frame, np.ones((3, 3), 'uint8'))
+        ranged_frame = cv2.dilate(ranged_frame, np.ones((3, 3), np.uint8))
         contour_area, contour = self.find_contour(ranged_frame, r_area)
 
         # find centroids of the contour returned
@@ -194,34 +194,35 @@ class Tracker:
 
     def find_contour(self, frame, range_area):
         """
-        Return contour with largest area. Returns None if no contour
-        larger than minimum area (range_area[0])
+        Return contour with largest area. Returns None if no contour within
+        admissible range_area is found.
         """
-        contours, hierarchy = cv2.findContours( frame,
-                                                cv2.RETR_LIST,
-                                                cv2.CHAIN_APPROX_SIMPLE )
+        contours, hierarchy = cv2.findContours(frame,
+                                               cv2.RETR_LIST,
+                                               cv2.CHAIN_APPROX_SIMPLE)
         largest_area = 0
         best_cnt = None
+        min_area = range_area[0]
+        max_area = range_area[1]
         for cnt in contours:
             area = cv2.contourArea(cnt.astype(int))
-            if area >= range_area[0] and area > largest_area:
-                largest_area = area
-                best_cnt = cnt
-
+            if area > largest_area and area >= min_area:
+                if max_area > 0 and area < range_area[1]:
+                    largest_area = area
+                    best_cnt = cnt
         return largest_area, best_cnt
 
     def track_camshift( self, hsv_frame, led_list):
-        """ camshifting shifty histograms
-        """
-        kernel = np.ones( (3,3), 'uint8' )
-        dilatedframe = cv2.dilate( hsv_frame, kernel )
-        h, s, v = cv2.split(dilatedframe)
+        """ CAMshifting shifty histograms """
+        kernel = np.ones((3, 3), np.uint8)
+        dilated_frame = cv2.dilate(hsv_frame, kernel)
+        h, s, v = cv2.split(dilated_frame)
         rv, st = cv2.threshold(s, self.min_sat, 1, cv2.THRESH_BINARY)
         pos = (100, 100)
         return pos
 
     def close(self):
-        """ Nothing to do here as of moving chatter to spotter. """
+        """ Nothing to do here. """
         pass
 
 
