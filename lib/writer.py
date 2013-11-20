@@ -45,6 +45,7 @@ OVERWRITE = False
  #seconds till writer process times out after having received last alive packet
 TIMEOUT = 10
 
+
 class Writer:
     codecs = ( ('XVID'), ('DIVX'), ('IYUV') )
     destination = None
@@ -60,7 +61,7 @@ class Writer:
         self.pipe = pipe
 
         self.fps = fps
-        # Video Writer takes tuple of INTS, not FLOATS!
+        # Video Writer takes tuple of INTs, not floats!
         self.size = tuple(int(i) for i in size)
 
         # Explode the string into characters as required by archaic VideoWriter
@@ -70,7 +71,7 @@ class Writer:
 
         # Only important if lower than what camera can provide, or for videos
         try:
-            fps = float( 29.97 if not fps else fps )
+            fps = float(29.97 if not fps else fps)
         except ValueError:
             fps = 29.97
 

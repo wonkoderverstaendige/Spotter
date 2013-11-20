@@ -374,10 +374,13 @@ class Main(QtGui.QMainWindow):
 
     def load_config(self, filename=None, directory=DIR_TEMPLATES):
         """
-        Opens file dialog to choose template file and starts parsing of it
+        Opens file dialog to choose template file and starts parsing it
         """
         if filename is None:
             filename = str(QtGui.QFileDialog.getOpenFileName(self, 'Open Template', directory))
+        if not len(filename):
+            return None
+
         print "Opening template", filename
         template = self.parse_config(filename)
         if template is not None:
@@ -389,13 +392,16 @@ class Main(QtGui.QMainWindow):
                 self.add_region(r_val, r_key, shapes=template['SHAPES'], focus_new=False)
 
     def save_config(self, filename=None, directory=DIR_TEMPLATES):
+        """
+        Store a full set of configuration to file.
+        """
         config = ConfigObj(indent_type='    ')
+
         if filename is None:
             filename = str(QtGui.QFileDialog.getSaveFileName(self, 'Save Template', directory))
-            if len(filename):
-                config.filename = filename
-            else:
-                return
+        if not len(filename):
+            return
+        config.filename = filename
 
         # General options and comment
         config['TEMPLATE'] = {}
@@ -456,9 +462,13 @@ class Main(QtGui.QMainWindow):
         config['SERIAL']['auto'] = self.spotter.chatter.auto
         config['SERIAL']['last_port'] = self.spotter.chatter.serial_port
 
+        # and finally
         config.write()
 
     def reset_config(self):
+        """
+        Remove everything from everything to start over!
+        """
         pass
 
     ###############################################################################
