@@ -47,7 +47,7 @@ class Tracker:
         self.leds = []
         self.adaptive_tracking = adaptive_tracking
 
-    def addLED(self, label, range_hue, range_sat, range_val, min_area=5, fixed_pos=False, linked_to=None):
+    def addLED(self, label, range_hue, range_sat, range_val, range_area, fixed_pos=False, linked_to=None):
         if self.adaptive_tracking:
             roi = trkbl.Shape('rectangle', None, None)
         else:
@@ -56,7 +56,7 @@ class Tracker:
                         range_hue,
                         range_sat,
                         range_val,
-                        min_area,
+                        range_area,
                         fixed_pos,
                         linked_to,
                         roi)
@@ -81,13 +81,13 @@ class Tracker:
         self.rois.append(roi)
         return roi
 
-    def track_feature(self, frame, method = 'hsv_thresh', scale=1.0):
+    def track_feature(self, frame, method='hsv_thresh', scale=1.0):
         """
-        Intermediate method selecting tracking method and seperating those
-        tracking methods from the frames stored in the instantiatd Tracker
+        Intermediate method selecting tracking method and separating those
+        tracking methods from the frames stored in the instantiated Tracker
 
         :param:scale
-            Resizes frame before tracking, computation decreases scale^2.
+            Resize frame before tracking, computation decreases scale^2.
         """
         self.scale = scale*1.0 #float
         if self.scale > 1.0:
@@ -101,11 +101,11 @@ class Tracker:
                 self.frame = cv2.cvtColor(frame.img, cv2.COLOR_BGR2HSV)
             else:
                 self.frame = cv2.cvtColor(cv2.resize(frame.img,
-                                                 (0, 0),
-                                                 fx=self.scale,
-                                                 fy=self.scale,
-                                                 interpolation=cv2.INTER_LINEAR),
-                                     cv2.COLOR_BGR2HSV)
+                                          (0, 0),
+                                          fx=self.scale,
+                                          fy=self.scale,
+                                          interpolation=cv2.INTER_LINEAR),
+                                          cv2.COLOR_BGR2HSV)
 
             for led in self.leds:
                 if led.detection_active:
@@ -118,7 +118,6 @@ class Tracker:
         Tracks LEDs from a list in a HSV frame by thresholding
         hue, saturation, followed by thresholding for each LEDs hue.
         Large enough contours will have coords returned, or None
-
         """
         r_hue = l.range_hue
         r_sat = l.range_sat
@@ -128,7 +127,7 @@ class Tracker:
 
         # determine array slices if adaptive tracking is used
         if (l.adaptive_tracking and self.adaptive_tracking) \
-            and l.search_roi is not None and l.search_roi.points is not None:
+        and l.search_roi is not None and l.search_roi.points is not None:
             (ax, ay), (bx, by) = l.search_roi.points
             ax *= self.scale
             bx *= self.scale
@@ -177,8 +176,8 @@ class Tracker:
             ranged_frame = cv2.bitwise_or(ranged_frame, redrange)
 
         # find largest contour that is >= than minimum area
-        ranged_frame = cv2.dilate( ranged_frame, np.ones((3,3), 'uint8'))
-        contour_area, contour = self.findContour(ranged_frame, r_area)
+        ranged_frame = cv2.dilate(ranged_frame, np.ones((3, 3), 'uint8'))
+        contour_area, contour = self.find_contour(ranged_frame, r_area)
 
         # find centroids of the contour returned
         if contour is not None:
@@ -193,7 +192,7 @@ class Tracker:
             # Couldn't find a good enough spot
             l.pos_hist.append(None)
 
-    def findContour(self, frame, range_area):
+    def find_contour(self, frame, range_area):
         """
         Return contour with largest area. Returns None if no contour
         larger than minimum area (range_area[0])
@@ -211,7 +210,7 @@ class Tracker:
 
         return largest_area, best_cnt
 
-    def track_camshift( self, hsv_frame, led_list ):
+    def track_camshift( self, hsv_frame, led_list):
         """ camshifting shifty histograms
         """
         kernel = np.ones( (3,3), 'uint8' )
@@ -221,7 +220,7 @@ class Tracker:
         pos = (100, 100)
         return pos
 
-    def close( self ):
+    def close(self):
         """ Nothing to do here as of moving chatter to spotter. """
         pass
 

@@ -172,7 +172,7 @@ class OOI:
 
     slots = None
 
-    def __init__( self, led_list, label, traced=False, tracked=True, magnetic_signals=None):
+    def __init__(self, led_list, label, traced=False, tracked=True, magnetic_signals=None):
         self.linked_leds = led_list
         self.label = label
         self.traced = traced
