@@ -89,7 +89,8 @@ class GLFrame(QtOpenGL.QGLWidget):
         """
         while self.jobs:
             j = self.jobs.pop()
-            j[0](*j[1:])
+            draw_func = j[0]
+            draw_func(*j[1:])
 
     def resizeGL(self, width, height):
         """ Resize frame when widget resized """
@@ -218,6 +219,8 @@ class GLFrame(QtOpenGL.QGLWidget):
         glRectf(points[0][0]*1.0/self.width, points[0][1]*1.0/self.height, points[1][0]*1.0/self.width, points[1][1]*1.0/self.height)
 
     def drawBox(self, points, color):
+        if points is None:
+            return
         p1x = (points[0][0]*1.0)/self.width
         p1y = (points[0][1]*1.0)/self.height
         p2x = (points[1][0]*1.0)/self.width
