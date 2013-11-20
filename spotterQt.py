@@ -240,7 +240,7 @@ class Main(QtGui.QMainWindow):
         QtGui.QMessageBox.about(self, "About",
                                 """<b>Spotter</b> v%s
                    <p>Copyright &#169; 2012-2013 <a href=mailto:ronny.eichler@gmail.com>Ronny Eichler</a>.
-                   <p>This application is under heavy development. Use on your own risk.
+                   <p>This application is under heavy development. Use at your own risk.
                    <p>Python %s -  PyQt4 version %s - on %s""" % (__version__,
                                                                   platform.python_version(), QtCore.QT_VERSION_STR,
                                                                   platform.system()))
@@ -384,12 +384,19 @@ class Main(QtGui.QMainWindow):
         print "Opening template", filename
         template = self.parse_config(filename)
         if template is not None:
+            abs_pos = template['TEMPLATE']['absolute_positions']
+
             for f_key, f_val in template['FEATURES'].items():
                 self.add_feature(f_val, f_key, focus_new=False)
+
             for o_key, o_val in template['OBJECTS'].items():
                 self.add_object(o_val, o_key, focus_new=False)
+
             for r_key, r_val in template['REGIONS'].items():
-                self.add_region(r_val, r_key, shapes=template['SHAPES'], focus_new=False)
+                self.add_region(r_val, r_key,
+                                shapes=template['SHAPES'],
+                                abs_pos=abs_pos,
+                                focus_new=False)
 
     def save_config(self, filename=None, directory=DIR_TEMPLATES):
         """
@@ -435,16 +442,21 @@ class Main(QtGui.QMainWindow):
 
         # Shapes
         shapelist = []
-        rng = (self.glframe.width, self.glframe.height)
+        #rng = (self.glframe.width, self.glframe.height)
         for r in self.spotter.tracker.rois:
             for s in r.shapes:
                 if not s in shapelist:
                     shapelist.append(s)
         config['SHAPES'] = {}
         for s in shapelist:
-            section = {'p1': geom.norm_points(s.points[0], rng),
-                       'p2': geom.norm_points(s.points[1], rng),
+            section = {'p1': s.points[0],
+                       'p2': s.points[1],
                        'type': s.shape}
+            # if one would store the points normalized instead of absolute
+            # But that would require setting the flag in TEMPLATES section
+            #section = {'p1': geom.norm_points(s.points[0], rng),
+            #           'p2': geom.norm_points(s.points[1], rng),
+            #           'type': s.shape}
             config['SHAPES'][str(s.label)] = section
 
         # Regions
@@ -615,7 +627,7 @@ class Main(QtGui.QMainWindow):
         #        else:
         self.ui.tab_regions.setCurrentIndex(idx_tab)
 
-    def add_region(self, template=None, label=None, shapes=None, focus_new=True):
+    def add_region(self, template=None, label=None, shapes=None, abs_pos=True, focus_new=True):
         """
         Create a new region of interest that will be that will be linked
         to Objects with conditions to trigger events.
@@ -634,10 +646,13 @@ class Main(QtGui.QMainWindow):
         for s_key in template['shapes']:
             if s_key in shapes:
                 shape_type = shapes[s_key]['type']
-                points = geom.scale_points([shapes[s_key]['p1'],
-                                            shapes[s_key]['p2']],
-                                           (self.glframe.width,
-                                            self.glframe.height))
+                if abs_pos:
+                    points = [shapes[s_key]['p1'], shapes[s_key]['p2']]
+                else:
+                    points = geom.scale_points([shapes[s_key]['p1'],
+                                                shapes[s_key]['p2']],
+                                               (self.glframe.width,
+                                                self.glframe.height))
                 shape_list.append([shape_type, points, s_key])
 
         # Magnetic objects from collision list

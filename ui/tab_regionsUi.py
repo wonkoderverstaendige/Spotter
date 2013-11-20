@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'tab_regionsUi.ui'
 #
-# Created: Wed Nov 20 05:21:10 2013
-#      by: PyQt4 UI code generator 4.9.6
+# Created: Wed Nov 20 20:24:17 2013
+#      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -78,14 +78,6 @@ class Ui_tab_regions(object):
         self.spin_shape_x.setMaximum(2048)
         self.spin_shape_x.setObjectName(_fromUtf8("spin_shape_x"))
         self.horizontalLayout.addWidget(self.spin_shape_x)
-        self.spin_shape_normx = QtGui.QDoubleSpinBox(self.page_regions_overview)
-        self.spin_shape_normx.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
-        self.spin_shape_normx.setDecimals(3)
-        self.spin_shape_normx.setMinimum(-2.0)
-        self.spin_shape_normx.setMaximum(2.0)
-        self.spin_shape_normx.setSingleStep(0.05)
-        self.spin_shape_normx.setObjectName(_fromUtf8("spin_shape_normx"))
-        self.horizontalLayout.addWidget(self.spin_shape_normx)
         self.gridLayout_5.addLayout(self.horizontalLayout, 3, 0, 1, 2)
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
@@ -102,14 +94,6 @@ class Ui_tab_regions(object):
         self.spin_shape_y.setMaximum(2048)
         self.spin_shape_y.setObjectName(_fromUtf8("spin_shape_y"))
         self.horizontalLayout_2.addWidget(self.spin_shape_y)
-        self.spin_shape_normy = QtGui.QDoubleSpinBox(self.page_regions_overview)
-        self.spin_shape_normy.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
-        self.spin_shape_normy.setDecimals(3)
-        self.spin_shape_normy.setMinimum(-2.0)
-        self.spin_shape_normy.setMaximum(2.0)
-        self.spin_shape_normy.setSingleStep(0.05)
-        self.spin_shape_normy.setObjectName(_fromUtf8("spin_shape_normy"))
-        self.horizontalLayout_2.addWidget(self.spin_shape_normy)
         self.gridLayout_5.addLayout(self.horizontalLayout_2, 5, 0, 1, 2)
         self.tree_region_shapes = QtGui.QTreeWidget(self.page_regions_overview)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)

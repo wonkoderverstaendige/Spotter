@@ -37,17 +37,17 @@ def scale_points(pts, rng):
     """
     try:
         is_list = len(pts[0]) > 1
-    except: # Exception as inst
+    except:  # Exception as inst
         pts = [pts]
         is_list = False
 
     outpts = []
     if type(rng[0]) == int and type(rng[1]) == int:
         for p in pts:
-            outpts.append( [int(p[0]*rng[0]), int(p[1]*rng[1])] )
+            outpts.append([int(p[0]*rng[0]), int(p[1]*rng[1])])
     else:
         for p in pts:
-            outpts.append( [p[0]*rng[0], p[1]*rng[1]] )
+            outpts.append([p[0]*rng[0], p[1]*rng[1]])
 
     if is_list:
         return outpts

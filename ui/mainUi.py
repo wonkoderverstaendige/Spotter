@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Wed Nov 20 05:21:09 2013
-#      by: PyQt4 UI code generator 4.9.6
+# Created: Wed Nov 20 20:24:17 2013
+#      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
-        MainWindow.resize(333, 388)
+        MainWindow.resize(594, 388)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -45,7 +45,7 @@ class Ui_MainWindow(object):
         self.frame_video = QtGui.QHBoxLayout()
         self.frame_video.setSpacing(0)
         self.frame_video.setObjectName(_fromUtf8("frame_video"))
-        spacerItem = QtGui.QSpacerItem(100, 0, QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Minimum)
+        spacerItem = QtGui.QSpacerItem(320, 0, QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Minimum)
         self.frame_video.addItem(spacerItem)
         self.frame = QtGui.QFrame(self.centralwidget)
         self.frame.setFrameShape(QtGui.QFrame.StyledPanel)
@@ -170,7 +170,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addLayout(self.frame_parameters)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 333, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 594, 21))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menu_File = QtGui.QMenu(self.menubar)
         self.menu_File.setObjectName(_fromUtf8("menu_File"))
