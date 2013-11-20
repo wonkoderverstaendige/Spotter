@@ -56,7 +56,7 @@ class Writer:
     recording = False
     ts_last = time.clock()
 
-    def __init__( self, fps, size, queue, pipe, codec='XVID' ):
+    def __init__(self, fps, size, queue, pipe, codec='XVID'):
         self.queue = queue
         self.pipe = pipe
 
@@ -67,7 +67,7 @@ class Writer:
         # Explode the string into characters as required by archaic VideoWriter
         self.codec = codec
         self.cc = list(codec)
-        self.printflush(codec)
+        self.print_flush(codec)
 
         # Only important if lower than what camera can provide, or for videos
         try:
@@ -79,16 +79,17 @@ class Writer:
 
     def start(self, dst=None):
         # check if output file exists
-        dst = self.time_string() + '.avi'
+        if dst is None:
+            dst = utils.time_string() + '.avi'
         destination = utils.dst_file_name(dst)
         if os.path.isfile(destination) and not OVERWRITE:
-            self.printflush('Destination file exists, stopped.', True)
+            self.print_flush('Destination file exists, stopped.', True)
             return
         self.destination = destination
-        self.printflush(self.destination)
+        self.print_flush(self.destination)
 
         # VideoWriter object
-        self.printflush('Writer Init - fps: ' + str(self.fps) + '; size: ' + str(self.size) + ';')
+        self.print_flush('Writer Init - fps: ' + str(self.fps) + '; size: ' + str(self.size) + ';')
 
         self.writer = cv2.VideoWriter(
                         self.destination,
@@ -103,10 +104,10 @@ class Writer:
         self.logger.addHandler(loghandler)
         self.logger.setLevel(logging.INFO)
 
-        self.printflush(str(self.writer) + ' destination: ' + self.destination)
+        self.print_flush(str(self.writer) + ' destination: ' + self.destination)
         self.recording = True
 
-    def printflush(self, string, override = False):
+    def print_flush(self, string, override=False):
         """ Prints a string and flushes the buffered output, so that prints
         in this sub-process show up in the parent process terminal output."""
         if DEBUG or override:
@@ -114,7 +115,7 @@ class Writer:
             sys.stdout.flush()
 
     def stop(self):
-#        self.printflush("STOP METHOD")
+#        self.print_flush("STOP METHOD")
         self.destination = None
         self.logger = None
 
@@ -138,7 +139,7 @@ class Writer:
         while 42 and self.alive:
             # Process should terminate if not being talked to for a while
             if time.clock() - self.ts_last > TIMEOUT:
-                self.printflush("Terminating unattended Writer process!")
+                self.print_flush("Terminating unattended Writer process!")
                 self.close()
                 sys.exit(1)
 
@@ -152,21 +153,21 @@ class Writer:
                 cmd = self.pipe.recv()
                 self.ts_last = time.clock()
                 if cmd == 'terminate':
-                    self.printflush('Writer received termination signal')
+                    self.print_flush('Writer received termination signal')
                     # don't close yet, first empty buffer!
                     self.alive = False
                 elif cmd == 'stop':
-                    self.printflush('Writer received stop signal')
+                    self.print_flush('Writer received stop signal')
                     self.stop()
                 elif cmd == 'start':
-                    self.printflush('Writer received start signal')
+                    self.print_flush('Writer received start signal')
                     self.start()
                 elif cmd == 'alive':
                     pass
 
             while not self.queue.empty():
                 item = self.queue.get()
-#                self.printflush("removed item")
+#                self.print_flush("removed item")
                 if self.writer is not None and self.recording:
                     self.write(item)
 
@@ -176,14 +177,10 @@ class Writer:
         if not self.alive:
             self.close()
 
-    def time_string(self):
-        return time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
-#        return '_'.join(map(str, time.localtime())[0:6])
-
     def close(self):
         print 'Closing Writer'
         if self.writer is not None:
-            del(self.writer)
+            del self.writer
             self.writer = None
 
 

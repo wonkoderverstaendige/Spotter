@@ -10,9 +10,16 @@ from sys import float_info
 import numpy as np
 import cv2
 import math
-#import time
+import time
 
-def BGRpix2HSV( pixel ):
+
+def time_string():
+    """ Return string of current time and date """
+    return time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
+#        return '_'.join(map(str, time.localtime())[0:6])
+
+
+def BGRpix2HSV(pixel):
     """ Converts BGR color information of a single pixel to HSV """
     B = pixel[0]/255.
     G = pixel[1]/255.
@@ -45,8 +52,7 @@ def BGRpix2HSV( pixel ):
 
     return int(H), int(S), int(V)
 
-
-def HSVpix2RGB( pixel ):
+def HSVpix2RGB(pixel):
     """ Converts HSV color information of a single pixel to RGB """
     h, s, v = pixel
     S = s/255.0
@@ -81,7 +87,7 @@ def mean_hue(range_hue):
     Overly complicated formula to calculate the center color of the 
     HSV range, used for coloring of related labels etc.
     """
-    if range_hue == None:
+    if range_hue is None:
         return None
         
     if range_hue[0] <= range_hue[1]:
@@ -95,7 +101,7 @@ def mean_hue(range_hue):
     return mean_hue
 
 
-def drawPointer( frame, p1, p2, color=(255, 255, 255), length = 50):
+def drawPointer(frame, p1, p2, color=(255, 255, 255), length = 50):
     """ draws line prependicular to midpoint of line section between p1 and p2"""
     # TODO: - scale line by length
 
@@ -111,26 +117,25 @@ def drawPointer( frame, p1, p2, color=(255, 255, 255), length = 50):
     cv2.line(frame, line_start, line_end, color )
 
 
-def drawTrace( frame, history, color, N ):
-    N = min( N, len(history) )
+def drawTrace(frame, history, color, N):
+    N = min(N, len(history))
     if N >= 2:
         for n in range(N-1, 0, -1):
-            col = int( color/N * (N-n) )
+            col = int(color/N * (N-n))
             if history[-(n+1)] is None:
                 continue
             elif history[-n] is None:
-                n+=1
+                n += 1
                 continue
             else:
                 cv2.line(frame,
                          tuple(history[-n]),
                          tuple(history[-(n+1)]),
                          [col, col, col],
-                         1 )
+                         1)
 
 
-
-def drawCross( frame, coords, size, color, gap = 7 ):
+def drawCross(frame, coords, size, color, gap=7):
     """ Draws cross into BGR frame.
     ( frame = BGR image, coords = tuple(2 ints), size=int, color=tuple(3 ints), gap = int )
     """
@@ -145,39 +150,28 @@ def drawCross( frame, coords, size, color, gap = 7 ):
     cv2.line(frame, (x, y + size + gap), (x, y + gap), color, 1)
 
 
-def dst_file_name( destination ):
+def dst_file_name(destination):
     """ Allows to automatically generate the output file name from tokens:
         %date-FORMAT        FORMAT as YYYYMMDDhhmmss
         %iterator           If file with base till this point exists, iterate
         $fixedString        $Animal52
     """
     # TODO: Destination file name generation
-    if destination == 'None':
+    if destination is 'None':
         return None
     else:
         return destination
+
 
 def binary_prefix(n_bytes):
     prefixes = {'0': 'B', '1': 'KiB', '2': 'MiB', '3': 'GiB', '4': 'TiB',
                 '5': 'PiB', '6': 'EiB', '7': 'ZiB', '8': 'YiB'}
     
     for n in xrange(10):
-        if (n_bytes/math.pow(2, 10*n) < 1000):
+        if n_bytes/math.pow(2, 10*n) < 1000:
             num_str = '{0:.2f} ' + prefixes[str(n)]
             return num_str.format(n_bytes/math.pow(2, 10*n))
-        
-#    if n_bytes > math.pow(2, 60):
-#        return '%d EiB'.format( % n_bytes/math.pow(2, 60)
-#    if n_bytes > math.pow(2, 50):
-#        return str(n_bytes/math.pow(2, 50)) + ' MiB'
-#    if n_bytes > math.pow(2, 40):
-#        return str(n_bytes/math.pow(2, 40)) + ' TiB'    
-#    if n_bytes > math.pow(2, 30):
-#        return str(n_bytes/math.pow(2, 30)) + ' GiB'
-#    if n_bytes > math.pow(2, 20):
-#        return str(n_bytes/math.pow(2, 20)) + ' MiB'
-#    if n_bytes > math.pow(2, 10):
-#        return str(n_bytes/math.pow(2, 10)) + ' KiB'
+
 
 class HSVHist:
     """ Calculate and show HSV histogram for the current frame shown
@@ -192,19 +186,18 @@ class HSVHist:
     log = True
     binwidth = None
 
-    def __init__( self, width = 180, height = 100, binwidth = 4 ):
-        if not width == None:
+    def __init__(self, width = 180, height=100, binwidth=4):
+        if not width is None:
             self.map_width = width
 
-        if not height == None:
+        if not height is None:
             self.map_height = height
 
         self.binwidth = binwidth
 
         self.createMap()
 
-
-    def createMap( self ):
+    def createMap(self):
         """ Creates a HSV map with given size, best to give multiples of 180
             width
             height"""

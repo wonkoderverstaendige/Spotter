@@ -283,7 +283,7 @@ if __name__ == '__main__':                                  #
             cv2.imshow( 'Tracker', frame )
             key = cv2.waitKey(1)
 
-        n+=1
+        n += 1
 
     # Exiting gracefully
     tt = time.clock() - ts
