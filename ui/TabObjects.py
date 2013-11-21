@@ -14,24 +14,25 @@ from tab_objectsUi import Ui_tab_objects
 
 tab_type = "object"
 
+
 class Tab(QtGui.QWidget, Ui_tab_objects):
 
     label = None
     accept_events = False
     tab_type = "object"
 
-    def __init__(self, parent, object_handle, label = None):
+    def __init__(self, parent, object_handle, label=None):
         self.object = object_handle
         self.parent = parent
 
         self.all_features = self.parent.spotter.tracker.leds
         self.all_regions = self.parent.spotter.tracker.rois
 
-        if label == None:
+        if label is None:
             self.label = self.object.label
         else:
             self.label = label
-            self.object.label  = label
+            self.object.label = label
         super(QtGui.QWidget, self).__init__(parent)
         self.setupUi(self)
 
@@ -51,7 +52,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         self.update()
 
     def update(self):
-        if self.label == None:
+        if self.label is None:
             print "empty tab"
             return
 
@@ -68,8 +69,8 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
             self.ckb_analog_pos.setChecked(self.object.analog_pos)
 
         if self.object.position:
-            self.lbl_x.setText(str(self.object.position[0]))
-            self.lbl_y.setText(str(self.object.position[1]))
+            self.lbl_x.setText(str(int(self.object.position[0])))
+            self.lbl_y.setText(str(int(self.object.position[1])))
         else:
             self.lbl_x.setText('---')
             self.lbl_y.setText('---')
@@ -82,7 +83,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
             self.dial_direction.setValue(self.object.angle)
 
     def update_object(self):
-        if self.label == None:
+        if self.label is None:
             print "Empty object tab! This should not have happened!"
             return
         self.object.tracked = self.ckb_track.isChecked()
@@ -91,7 +92,6 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
 
     def process_event(self, event):
         pass
-
 
 ###############################################################################
 ## FEATURE LIST
@@ -160,7 +160,6 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         """ Remove a specific feature from the list. """
         self.object.linked_leds.pop(self.object.linked_leds.index(feature))
 
-
 ###############################################################################
 ## SLOT TABLE
 ###############################################################################
@@ -168,7 +167,6 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         for i, s in enumerate(self.object.slots):
             self.slots_add_row(s, i)
         self.slots_resize_columns()
-
 
     def refresh_slot_table(self):
         """
@@ -207,7 +205,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
                         cbx.setCurrentIndex(cbx.count()-1)
             else:
                 # Nothing selected, but slot has a pin!
-                if (slot.pin is not None):
+                if slot.pin is not None:
                     pin_idx = pins.index(slot.pin)
                     if pin_idx < 0:
                         cbx.setCurrentIndex(cbx.count()-1)
@@ -227,12 +225,11 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
                 cbx.model().setData(j, QtCore.QVariant(enabled[i]), QtCore.Qt.UserRole-1)
 
     def slot_table_changed(self):
-          for i in xrange(self.table_slots.rowCount()):
+        for i in xrange(self.table_slots.rowCount()):
             cbx = self.table_slots.cellWidget(i, 1)
             slot = self.object.slots[i]
             selected_pin = cbx.currentIndex()
             pins, enabled = self.available_pins(slot)
-
             if selected_pin < len(pins):
                 if not slot.pin is pins[selected_pin]:
                     slot.attach_pin(pins[selected_pin])
@@ -247,10 +244,9 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
             item_list.append(QtGui.QTableWidgetItem(row[i]))
         return item_list
 
-
     def slots_add_row(self, slot, pos=None):
         row_items = self._table_slot_row([slot.label, '', 'IGNORE'])
-        if pos == None:
+        if pos is None:
             pos = len(self.slots_items)
         self.table_slots.insertRow(pos)
         for j, item in enumerate(row_items):
@@ -258,16 +254,13 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
                 self.table_slots.setCellWidget(pos, j, self._combo_pins(slot))
             self.table_slots.setItem(pos, j, item)
 
-
     def slots_remove_row(self, index):
         self.table_slots.removeRow(index)
-
 
     def slots_resize_columns(self):
         self.table_slots.resizeColumnsToContents()
         self.table_slots.resizeRowsToContents()
         self.table_slots.horizontalHeader().setStretchLastSection(True)
-
 
     def lock_slot_table(self, state):
         self.table_slots.setEnabled(state)
@@ -285,7 +278,6 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
 #            print "pew pew"
 #            return
 #        return QtCore.QObject.eventFilter(self, filteredObj, event)
-
 
 ###############################################################################
 ## PIN LIST
@@ -306,7 +298,6 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
 
         self.connect(cbx, QtCore.SIGNAL('currentIndexChanged(int)'), self.slot_table_changed)
         return cbx
-
 
     def available_pins(self, slot):
         """
