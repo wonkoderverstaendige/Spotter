@@ -7,17 +7,15 @@ Created on Sun Jan 13 14:19:24 2013
 """
 
 import sys
+from PyQt4 import QtGui, QtCore
 #import math
 #import random
-from PyQt4 import QtGui, QtCore
 
 sys.path.append('./ui')
 from tab_regionsUi import Ui_tab_regions
 
 sys.path.append('./lib')
 import geometry as geom
-
-#tab_type = "region"
 
 
 class Tab(QtGui.QWidget, Ui_tab_regions):
@@ -121,9 +119,10 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
                 dy = event.y() - self.coords_last[1]
                 self.coords_last = [event.x(), event.y()]
                 if modifiers == QtCore.Qt.ShiftModifier:
-                     self.move_shape(dx, dy)
-                else:
                     self.move_region(dx, dy)
+                else:
+                    self.move_shape(dx, dy)
+
                 self.spin_shape = None
                 self.update_spin_boxes()
         elif event_type == "mouseRelease":
@@ -152,7 +151,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
 
                 shape_points = [self.coords_start, self.coords_end]
                 if shape_type and shape_points:
-                    self.add_shape(shape_type, shape_points, shape_type)
+                    self.add_shape(shape_type, shape_points)
         else:
             print 'Event not understood. Hulk sad and confused.'
 
@@ -164,7 +163,6 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
             print "Empty object tab! This should not have happened!"
             return
 
-
 ###############################################################################
 ## SHAPE LIST
 ###############################################################################
@@ -174,7 +172,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         if n_items and not self.tree_region_shapes.currentItem():
             self.tree_region_shapes.setCurrentItem(self.tree_region_shapes.topLevelItem(0))
 
-    def add_shape(self, shape_type, shape_points, shape_label):
+    def add_shape(self, shape_type, shape_points):  # , shape_label
         """
         Add a new geometric shape to the region. First, create a new
         item widget. Add it to the region object via its add_shape function
@@ -261,9 +259,10 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
             self.spin_shape = self.tree_region_shapes.currentItem().shape
             return
 
-    def shape_item_changed(self, item, column):
+    @staticmethod
+    def shape_item_changed(item, column):
         """
-        Activate/deactive shapes. If not active, will not be included in
+        Activate/inactive shapes. If not active, will not be included in
         collision detection and will not be drawn/will be drawn in a distinct
         way (i.e. only outline or greyed out?)
         """
@@ -272,7 +271,6 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         else:
             item.shape.active = False
         item.shape.label = item.text(0)
-
 
 ###############################################################################
 ## SLOT TABLE
@@ -339,7 +337,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
                         cbx.setCurrentIndex(cbx.count()-1)
             else:
                 # Nothing selected, but slot has a pin!
-                if (slot.pin is not None):
+                if slot.pin is not None:
                     pin_idx = pins.index(slot.pin)
                     if pin_idx < 0:
                         cbx.setCurrentIndex(cbx.count()-1)
@@ -353,9 +351,8 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
             pins, enabled = self.available_pins(self.region.slots[row])
             cbx = self.table_slots.cellWidget(row, 1)
             for i in xrange(len(pins)):
-                j = cbx.model().index(i,0)
+                j = cbx.model().index(i, 0)
                 cbx.model().setData(j, QtCore.QVariant(enabled[i]), QtCore.Qt.UserRole-1)
-
 
     def slot_table_changed(self):
         for i in xrange(self.table_slots.rowCount()):
@@ -372,8 +369,8 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
                     slot.detach_pin()
         self.refresh_slot_table()
 
-
-    def _table_slot_row(self, row):
+    @staticmethod
+    def _table_slot_row(row):
         """ List of row widget items. """
         item_list = []
         for i in xrange(len(row)):
@@ -424,7 +421,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
             cbx.addItem(p.label)
             # Disable all pins already in use somewhere
             # From: http://stackoverflow.com/questions/11099975/pyqt-set-enabled-property-of-a-row-of-qcombobox
-            j = cbx.model().index(i,0)
+            j = cbx.model().index(i, 0)
             cbx.model().setData(j, QtCore.QVariant(enable[i]), QtCore.Qt.UserRole-1)
         cbx.insertSeparator(len(pins))
         cbx.addItem('None')

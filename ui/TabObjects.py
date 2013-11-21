@@ -12,8 +12,6 @@ from PyQt4 import QtGui, QtCore
 sys.path.append('./ui')
 from tab_objectsUi import Ui_tab_objects
 
-tab_type = "object"
-
 
 class Tab(QtGui.QWidget, Ui_tab_objects):
 
