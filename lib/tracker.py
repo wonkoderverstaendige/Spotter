@@ -93,18 +93,18 @@ class Tracker:
         if self.scale > 1.0:
             self.scale = 1.0
 
+#        # conversion to HSV before dilation causes artifacts!
         # dilate bright spots
 #        kernel = np.ones((3,3), 'uint8')
-#        # conversion to HSV before dilation causes artifacts!
         if method == 'hsv_thresh':
             if self.scale >= 1.0:
                 self.frame = cv2.cvtColor(frame.img, cv2.COLOR_BGR2HSV)
             else:
                 self.frame = cv2.cvtColor(cv2.resize(frame.img,
-                                          (0, 0),
-                                          fx=self.scale,
-                                          fy=self.scale,
-                                          interpolation=cv2.INTER_LINEAR),
+                                                     (0, 0),
+                                                     fx=self.scale,
+                                                     fy=self.scale,
+                                                     interpolation=cv2.INTER_LINEAR),
                                           cv2.COLOR_BGR2HSV)
 
             for led in self.leds:
@@ -207,7 +207,7 @@ class Tracker:
         for cnt in contours:
             area = cv2.contourArea(cnt.astype(int))
             if area > largest_area and area >= min_area:
-                if max_area > 0 and area < range_area[1]:
+                if max_area == 0 or area < range_area[1]:
                     largest_area = area
                     best_cnt = cnt
         return largest_area, best_cnt
