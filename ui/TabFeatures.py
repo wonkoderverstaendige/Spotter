@@ -46,6 +46,7 @@ class Tab(QtGui.QWidget, Ui_tab_features):
         self.spin_val_min.setValue(self.feature.range_val[0])
         self.spin_val_max.setValue(self.feature.range_val[1])
         self.spin_area_min.setValue(self.feature.range_area[0])
+        self.spin_area_max.setValue(self.feature.range_area[1])
 
         # Connect checkboxes
         self.ckb_track.setChecked(self.feature.detection_active)
@@ -60,6 +61,7 @@ class Tab(QtGui.QWidget, Ui_tab_features):
         self.connect(self.spin_val_min, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
         self.connect(self.spin_val_max, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
         self.connect(self.spin_area_min, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
+        self.connect(self.spin_area_max, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
 
         self.connect(self.ckb_track, QtCore.SIGNAL('stateChanged(int)'), self.update_led)
         self.connect(self.ckb_fixed_pos, QtCore.SIGNAL('stateChanged(int)'), self.update_led)
@@ -69,29 +71,26 @@ class Tab(QtGui.QWidget, Ui_tab_features):
 
         self.update()
 
-
     def update(self):
-        if self.label == None:
+        if self.label is None:
             print "Empty tab! This should not have happened!"
             return
-
 
         if not self.label == self.feature.label:
             self.label = self.feature.label
 
         if self.feature.pos_hist and self.feature.pos_hist[-1]:
-            self.lbl_x.setText(str(self.feature.pos_hist[-1][0]))
-            self.lbl_y.setText(str(self.feature.pos_hist[-1][1]))
+            self.lbl_x.setText(str(int(self.feature.pos_hist[-1][0])))
+            self.lbl_y.setText(str(int(self.feature.pos_hist[-1][1])))
         else:
             self.lbl_x.setText('---')
             self.lbl_y.setText('---')
 
-
-    def update_led(self, value):
+    def update_led(self):
         self.feature.range_hue = (self.spin_hue_min.value(), self.spin_hue_max.value())
         self.feature.range_sat = (self.spin_sat_min.value(), self.spin_sat_max.value())
         self.feature.range_val = (self.spin_val_min.value(), self.spin_val_max.value())
-        self.feature.range_area = (self.spin_area_min.value(), 0)
+        self.feature.range_area = (self.spin_area_min.value(), self.spin_area_max.value())
         self.feature.detection_active = self.ckb_track.isChecked()
         self.feature.fixed_pos = self.ckb_fixed_pos.isChecked()
         self.feature.marker_visible = self.ckb_marker.isChecked()

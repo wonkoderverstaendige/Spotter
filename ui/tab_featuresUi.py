@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'tab_featuresUi.ui'
 #
-# Created: Wed Nov 20 22:14:14 2013
+# Created: Thu Nov 21 01:44:30 2013
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -150,7 +150,7 @@ class Ui_tab_features(object):
         self.btn_pick_color.setObjectName(_fromUtf8("btn_pick_color"))
         self.layout_feature_parameters.addWidget(self.btn_pick_color, 5, 2, 1, 2)
         self.spin_area_min = QtGui.QSpinBox(self.page_feature_detection)
-        self.spin_area_min.setMaximum(9999)
+        self.spin_area_min.setMaximum(99999)
         self.spin_area_min.setObjectName(_fromUtf8("spin_area_min"))
         self.layout_feature_parameters.addWidget(self.spin_area_min, 4, 2, 1, 1)
         self.spin_area_max = QtGui.QSpinBox(self.page_feature_detection)
