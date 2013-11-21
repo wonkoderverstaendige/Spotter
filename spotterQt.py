@@ -70,6 +70,7 @@ import TabObjects
 import TabRegions
 import TabSerial
 from SerialIndicator import SerialIndicator
+from StatusBar import StatusBarWidget
 
 #command line handling
 sys.path.append('./lib/docopt')
@@ -78,6 +79,7 @@ from docopt import docopt
 
 class Main(QtGui.QMainWindow):
     gui_fps = 20
+    gui_refresh_offset = 0
 
     def __init__(self, source, destination, fps, size, gui, serial):
         QtGui.QMainWindow.__init__(self)
@@ -85,10 +87,9 @@ class Main(QtGui.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.center_window()
-        #self.statusBar().showMessage('Ready')
-        self.fps_lbl = QtGui.QLabel("PEW PEW")
-        self.fps_lbl.setStyleSheet(' QLabel {color: red}')
-        self.statusBar().addWidget(self.fps_lbl)
+        self.sbw = StatusBarWidget(self)
+        self.statusBar().addWidget(self.sbw)
+        self.sbw.lbl_fps.setStyleSheet(' QLabel {color: red}')
 
         # Exit Signals
         self.ui.actionE_xit.setShortcut('Ctrl+Q')
@@ -172,7 +173,7 @@ class Main(QtGui.QMainWindow):
     ###############################################################################
     def refresh(self):
         self.gui_fps = self.gui_fps*0.9 + 0.1*1000./self.stopwatch.restart()
-        self.fps_lbl.setText('FPS: {:.1f}'.format(self.gui_fps))
+        self.sbw.lbl_fps.setText('FPS: {:.1f}'.format(self.gui_fps))
 
         if self.spotter.update() is None:
             self.spotter.exitMain()
@@ -189,13 +190,15 @@ class Main(QtGui.QMainWindow):
         self.update_current_tab()
 
         # check if the refresh rate needs adjustment
-        self.adjust_refresh_rate(1)
+        self.adjust_refresh_rate()
 
     def adjust_refresh_rate(self, forced=None):
         """
         Change GUI refresh rate according to frame rate of video source, or keep at
         1000/GUI_REFRESH_INTERVAL Hz for cameras to not miss too many frames
         """
+        self.gui_refresh_offset = self.sbw.sb_offset.value()
+
         if forced:
             self.timer.setInterval(forced)
             return
@@ -203,11 +206,16 @@ class Main(QtGui.QMainWindow):
         if self.spotter.source_type is not 'file':
             if self.timer.interval() != GUI_REFRESH_INTERVAL:
                 self.timer.setInterval(GUI_REFRESH_INTERVAL)
-                print "Changed main loop update rate to be fast. New: ", self.timer.interval()
+                #print "Changed main loop update rate to be fast. New: ", self.timer.interval()
         else:
-            if self.spotter.grabber.fps != 0 and self.timer.interval() != int(1000/self.spotter.grabber.fps):
-                self.timer.setInterval(int(1000/self.spotter.grabber.fps))
-                print "Changed main loop update rate to match file. New: ", self.timer.interval()
+            interval = int(1000.0/self.spotter.grabber.fps) + self.gui_refresh_offset
+            if interval < 0:
+                interval = 1
+                self.sbw.sb_offset.setValue(interval - int(1000.0/self.spotter.grabber.fps))
+
+            if self.spotter.grabber.fps != 0 and self.timer.interval() != interval:
+                self.timer.setInterval(interval)
+                #print "Changed main loop update rate to match file. New: ", self.timer.interval()
 
     def record_video(self, state, filename=None):
         """
@@ -241,8 +249,8 @@ class Main(QtGui.QMainWindow):
     def center_window(self):
         """
         Centers main window on screen.
-        Doesn't quite work on multi-monitor setups, as the whole screen-area is taken. But as long as the window ends
-        up in a predictable position...
+        Doesn't quite work on multi-monitor setups, as the whole screen-area is taken.
+        But as long as the window ends up in a predictable position...
         """
         screen = QtGui.QDesktopWidget().screenGeometry()
         window_size = self.geometry()

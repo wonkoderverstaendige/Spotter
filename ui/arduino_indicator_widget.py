@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'arduino_indicator_widget.ui'
 #
-# Created: Wed Nov 20 22:14:15 2013
+# Created: Thu Nov 21 22:48:01 2013
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
