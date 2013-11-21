@@ -574,6 +574,25 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>spin_hue_min</tabstop>
+  <tabstop>spin_hue_max</tabstop>
+  <tabstop>spin_sat_min</tabstop>
+  <tabstop>spin_sat_max</tabstop>
+  <tabstop>spin_val_min</tabstop>
+  <tabstop>spin_val_max</tabstop>
+  <tabstop>spin_area_min</tabstop>
+  <tabstop>spin_area_max</tabstop>
+  <tabstop>btn_pick_color</tabstop>
+  <tabstop>ckb_marker</tabstop>
+  <tabstop>ckb_track</tabstop>
+  <tabstop>ckb_fixed_pos</tabstop>
+  <tabstop>pushButton_12</tabstop>
+  <tabstop>pushButton_13</tabstop>
+  <tabstop>pushButton_14</tabstop>
+  <tabstop>pushButton_15</tabstop>
+  <tabstop>combo_label</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

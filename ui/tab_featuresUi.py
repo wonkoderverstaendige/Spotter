@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'tab_featuresUi.ui'
 #
-# Created: Thu Nov 21 01:44:30 2013
+# Created: Thu Nov 21 18:00:32 2013
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -266,6 +266,22 @@ class Ui_tab_features(object):
         self.toolBox.setCurrentIndex(0)
         self.toolBox.layout().setSpacing(0)
         QtCore.QMetaObject.connectSlotsByName(tab_features)
+        tab_features.setTabOrder(self.spin_hue_min, self.spin_hue_max)
+        tab_features.setTabOrder(self.spin_hue_max, self.spin_sat_min)
+        tab_features.setTabOrder(self.spin_sat_min, self.spin_sat_max)
+        tab_features.setTabOrder(self.spin_sat_max, self.spin_val_min)
+        tab_features.setTabOrder(self.spin_val_min, self.spin_val_max)
+        tab_features.setTabOrder(self.spin_val_max, self.spin_area_min)
+        tab_features.setTabOrder(self.spin_area_min, self.spin_area_max)
+        tab_features.setTabOrder(self.spin_area_max, self.btn_pick_color)
+        tab_features.setTabOrder(self.btn_pick_color, self.ckb_marker)
+        tab_features.setTabOrder(self.ckb_marker, self.ckb_track)
+        tab_features.setTabOrder(self.ckb_track, self.ckb_fixed_pos)
+        tab_features.setTabOrder(self.ckb_fixed_pos, self.pushButton_12)
+        tab_features.setTabOrder(self.pushButton_12, self.pushButton_13)
+        tab_features.setTabOrder(self.pushButton_13, self.pushButton_14)
+        tab_features.setTabOrder(self.pushButton_14, self.pushButton_15)
+        tab_features.setTabOrder(self.pushButton_15, self.combo_label)
 
     def retranslateUi(self, tab_features):
         tab_features.setWindowTitle(_translate("tab_features", "Form", None))
