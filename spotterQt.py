@@ -154,7 +154,7 @@ class Main(QtGui.QMainWindow):
         self.timer.timeout.connect(self.refresh)
         self.refresh()
         self.glframe.resizeFrame()
-        self.timer.start(30)
+        self.timer.start(10)
 
     ###############################################################################
     ##  FRAME REFRESH
