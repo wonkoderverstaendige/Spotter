@@ -94,8 +94,8 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
     #    tree_item = self.tree_region_shapes.selectedItems()
     #    if tree_item:
     #        tree_item = tree_item[0]
-    #        width = self.parent.glframe.width
-    #        height = self.parent.glframe.height
+    #        width = self.parent.gl_frame.width
+    #        height = self.parent.gl_frame.height
     #        p1 = tree_item.shape.points[0]
     #        p1_norm = geom.norm_points(p1, (width, height))
     #        if not self.spin_shape_normx.value() == p1_norm[0]:
@@ -232,8 +232,8 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
     #    if self.tree_region_shapes.currentItem().shape == self.spin_shape:
     #        # find the shape in the shape list of the ROI
     #        idx = self.region.shapes.index(self.tree_region_shapes.currentItem().shape)
-    #        width = self.parent.glframe.width
-    #        height = self.parent.glframe.height
+    #        width = self.parent.gl_frame.width
+    #        height = self.parent.gl_frame.height
     #        p1_norm = (self.spin_shape_normx.value(),self.spin_shape_normy.value())
     #        p1 = geom.scale_points(p1_norm, (width, height))
     #        dx = p1[0] - self.region.shapes[idx].points[0][0]

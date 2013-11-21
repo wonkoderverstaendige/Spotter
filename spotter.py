@@ -158,18 +158,18 @@ class Spotter:
             self.chatter.update_pins(slots)
 
             # Add timestamp to image if from a live source
-            if self.newest_frame.source_type == 'device':
+            if self.source_type == 'device':
                 cv2.putText(img=self.newest_frame.img,
-                        text=time_text,
-                        org=(3,12),
-                        fontFace=cv2.FONT_HERSHEY_PLAIN,
-                        fontScale=0.8,
-                        color=(255, 255, 255),
-                        thickness=1,
-                        lineType=cv2.CV_AA)
+                            text=time_text,
+                            org=(3, 12),
+                            fontFace=cv2.FONT_HERSHEY_PLAIN,
+                            fontScale=0.8,
+                            color=(255, 255, 255),
+                            thickness=1,
+                            lineType=cv2.CV_AA)
 
             # Check on writer process to prevent data loss
-            # Copy object, or referece deleted before written out
+            # Copy object, or reference deleted before written out
             if self.check_writer():
                 if self.recording:
                     self.writer_pipe.send('record')
@@ -187,6 +187,14 @@ class Spotter:
 #        if t <= 0:
 ##            log.info('Missed next frame by: ' + str( t * -1. ) + ' ms')
 #            t = 1
+
+    @property
+    def source_type(self):
+        if self.newest_frame is None:
+            return None
+        else:
+            return self.newest_frame.source_type
+
 
     def check_writer(self):
         """ True if alive """
@@ -207,7 +215,6 @@ class Spotter:
     def stop_writer(self):
         self.writer_pipe.send('stop')
         self.recording = False
-
 
     def exitMain(self):
         """ Graceful exit. Ha. Ha. Ha. Bottle of root beer anyone? """
@@ -234,7 +241,7 @@ class Spotter:
             log.info('Done! Grabbed ' + str(fc) + ' frames in ' + str(tt) + 's, with ' + str(fc/tt) + ' fps')
         except:
             pass
-        outfile = open(timingfname, "wb" )
+        outfile = open(timingfname, "wb")
         pickle.dump(self.timings, outfile)
 
         sys.exit(1)

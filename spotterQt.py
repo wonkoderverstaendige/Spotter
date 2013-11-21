@@ -40,6 +40,8 @@ DIR_TEMPLATES = './config'
 DIR_SPECIFICATION = './config/template_specification.ini'
 DEFAULT_TEMPLATE = 'defaults.ini'
 
+GUI_REFRESH_INTERVAL = 10
+
 import sys
 import os
 import platform
@@ -75,12 +77,18 @@ from docopt import docopt
 
 
 class Main(QtGui.QMainWindow):
+    gui_fps = 20
+
     def __init__(self, source, destination, fps, size, gui, serial):
         QtGui.QMainWindow.__init__(self)
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.center_window()
+        #self.statusBar().showMessage('Ready')
+        self.fps_lbl = QtGui.QLabel("PEW PEW")
+        self.fps_lbl.setStyleSheet(' QLabel {color: red}')
+        self.statusBar().addWidget(self.fps_lbl)
 
         # Exit Signals
         self.ui.actionE_xit.setShortcut('Ctrl+Q')
@@ -105,12 +113,14 @@ class Main(QtGui.QMainWindow):
         self.spotter = Spotter(source, destination, fps, size, gui, serial)
 
         # OpenGL frame
-        self.glframe = GLFrame()
-        self.ui.frame_video.addWidget(self.glframe)
-        self.glframe.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        self.gl_frame = GLFrame()
+        self.ui.frame_video.addWidget(self.gl_frame)
+        self.gl_frame.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        # hand the gl frame the spotter object
+        self.gl_frame.spotter = self.spotter
 
         # handling mouse events by the tabs for selection of regions etc.
-        self.glframe.sig_event.connect(self.mouse_event_to_tab)
+        self.gl_frame.sig_event.connect(self.mouse_event_to_tab)
 
         # Loading template list in folder
         default_path = os.path.join(os.path.abspath(DIR_TEMPLATES), DEFAULT_TEMPLATE)
@@ -149,72 +159,55 @@ class Main(QtGui.QMainWindow):
         self.serial_timer.timeout.connect(self.serial_check)
         self.serial_timer.start(1000)
 
+        self.stopwatch = QtCore.QElapsedTimer()
+        self.stopwatch.start()
+
         # Starts main frame grabber loop
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.refresh)
-        self.refresh()
-        self.glframe.resizeFrame()
-        self.timer.start(10)
+        self.timer.start(GUI_REFRESH_INTERVAL)
 
     ###############################################################################
     ##  FRAME REFRESH
     ###############################################################################
     def refresh(self):
-        rv = self.spotter.update()
-        if rv is None:
+        self.gui_fps = self.gui_fps*0.9 + 0.1*1000./self.stopwatch.restart()
+        self.fps_lbl.setText('FPS: {:.1f}'.format(self.gui_fps))
+
+        if self.spotter.update() is None:
             self.spotter.exitMain()
             self.close()
             return
 
-        # Append Object tracking markers to the list of things that have
-        # to be drawn onto the GL frame
-        self.glframe.frame = self.spotter.newest_frame.img
+        if not (self.gl_frame.width and self.gl_frame.height):
+            return
 
-        # draw crosses
-        for l in self.spotter.tracker.leds:
-            if l.pos_hist[-1] is not None and l.marker_visible:
-                self.glframe.jobs.append([self.glframe.drawCross,
-                                          l.pos_hist[-1], 14, l.lblcolor])
+        # update the OpenGL frame
+        self.gl_frame.update_world()
 
-        # draw search windows if adaptive tracking is used:
-        if self.spotter.tracker.adaptive_tracking:
-            for l in self.spotter.tracker.leds:
-                if l.adaptive_tracking and l.search_roi is not None:
-                    self.glframe.jobs.append([self.glframe.drawBox,
-                                              l.search_roi.points,
-                                              (l.lblcolor[0],
-                                               l.lblcolor[1],
-                                               l.lblcolor[2],
-                                               0.25)])
-
-        # draw crosses and traces for objects
-        for o in self.spotter.tracker.oois:
-            if o.position is not None:
-                self.glframe.jobs.append([self.glframe.drawCross,
-                                          o.position, 8,
-                                          (1.0, 1.0, 1.0, 1.0), 7, True])
-                if o.traced:
-                    points = []
-                    for n in xrange(min(len(o.pos_hist), 100)):
-                        if o.pos_hist[-n - 1] is not None:
-                            points.append([o.pos_hist[-n - 1][0] * 1.0 / self.glframe.width,
-                                           o.pos_hist[-n - 1][1] * 1.0 / self.glframe.height])
-                    self.glframe.jobs.append([self.glframe.drawTrace, points])
-
-        # draw shapes of active ROIs
-        for r in self.spotter.tracker.rois:
-            color = (r.normal_color[0], r.normal_color[1], r.normal_color[2], r.alpha)
-            for s in r.shapes:
-                if s.active:
-                    if s.shape == "rectangle":
-                        self.glframe.jobs.append([self.glframe.drawRect, s.points, color])
-                    elif s.shape == "circle":
-                        self.glframe.jobs.append([self.glframe.drawCircle, s.points, color])
-                    elif s.shape == "line":
-                        self.glframe.jobs.append([self.glframe.drawLine, s.points, color])
-
-        self.glframe.updateWorld()
+        # Update the currently open tab
         self.update_current_tab()
+
+        # check if the refresh rate needs adjustment
+        self.adjust_refresh_rate(1)
+
+    def adjust_refresh_rate(self, forced=None):
+        """
+        Change GUI refresh rate according to frame rate of video source, or keep at
+        1000/GUI_REFRESH_INTERVAL Hz for cameras to not miss too many frames
+        """
+        if forced:
+            self.timer.setInterval(forced)
+            return
+
+        if self.spotter.source_type is not 'file':
+            if self.timer.interval() != GUI_REFRESH_INTERVAL:
+                self.timer.setInterval(GUI_REFRESH_INTERVAL)
+                print "Changed main loop update rate to be fast. New: ", self.timer.interval()
+        else:
+            if self.spotter.grabber.fps != 0 and self.timer.interval() != int(1000/self.spotter.grabber.fps):
+                self.timer.setInterval(int(1000/self.spotter.grabber.fps))
+                print "Changed main loop update rate to match file. New: ", self.timer.interval()
 
     def record_video(self, state, filename=None):
         """
@@ -442,7 +435,7 @@ class Main(QtGui.QMainWindow):
 
         # Shapes
         shapelist = []
-        #rng = (self.glframe.width, self.glframe.height)
+        #rng = (self.gl_frame.width, self.gl_frame.height)
         for r in self.spotter.tracker.rois:
             for s in r.shapes:
                 if not s in shapelist:
@@ -655,8 +648,8 @@ class Main(QtGui.QMainWindow):
                 else:
                     points = geom.scale_points([shapes[s_key]['p1'],
                                                 shapes[s_key]['p2']],
-                                               (self.glframe.width,
-                                                self.glframe.height))
+                                               (self.gl_frame.width,
+                                                self.gl_frame.height))
                 shape_list.append([shape_type, points, s_key])
 
         # Magnetic objects from collision list

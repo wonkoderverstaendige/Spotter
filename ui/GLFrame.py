@@ -12,11 +12,12 @@ import math
 import numpy as np
 import geometry as geom
 
+
 class GLFrame(QtOpenGL.QGLWidget):
 
     frame = None
-    width = None
-    height = None
+    width = 1
+    height = 1
     m_x1 = -50
     m_x2 = -50
     m_y1 = -50
@@ -32,14 +33,61 @@ class GLFrame(QtOpenGL.QGLWidget):
         QtOpenGL.QGLWidget.__init__(self, *args)
         self.setMouseTracking(True)
         self.setCursor(QtGui.QCursor(QtCore.Qt.BlankCursor))
+        self.resize_canvas()
 
         self.jobs = []
+        self.spotter = None
 
-    def updateWorld(self):
+    def update_world(self):
+        if self.spotter is None:
+            return
+
+        self.frame = self.spotter.newest_frame.img
+        if self.frame is None:
+            return
+
+        self.resize_canvas()
+
+        # draw crosses
+        for l in self.spotter.tracker.leds:
+            if l.pos_hist[-1] is not None and l.marker_visible:
+                self.jobs.append([self.drawCross, l.pos_hist[-1], 14, l.lblcolor])
+
+        # draw search windows if adaptive tracking is used:
+        if self.spotter.tracker.adaptive_tracking:
+            for l in self.spotter.tracker.leds:
+                if l.adaptive_tracking and l.search_roi is not None:
+                    self.jobs.append([self.drawBox, l.search_roi.points,
+                                      (l.lblcolor[0], l.lblcolor[1], l.lblcolor[2],0.25)])
+
+        # draw crosses and traces for objects
+        for o in self.spotter.tracker.oois:
+            if o.position is not None:
+                self.jobs.append([self.drawCross, o.position, 8,
+                                  (1.0, 1.0, 1.0, 1.0), 7, True])
+                if o.traced:
+                    points = []
+                    for n in xrange(min(len(o.pos_hist), 100)):
+                        if o.pos_hist[-n - 1] is not None:
+                            points.append([o.pos_hist[-n - 1][0] * 1.0 / self.width,
+                                           o.pos_hist[-n - 1][1] * 1.0 / self.height])
+                    self.jobs.append([self.drawTrace, points])
+
+        # draw shapes of active ROIs
+        for r in self.spotter.tracker.rois:
+            color = (r.normal_color[0], r.normal_color[1], r.normal_color[2], r.alpha)
+            for s in r.shapes:
+                if s.active:
+                    if s.shape == "rectangle":
+                        self.jobs.append([self.drawRect, s.points, color])
+                    elif s.shape == "circle":
+                        self.jobs.append([self.drawCircle, s.points, color])
+                    elif s.shape == "line":
+                        self.jobs.append([self.drawLine, s.points, color])
+
         self.updateGL()
 
-
-    def initializeGL(self, width = 20, height = 20):
+    def initializeGL(self):  # , width=1, height=1
         """ Initialization of the GL frame.
         TODO: glOrtho should set to size of the frame which would allow
         using absolute coordinates in range/domain of original frame
@@ -49,16 +97,15 @@ class GLFrame(QtOpenGL.QGLWidget):
         glOrtho(0, 1, 1, 0, -1, 1)
         glMatrixMode(GL_PROJECTION)
 
-
     def paintGL(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
 
         # Draw the numpy array onto the GL frame, stringify first
         # NB: Currently flips the frame.
-        if self.frame != None:
+        if self.frame is not None:
             shape = self.frame.shape
-            glDrawPixels(shape[1], shape[0] , GL_RGB, GL_UNSIGNED_BYTE, np.fliplr(self.frame).tostring()[::-1])
+            glDrawPixels(shape[1], shape[0], GL_RGB, GL_UNSIGNED_BYTE, np.fliplr(self.frame).tostring()[::-1])
 
         color = (0.5, 0.5, 0.5, 0.5)
         if self.dragging:
@@ -80,7 +127,6 @@ class GLFrame(QtOpenGL.QGLWidget):
         # Process job queue
         self.process_paint_jobs()
 
-
     def process_paint_jobs(self):
         """ This puny piece of code is IMPORTANT! It handles all external
         drawing jobs! That looks really un-pythonic, by the way!
@@ -93,7 +139,7 @@ class GLFrame(QtOpenGL.QGLWidget):
             draw_func(*j[1:])
 
     def resizeGL(self, width, height):
-        """ Resize frame when widget resized """
+        """ Resize frame when widget is being resized. """
         self.width = width
         self.height = height
         self.aratio = width*1.0/height
@@ -103,7 +149,7 @@ class GLFrame(QtOpenGL.QGLWidget):
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
 
-        # DOESN't WORK!!
+        # DOESN'T WORK!!
 #        glOrtho(0, width, height, 0, -1, 1)
 
         # Enable rational alpha blending
@@ -113,12 +159,11 @@ class GLFrame(QtOpenGL.QGLWidget):
         # Load identity matrix
         glLoadIdentity()
 
-
     def mouseMoveEvent(self, mouseEvent):
         if int(mouseEvent.buttons()) != QtCore.Qt.NoButton:
             # user is dragging
             self.sig_event.emit('mouseDrag', mouseEvent)
-            if  int(mouseEvent.buttons()) == QtCore.Qt.LeftButton:
+            if int(mouseEvent.buttons()) == QtCore.Qt.LeftButton:
                 self.dragging = True
                 self.m_x2 = mouseEvent.x()
                 self.m_y2 = mouseEvent.y()
@@ -150,11 +195,11 @@ class GLFrame(QtOpenGL.QGLWidget):
 
         glColor(*color)
         glBegin(GL_LINES)
-        glVertex( x1, y1, 0.0)
-        glVertex( x2, y2, 0.0)
+        glVertex(x1, y1, 0.0)
+        glVertex(x2, y2, 0.0)
         glEnd()
 
-    def drawCross(self, point, size, color, gap = 7, angled = False):
+    def drawCross(self, point, size, color, gap = 7, angled=False):
         """ Draw colored cross to mark tracked features """
         x = point[0]*1.0/self.width
         y = point[1]*1.0/self.height
@@ -162,35 +207,34 @@ class GLFrame(QtOpenGL.QGLWidget):
         dx = size*.5/self.width
         dy = size*.5/self.height
 
-
         glColor(*color)
         if angled:
             # diagonal line 1
             glBegin(GL_LINES)
-            glVertex( x-dx, y-dy, 0.0)
-            glVertex( x+dx, y+dy, 0.0)
+            glVertex(x-dx, y-dy, 0.0)
+            glVertex(x+dx, y+dy, 0.0)
             glEnd()
 
             # diagonal line 2
             glBegin(GL_LINES)
-            glVertex( x-dx, y+dy, 0.0)
-            glVertex( x+dx, y-dy, 0.0)
+            glVertex(x-dx, y+dy, 0.0)
+            glVertex(x+dx, y-dy, 0.0)
             glEnd()
 
         else:
             # vertical line
             glBegin(GL_LINES)
-            glVertex( x-dx, y, 0.0)
-            glVertex( x+dx, y, 0.0)
+            glVertex(x-dx, y, 0.0)
+            glVertex(x+dx, y, 0.0)
             glEnd()
 
             # horizontal line
             glBegin(GL_LINES)
-            glVertex( x, y+dy, 0.0)
-            glVertex( x, y-dy, 0.0)
+            glVertex(x, y+dy, 0.0)
+            glVertex(x, y-dy, 0.0)
             glEnd()
 
-
+        glFlush()
 #        glColor4f(0.0, 0.0, 1.0, 0.5)
 #        glRectf(-.5, -.5, .5, .5)
 #        glColor3f(1.0, 0.0, 0.0)
@@ -210,10 +254,8 @@ class GLFrame(QtOpenGL.QGLWidget):
 #        glVertex( 0, 0, 1)
 #        glEnd()
 
-        glFlush()
 
-
-    def drawRect(self, points, color): #x1, y1, x2, y2
+    def drawRect(self, points, color):  # x1, y1, x2, y2
         """ Draws a filled rectangle. """
         glColor(*color)
         glRectf(points[0][0]*1.0/self.width, points[0][1]*1.0/self.height, points[1][0]*1.0/self.width, points[1][1]*1.0/self.height)
@@ -246,7 +288,7 @@ class GLFrame(QtOpenGL.QGLWidget):
         cy2 *= 1.0/self.height
         dx = abs(cx1 - cx2)
         dy = abs(cy1 - cy2)
-        r = dx if dx>dy else dy
+        r = dx if dx > dy else dy
 
         if num_segments is None:
             num_segments = int(math.pi*16.0*math.sqrt(r))
@@ -260,10 +302,10 @@ class GLFrame(QtOpenGL.QGLWidget):
             glEnd()
         else:
             theta = 2 * math.pi / float(num_segments)
-            c = math.cos(theta) # pre-calculate cosine0
-            s = math.sin(theta) # and sine
+            c = math.cos(theta)  # pre-calculate cosine0
+            s = math.sin(theta)  # and sine
             t = 0
-            x = r # we start at angle = 0
+            x = r  # we start at angle = 0
             y = 0
 
             glColor4f(*color)
@@ -276,7 +318,7 @@ class GLFrame(QtOpenGL.QGLWidget):
                 y = s * t + c * y
             glEnd()
 
-    def drawTrace(self, points, color=(1.0, 1.0, 1.0, 1.0)): #array
+    def drawTrace(self, points, color=(1.0, 1.0, 1.0, 1.0)):  # array
         """ Draw trace of position given in array.
         TODO: Draw trace in immediate mode via vertex and color arrays
         """
@@ -285,11 +327,20 @@ class GLFrame(QtOpenGL.QGLWidget):
         glVertexPointerf(points)
         glDrawArrays(GL_LINE_STRIP, 0, len(points))
 
-    def resizeFrame(self):
-        """ Locks video frame widget size to raster size, won't show
+    def resize_canvas(self):
+        """
+        Locks video frame widget size to raster size, won't show
         up at all otherwise.
         """
-        if self.frame is not None:
-            self.framesize = self.frame.shape
-            self.setMinimumSize(self.framesize[1], self.framesize[0])
-            self.setMaximumSize(self.framesize[1], self.framesize[0])
+        if self.frame is None:
+            width = 320
+            height = 240
+        else:
+            width, height = self.frame.shape[1], self.frame.shape[0]
+
+        if not (self.width == width and self.height == height):
+            self.width = width
+            self.height = height
+            #self.setFixedSize(self.width, self.height)
+            self.setMinimumSize(width, height)
+            self.setMaximumSize(width, height)

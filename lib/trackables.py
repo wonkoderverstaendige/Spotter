@@ -334,7 +334,7 @@ class ROI:
 
     strict_prefs_dealt = False
 
-    linked_objects = None # aka slots?!
+    linked_objects = None  # aka slots?!
 
     def __init__(self, shape_list=None, label=None, color=None, obj_list=None,
                  magnetic_objects = None):
