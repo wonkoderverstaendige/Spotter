@@ -204,10 +204,15 @@ class Main(QtGui.QMainWindow):
             return
 
         if self.spotter.source_type is not 'file':
+            if self.sbw.sb_offset.isEnabled():
+                self.sbw.sb_offset.setEnabled(False)
+                self.sbw.sb_offset.setValue(0)
             if self.timer.interval() != GUI_REFRESH_INTERVAL:
                 self.timer.setInterval(GUI_REFRESH_INTERVAL)
                 #print "Changed main loop update rate to be fast. New: ", self.timer.interval()
         else:
+            if not self.sbw.sb_offset.isEnabled():
+                self.sbw.sb_offset.setEnabled(True)
             interval = int(1000.0/self.spotter.grabber.fps) + self.gui_refresh_offset
             if interval < 0:
                 interval = 1
