@@ -15,7 +15,8 @@ from tab_featuresUi import Ui_tab_features
 sys.path.append('./lib')
 import utilities as utils
 
-tab_type = "newLED"
+#tab_type = "newLED"
+
 
 class Tab(QtGui.QWidget, Ui_tab_features):
 
@@ -24,9 +25,9 @@ class Tab(QtGui.QWidget, Ui_tab_features):
     accept_events = False
     tab_type = "feature"
 
-    def __init__(self, parent, feature, label = None):
+    def __init__(self, parent, feature, label=None):
         self.feature = feature
-        if label == None:
+        if label is None:
             self.label = self.feature.label
         else:
             self.label = label
