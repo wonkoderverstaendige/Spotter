@@ -72,6 +72,7 @@ import arduino
 
 N_TRIES = 5
 
+
 class Chatter:
     serial_device = None
     serial_port = None
@@ -108,7 +109,6 @@ class Chatter:
                 portlist = [port]
         else:
             portlist = self.list_ports()
-#
 #        print portlist
 
         for p in portlist:
@@ -125,7 +125,7 @@ class Chatter:
 
     def open_serial(self, port):
         self.close()
-        print "Opening port "+ port
+        print "Opening port " + port
         self.serial_device = arduino.Arduino(port)
         if self.serial_device.is_open():
             self.serial_port = port
@@ -158,7 +158,7 @@ class Chatter:
 
         instr = []
         for s in slots:
-            if s.state_idx == None:
+            if s.state_idx is None:
                 instr.append([s.pin.type_id, s.pin.id, s.state()])
             else:
                 data = s.state(s.state_idx)
@@ -168,12 +168,14 @@ class Chatter:
                     else:
                         data = 0
                 elif s.type == 'dac':
-                    if data == None:
+                    if data is None:
                         data = 0
                     else:
                         data = self.scale_point(data)[s.state_idx]
                 instr.append([s.pin.type_id, s.pin.id, data])
-        self.serial_device.send_instructions(instr)
+
+        if not self.serial_device.send_instructions(instr):
+            self.close()
 
     def pins_for_slot(self, slot):
         return self.pins(slot.type)
@@ -187,7 +189,7 @@ class Chatter:
         yc = (self.range_xy[1] - point[1]) + (coord_max - self.range_xy[1])/2.0
         xc = int(xc * self.factor_dac + self.offset_dac)
         yc = int(yc * self.factor_dac + self.offset_dac)
-        return (xc, yc)
+        return xc, yc
 
     def read_all(self):
         if not self.serial_device:
@@ -200,10 +202,10 @@ class Chatter:
         return self.serial_device.read_line()
 
     def is_open(self):
-        return (self.serial_device and self.serial_device.is_open())
+        return self.serial_device and self.serial_device.is_open()
 
     def is_connected(self):
-        return (self.connected) #self.is_open() and
+        return self.connected  # self.is_open() and
 
     def bytes_tx(self):
         if self.serial_device:
@@ -231,7 +233,6 @@ class Chatter:
                 return []
         else:
             return []
-
 
 ###############################################################################
 # These two methods are directly taken from Eli Bendersky's example code:
@@ -297,16 +298,6 @@ class Chatter:
 
         return portlist
 
-    def close(self):
-        """
-        Close serial port if any device connected. May cause trouble if
-        port remains open!
-        """
-        self.connected = False
-        if self.serial_device:
-            print 'Closing Serial'
-            self.serial_device.close()
-
     def test_scan_frame(self, stepsize=4):
         """
         scan through all points in frame size and give their coordinates
@@ -335,6 +326,17 @@ class Chatter:
         self.serial_device.send_instructions([[1, 0, 0], [1, 1, 0]])
         self.read_all()
         time.sleep(0.5)
+
+
+    def close(self):
+        """
+        Close serial port if any device connected. May cause trouble if
+        port remains open!
+        """
+        self.connected = False
+        if self.serial_device:
+            print 'Closing Serial'
+            self.serial_device.close()
 
 #############################################################
 if __name__ == '__main__':

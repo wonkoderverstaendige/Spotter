@@ -16,9 +16,11 @@ import struct
 
 VERSION = 0.1
 
+
 class Pin(object):
     prefixes = ['CMD', 'DAC', 'DO', 'PWM']
     types = ['report', 'dac', 'digital', 'pwm']
+
     def __init__(self, idx, type_id):
         self.id = idx
         self.type_id = type_id
@@ -28,10 +30,10 @@ class Pin(object):
         self.slot = None
         self.available = True
 
+
 class Arduino(object):
     firmware_version = None
     connected = False
-
 
     def __init__(self, port, baudrate=57600):
         self.sp = serial.Serial(port, baudrate)
@@ -42,7 +44,7 @@ class Arduino(object):
 
         self.pins = dict(dac=[], digital=[], pwm=[], adc=[])
 
-        self.portString = port
+        self.port_string = port
 #        self.sp.flushInput()
 
     def __str__(self):
@@ -56,7 +58,7 @@ class Arduino(object):
         self.close()
 
     def is_open(self):
-        return self.sp.isOpen()
+        return self.sp is not None and self.sp.isOpen()
 
     def get_pins(self):
         self.send_instructions([[0, 1, 0], [0, 2, 0]])
@@ -76,19 +78,7 @@ class Arduino(object):
             return True
         return False
 
-
-    def null_pins(self, pins=None):
-        """ Reset the given pins to zero (0, low). If no pins given, do all."""
-        if self.is_open():
-            instr = []
-            for pkey in self.pins.iterkeys():
-                for p in self.pins[pkey]:
-                    instr.append([p.type_id, p.id, 0])
-            self.send_instructions(instr)
-
-
     def read_all_bytes(self):
-        msg = ''
         msg = self.sp.read(self.bytes_available())
         self.bytes_received += len(msg)
         return msg
@@ -105,7 +95,8 @@ class Arduino(object):
         self.sp.write(chr(val % 128) + chr(val >> 7))
 
     def send_instructions(self, instruction_list):
-        """ Send command byte followed by two data bytes. struct packs short
+        """
+        Send command byte followed by two data bytes. struct packs short
         unsigned value ('H') as two bytes, big endian.
         Type 0 = report
         Type 1 = dac
@@ -127,22 +118,40 @@ class Arduino(object):
         for i in instruction_list:
             # instruction and address
             msg += chr(cmd_vals[i[0]] + i[1])
-            data = i[2] if not i[2] == None else 0
+            data = i[2] if i[2] is not None else 0
             msg = msg + struct.pack('H', data) + '\n'
 
         # all instructions as one string to reduce the amount of
-        # time spent in 4ms delay arduino spends on serial commmunication
-        self.sp.write(msg)
+        # time spent in 4ms delay arduino spends on serial communication
+        if self.sp is None:
+            return False
+        try:
+            self.sp.write(msg)
+        except serial.serialutil.SerialTimeoutException:  # or writeTimeoutError
+            self.sp = None
+            self.close()
+            return False
+
         self.bytes_sent += len(msg)
+        return True
 
     def close(self):
-        """ Call this to exit cleanly. """
-        if hasattr(self, 'sp'):
+        """ Call this to exit a bit cleaner. """
+        print "Closing Serial..."
+        if hasattr(self, 'sp') and self.sp is not None:
             self.null_pins()
             self.sp.close()
         self.bytes_received = 0
         self.bytes_sent = 0
 
+    def null_pins(self):
+        """ Reset the given pins to zero (0, low). If no pins given, do all."""
+        if self.is_open():
+            instr = []
+            for pkey in self.pins.iterkeys():
+                for p in self.pins[pkey]:
+                    instr.append([p.type_id, p.id, 0])
+            self.send_instructions(instr)
 
     def pass_time(self, t):
         """
