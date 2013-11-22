@@ -1,4 +1,6 @@
 call pyuic4 mainUi.ui -o mainUi.py
+call pyuic4 designer\main_tab_pageUi.ui -o designer\main_tab_pageUi.py
+call pyuic4 designer\side_barUi.ui -o designer\side_barUi.py
 call pyuic4 tab_featuresUi.ui -o tab_featuresUi.py
 call pyuic4 tab_objectsUi.ui -o tab_objectsUi.py
 call pyuic4 tab_regionsUi.ui -o tab_regionsUi.py

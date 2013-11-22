@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'statusBarUi.ui'
 #
-# Created: Thu Nov 21 22:48:01 2013
+# Created: Fri Nov 22 04:10:21 2013
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!

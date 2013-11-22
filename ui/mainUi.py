@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Wed Nov 20 22:14:14 2013
+# Created: Fri Nov 22 04:10:21 2013
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -40,8 +40,11 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.horizontalLayout_2 = QtGui.QHBoxLayout(self.centralwidget)
         self.horizontalLayout_2.setSpacing(0)
-        self.horizontalLayout_2.setMargin(0)
+        self.horizontalLayout_2.setContentsMargins(9, 0, 0, 0)
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
+        self.new_parameters = QtGui.QHBoxLayout()
+        self.new_parameters.setObjectName(_fromUtf8("new_parameters"))
+        self.horizontalLayout_2.addLayout(self.new_parameters)
         self.frame_video = QtGui.QHBoxLayout()
         self.frame_video.setSpacing(0)
         self.frame_video.setObjectName(_fromUtf8("frame_video"))
@@ -65,6 +68,8 @@ class Ui_MainWindow(object):
         self.tab_parameters.setSizePolicy(sizePolicy)
         self.tab_parameters.setMinimumSize(QtCore.QSize(270, 0))
         self.tab_parameters.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
+        self.tab_parameters.setTabShape(QtGui.QTabWidget.Triangular)
+        self.tab_parameters.setTabsClosable(False)
         self.tab_parameters.setObjectName(_fromUtf8("tab_parameters"))
         self.widget_features = QtGui.QWidget()
         self.widget_features.setObjectName(_fromUtf8("widget_features"))
@@ -80,6 +85,8 @@ class Ui_MainWindow(object):
         self.tab_features.setSizePolicy(sizePolicy)
         self.tab_features.setTabPosition(QtGui.QTabWidget.East)
         self.tab_features.setTabShape(QtGui.QTabWidget.Rounded)
+        self.tab_features.setDocumentMode(True)
+        self.tab_features.setTabsClosable(True)
         self.tab_features.setObjectName(_fromUtf8("tab_features"))
         self.tab_features_newTab = QtGui.QWidget()
         self.tab_features_newTab.setObjectName(_fromUtf8("tab_features_newTab"))
@@ -112,6 +119,8 @@ class Ui_MainWindow(object):
         self.tab_objects.setSizePolicy(sizePolicy)
         self.tab_objects.setTabPosition(QtGui.QTabWidget.East)
         self.tab_objects.setTabShape(QtGui.QTabWidget.Rounded)
+        self.tab_objects.setDocumentMode(True)
+        self.tab_objects.setTabsClosable(True)
         self.tab_objects.setObjectName(_fromUtf8("tab_objects"))
         self.tab_object_newTab = QtGui.QWidget()
         self.tab_object_newTab.setObjectName(_fromUtf8("tab_object_newTab"))
@@ -138,6 +147,8 @@ class Ui_MainWindow(object):
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         self.tab_regions = QtGui.QTabWidget(self.widget_regions)
         self.tab_regions.setTabPosition(QtGui.QTabWidget.East)
+        self.tab_regions.setDocumentMode(True)
+        self.tab_regions.setTabsClosable(True)
         self.tab_regions.setObjectName(_fromUtf8("tab_regions"))
         self.tab_regions_newTab = QtGui.QWidget()
         self.tab_regions_newTab.setObjectName(_fromUtf8("tab_regions_newTab"))
@@ -163,6 +174,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_4.setObjectName(_fromUtf8("verticalLayout_4"))
         self.tab_serial = QtGui.QTabWidget(self.widget_serial)
         self.tab_serial.setTabPosition(QtGui.QTabWidget.East)
+        self.tab_serial.setDocumentMode(True)
         self.tab_serial.setObjectName(_fromUtf8("tab_serial"))
         self.verticalLayout_4.addWidget(self.tab_serial)
         self.tab_parameters.addTab(self.widget_serial, _fromUtf8(""))
@@ -201,7 +213,6 @@ class Ui_MainWindow(object):
         self.actionDevice.setEnabled(False)
         self.actionDevice.setObjectName(_fromUtf8("actionDevice"))
         self.actionFile = QtGui.QAction(MainWindow)
-        self.actionFile.setEnabled(False)
         self.actionFile.setObjectName(_fromUtf8("actionFile"))
         self.actionSave = QtGui.QAction(MainWindow)
         self.actionSave.setEnabled(False)
@@ -257,7 +268,6 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         self.tab_parameters.setCurrentIndex(0)
-        self.tab_features.setCurrentIndex(0)
         self.tab_objects.setCurrentIndex(0)
         self.tab_regions.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)

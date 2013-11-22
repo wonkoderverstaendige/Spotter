@@ -69,8 +69,12 @@ import TabFeatures
 import TabObjects
 import TabRegions
 import TabSerial
+import MainTabPage
 from SerialIndicator import SerialIndicator
 from StatusBar import StatusBarWidget
+from SideBar import SideBar
+
+sys.path.append('./ui/designer')
 
 #command line handling
 sys.path.append('./lib/docopt')
@@ -90,6 +94,10 @@ class Main(QtGui.QMainWindow):
         self.sbw = StatusBarWidget(self)
         self.statusBar().addWidget(self.sbw)
         self.sbw.lbl_fps.setStyleSheet(' QLabel {color: red}')
+
+        # Side bar widget
+        self.side_bar = SideBar(self)
+        self.ui.frame_parameters.addWidget(self.side_bar)
 
         # Exit Signals
         self.ui.actionE_xit.setShortcut('Ctrl+Q')
@@ -148,6 +156,7 @@ class Main(QtGui.QMainWindow):
         self.region_tabs = []
         self.connect(self.ui.tab_regions, QtCore.SIGNAL('currentChanged(int)'), self.tab_regions_switch)
         self.connect(self.ui.btn_new_region_tab, QtCore.SIGNAL('clicked()'), self.add_region)
+        self.ui.tab_regions.tabCloseRequested.connect(self.remove_tab)
 
         # Serial tab widget
         self.serial_tabs = []
@@ -263,7 +272,7 @@ class Main(QtGui.QMainWindow):
 
     def add_tab(self, tab_widget, new_tab_class, tab_equivalent, focus_new=True):
         """
-        Add new tab with Widget newTabClass and switches to it. The
+        Add new tab with Widget new_tab_class and switches to it. The
         tab_equivalent is the object that is being represented by the tab,
         for example an LED or Object.
         """
@@ -275,12 +284,12 @@ class Main(QtGui.QMainWindow):
             tab_widget.setCurrentIndex(0)
         return new_tab
 
-    def remove_tab(self, tab_widget, tab):
+    def remove_tab(self, idx):
         """
         Removing is trickier, as it has to delete the features/objects
         from the tracker!
         """
-        pass
+        print "Removing a tab", idx
 
     def get_top_tab_label(self):
         """ Return label of the top level tab. """
@@ -488,6 +497,7 @@ class Main(QtGui.QMainWindow):
         Remove everything from everything to start over!
         """
         pass
+        # loop over all tabs, call their close methods and they will take over
 
     ###############################################################################
     ##  FEATURES Tab Updates
@@ -531,6 +541,7 @@ class Main(QtGui.QMainWindow):
                                                   range_area,
                                                   fixed_pos)
         new_tab = self.add_tab(self.ui.tab_features, TabFeatures, feature, focus_new)
+        self.side_bar.features_page.add_item(feature)
         self.feature_tabs.append(new_tab)
 
     ###############################################################################
@@ -538,10 +549,7 @@ class Main(QtGui.QMainWindow):
     ###############################################################################
     def tab_objects_switch(self, idx_tab=0):
         """
-        Switch to selected tab or create a new tab if the selected tab is
-        the last, which should be the "+" tab. Switching through the tabs with
-        the mousewheel can cause to create a lot of tabs unfortunately.
-        TODO: Mousewheel handling.
+        Switch to selected tab.
         """
         #        if idx_tab == self.ui.tab_objects.count() - 1:
         #            self.add_object()
@@ -620,6 +628,7 @@ class Main(QtGui.QMainWindow):
                     object_.analog_dir = True
 
         new_tab = self.add_tab(self.ui.tab_objects, TabObjects, object_, focus_new)
+        self.side_bar.objects_page.add_item(object_)
         self.object_tabs.append(new_tab)
 
     ###############################################################################

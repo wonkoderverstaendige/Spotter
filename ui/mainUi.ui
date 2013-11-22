@@ -31,9 +31,21 @@
     <property name="spacing">
      <number>0</number>
     </property>
-    <property name="margin">
+    <property name="leftMargin">
+     <number>9</number>
+    </property>
+    <property name="topMargin">
      <number>0</number>
     </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <layout class="QHBoxLayout" name="new_parameters"/>
+    </item>
     <item>
      <layout class="QHBoxLayout" name="frame_video">
       <property name="spacing">
@@ -55,7 +67,7 @@
         </property>
        </spacer>
       </item>
-      <item>
+      <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
        <widget class="QFrame" name="frame">
         <property name="frameShape">
          <enum>QFrame::StyledPanel</enum>
@@ -92,8 +104,14 @@
         <property name="cursor">
          <cursorShape>ArrowCursor</cursorShape>
         </property>
+        <property name="tabShape">
+         <enum>QTabWidget::Triangular</enum>
+        </property>
         <property name="currentIndex">
          <number>0</number>
+        </property>
+        <property name="tabsClosable">
+         <bool>false</bool>
         </property>
         <widget class="QWidget" name="widget_features">
          <attribute name="title">
@@ -120,8 +138,11 @@
             <property name="tabShape">
              <enum>QTabWidget::Rounded</enum>
             </property>
-            <property name="currentIndex">
-             <number>0</number>
+            <property name="documentMode">
+             <bool>true</bool>
+            </property>
+            <property name="tabsClosable">
+             <bool>true</bool>
             </property>
             <widget class="QWidget" name="tab_features_newTab">
              <attribute name="title">
@@ -188,6 +209,12 @@
             <property name="currentIndex">
              <number>0</number>
             </property>
+            <property name="documentMode">
+             <bool>true</bool>
+            </property>
+            <property name="tabsClosable">
+             <bool>true</bool>
+            </property>
             <widget class="QWidget" name="tab_object_newTab">
              <attribute name="title">
               <string>+</string>
@@ -244,6 +271,12 @@
             <property name="currentIndex">
              <number>0</number>
             </property>
+            <property name="documentMode">
+             <bool>true</bool>
+            </property>
+            <property name="tabsClosable">
+             <bool>true</bool>
+            </property>
             <widget class="QWidget" name="tab_regions_newTab">
              <attribute name="title">
               <string>+</string>
@@ -293,6 +326,9 @@
            <widget class="QTabWidget" name="tab_serial">
             <property name="tabPosition">
              <enum>QTabWidget::East</enum>
+            </property>
+            <property name="documentMode">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -401,9 +437,6 @@
    </property>
   </action>
   <action name="actionFile">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
    <property name="text">
     <string>&amp;File</string>
    </property>
