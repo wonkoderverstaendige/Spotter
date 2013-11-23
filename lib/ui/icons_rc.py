@@ -2,13 +2,8 @@
 
 # Resource object code
 #
-<<<<<<< HEAD:ui/icons_rc.py
-# Created: Fri Nov 22 04:10:21 2013
-#      by: The Resource Compiler for PyQt (Qt v4.8.5)
-=======
-# Created: Sat Nov 23 00:27:48 2013
+# Created: Sat Nov 23 02:16:54 2013
 #      by: The Resource Compiler for PyQt (Qt v4.8.4)
->>>>>>> origin/master:lib/ui/icons_rc.py
 #
 # WARNING! All changes made in this file will be lost!
 

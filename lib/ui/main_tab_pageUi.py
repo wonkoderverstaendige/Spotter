@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'designer\main_tab_pageUi.ui'
+# Form implementation generated from reading ui file 'main_tab_pageUi.ui'
 #
-# Created: Fri Nov 22 04:10:21 2013
-#      by: PyQt4 UI code generator 4.10.3
+# Created: Sat Nov 23 02:16:53 2013
+#      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
 

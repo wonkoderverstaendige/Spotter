@@ -6,10 +6,7 @@ Created on Sun Jan 13 14:19:24 2013
 
 """
 
-import sys
 from PyQt4 import QtGui, QtCore
-
-sys.path.append('./ui/designer')
 from main_tab_pageUi import Ui_main_tab
 
 

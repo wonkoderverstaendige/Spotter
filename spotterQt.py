@@ -58,8 +58,7 @@ import lib.utilities as utils
 from lib.ui.mainUi import Ui_MainWindow
 from lib.ui import GLFrame
 from lib.ui import TabFeatures, TabObjects, TabRegions, TabSerial
-from lib.ui import SerialIndicator, StatusBar
-from lib.ui import SideBar
+from lib.ui import SerialIndicator, StatusBar, SideBar
 from lib.ui import MainTabPage
 
 sys.path.append(DIR_TEMPLATES)
@@ -75,12 +74,14 @@ class Main(QtGui.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.center_window()
+
+        # Status Bar
         self.sbw = StatusBar(self)
-        self.statusBar().addWidget(self.sbw)
         self.sbw.lbl_fps.setStyleSheet(' QLabel {color: red}')
+        self.statusBar().addWidget(self.sbw)
 
         # Side bar widget
-        self.side_bar = SideBar(self)
+        self.side_bar = SideBar.SideBar(self)
         self.ui.frame_parameters.addWidget(self.side_bar)
 
         # Exit Signals
@@ -91,7 +92,7 @@ class Main(QtGui.QMainWindow):
         # About window
         self.connect(self.ui.actionAbout, QtCore.SIGNAL('triggered()'), self.about)
 
-        # Menubar items
+        # Menu Bar items
         #   File
         self.connect(self.ui.actionFile, QtCore.SIGNAL('triggered()'), self.file_dialog_video)
         #   Configuration

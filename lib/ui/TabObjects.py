@@ -70,7 +70,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
             self.lbl_x.setText('---')
             self.lbl_y.setText('---')
 
-#        if not self.object.speed() == None:
+#        if self.object.speed() is not None:
 #            self.lbl_speed.setText(str(self.object.speed()))
 #
         if self.object.angle is not None:
