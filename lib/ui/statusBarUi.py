@@ -2,8 +2,13 @@
 
 # Form implementation generated from reading ui file 'statusBarUi.ui'
 #
+<<<<<<< HEAD:ui/statusBarUi.py
 # Created: Fri Nov 22 04:10:21 2013
 #      by: PyQt4 UI code generator 4.10.3
+=======
+# Created: Sat Nov 23 00:27:48 2013
+#      by: PyQt4 UI code generator 4.9.6
+>>>>>>> origin/master:lib/ui/statusBarUi.py
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,7 +31,7 @@ except AttributeError:
 class Ui_statusBar(object):
     def setupUi(self, statusBar):
         statusBar.setObjectName(_fromUtf8("statusBar"))
-        statusBar.resize(1027, 78)
+        statusBar.resize(960, 40)
         self.horizontalLayout_2 = QtGui.QHBoxLayout(statusBar)
         self.horizontalLayout_2.setMargin(0)
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))

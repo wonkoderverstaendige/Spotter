@@ -39,24 +39,11 @@ import logging
 import copy
 import pickle
 
-#project libraries
-sys.path.append('./lib')
-from grabber import Grabber
-from writer import Writer
-from tracker import Tracker
-from chatter import Chatter
-#from GUI import GUI
-import utilities as utils
-import timerclass
+from lib import utilities as utils, timerclass
+from lib.core import grabber, tracker, writer, chatter
+
+from lib.docopt import docopt
 timingfname = 'tracking_3LEDs.p'
-
-#misc
-
-
-
-#command line handling
-sys.path.append('./lib/docopt')
-from docopt import docopt
 
 
 class Spotter:
@@ -84,7 +71,7 @@ class Spotter:
 
     def __init__(self, source, destination, fps, size, gui, serial=None):
         # Setup frame grabber object, fills framebuffer
-        self.grabber = Grabber(source, fps, size)
+        self.grabber = grabber.Grabber(source, fps, size)
 
         # Writer writes frames from buffer to video file in a separate process.
 #        print str(multiprocessing.cpu_count()) + ' CPUs found'
@@ -92,7 +79,7 @@ class Spotter:
         self.writer_pipe, child_pipe = multiprocessing.Pipe()
 
         self.writer = multiprocessing.Process(
-                    target = Writer,
+                    target = writer.Writer,
                     args = (self.grabber.fps,
                             self.grabber.size,
                             self.writer_queue,
@@ -100,10 +87,10 @@ class Spotter:
         self.writer.start()
 
         # tracker object finds LEDs in frames
-        self.tracker = Tracker(adaptive_tracking=True)
+        self.tracker = tracker.Tracker(adaptive_tracking=True)
 
         # chatter handles serial communication
-        self.chatter = Chatter(serial, auto=True)
+        self.chatter = chatter.Chatter(serial, auto=True)
         self.timings = []
 
         # histogram instance required to do... nothing for now?

@@ -6,10 +6,7 @@ Created on Sun Jan 13 14:19:24 2013
 
 """
 
-import sys
 from PyQt4 import QtGui, QtCore
-
-sys.path.append('./ui')
 from tab_objectsUi import Ui_tab_objects
 
 

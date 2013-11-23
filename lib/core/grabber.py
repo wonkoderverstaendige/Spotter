@@ -21,22 +21,14 @@ Options:
 """
 
 import cv2
-import cv2.cv as cv
 import time
 import os
 import sys
 from collections import deque
-print cv2.__version__
-
-#project libraries
-sys.path.append('./lib')
-
-#command line handling
-sys.path.append('./lib/docopt')
-from docopt import docopt
+from lib.docopt import docopt
 
 DEBUG = True
-
+print cv2.__version__
 
 class Frame:
     img = None

@@ -10,7 +10,7 @@ from PyQt4 import QtGui, QtCore, QtOpenGL
 from OpenGL.GL import *
 import math
 import numpy as np
-import geometry as geom
+import lib.geometry as geom
 
 
 class GLFrame(QtOpenGL.QGLWidget):

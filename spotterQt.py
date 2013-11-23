@@ -46,39 +46,23 @@ import sys
 import os
 import platform
 import time
-from PyQt4 import QtGui, QtCore
 import logging
 
-#configuration and templates
+from lib.docopt import docopt
+from lib.configobj import configobj, validate
+
+from PyQt4 import QtGui, QtCore
+from lib.core import Spotter
+import lib.geometry as geom
+import lib.utilities as utils
+from lib.ui.mainUi import Ui_MainWindow
+from lib.ui import GLFrame
+from lib.ui import TabFeatures, TabObjects, TabRegions, TabSerial
+from lib.ui import SerialIndicator, StatusBar
+from lib.ui import SideBar
+from lib.ui import MainTabPage
+
 sys.path.append(DIR_TEMPLATES)
-sys.path.append('./lib/configobj')
-from configobj import ConfigObj, flatten_errors
-from validate import Validator
-
-#project libraries
-sys.path.append('./lib')
-from spotter import Spotter
-import geometry as geom
-import utilities as utils
-
-#Qt user interface files
-sys.path.append('./ui')
-from mainUi import Ui_MainWindow
-from GLFrame import GLFrame
-import TabFeatures
-import TabObjects
-import TabRegions
-import TabSerial
-import MainTabPage
-from SerialIndicator import SerialIndicator
-from StatusBar import StatusBarWidget
-from SideBar import SideBar
-
-sys.path.append('./ui/designer')
-
-#command line handling
-sys.path.append('./lib/docopt')
-from docopt import docopt
 
 
 class Main(QtGui.QMainWindow):
@@ -91,7 +75,7 @@ class Main(QtGui.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.center_window()
-        self.sbw = StatusBarWidget(self)
+        self.sbw = StatusBar(self)
         self.statusBar().addWidget(self.sbw)
         self.sbw.lbl_fps.setStyleSheet(' QLabel {color: red}')
 
@@ -135,12 +119,6 @@ class Main(QtGui.QMainWindow):
         default_path = os.path.join(os.path.abspath(DIR_TEMPLATES), DEFAULT_TEMPLATE)
         self.template_default = self.parse_config(default_path, True)
         #list_of_files = [f for f in os.listdir(DIR_TEMPLATES) if f.lower().endswith('ini')]
-        #for f in list_of_files:
-        #    if not f == DEFAULT_TEMPLATE:
-        #        self.ui.combo_templates.addItem(f)
-        #self.connect(self.ui.btn_feature_template, QtCore.SIGNAL('clicked()'), self.load_template)
-        #self.connect(self.ui.btn_object_template, QtCore.SIGNAL('clicked()'), self.load_template)
-        #self.connect(self.ui.btn_region_template, QtCore.SIGNAL('clicked()'), self.load_template)
 
         # Features tab widget
         self.feature_tabs = []
@@ -368,18 +346,18 @@ class Main(QtGui.QMainWindow):
     ###############################################################################
     ##  TEMPLATES handling
     ###############################################################################
-    def parse_config(self, path, validate=True):
+    def parse_config(self, path, run_validate=True):
         """
         Template parsing and validation.
         """
-        template = ConfigObj(path, file_error=True, stringify=True,
-                             configspec=DIR_SPECIFICATION)
-        if validate:
-            validator = Validator()
+        template = configobj.ConfigObj(path, file_error=True, stringify=True,
+                                       configspec=DIR_SPECIFICATION)
+        if run_validate:
+            validator = validate.Validator()
             results = template.validate(validator)
             if not results is True:
                 print "Template error in file ", path
-                for (section_list, key, _) in flatten_errors(template, results):
+                for (section_list, key, _) in configobj.flatten_errors(template, results):
                     if key is not None:
                         print 'The "%s" key in the section "%s" failed validation' % (key, ', '.join(section_list))
                     else:
@@ -417,7 +395,7 @@ class Main(QtGui.QMainWindow):
         """
         Store a full set of configuration to file.
         """
-        config = ConfigObj(indent_type='    ')
+        config = configobj.ConfigObj(indent_type='    ')
 
         if filename is None:
             filename = str(QtGui.QFileDialog.getSaveFileName(self, 'Save Template', directory))
@@ -504,14 +482,8 @@ class Main(QtGui.QMainWindow):
     ###############################################################################
     def tab_features_switch(self, idx_tab=0):
         """
-        Switch to selected tab or create a new tab if the selected tab is
-        the last, which should be the "+" tab. Switching through the tabs with
-        the mousewheel can cause to create a lot of tabs unfortunately.
-        TODO: Mousewheel handling.
+        Switch to the tab page with index idx_tab.
         """
-        #        if idx_tab == self.ui.tab_features.count() - 1:
-        #            self.add_feature()
-        #        else:
         self.ui.tab_features.setCurrentIndex(idx_tab)
 
     def add_feature(self, template=None, label=None, focus_new=True):
@@ -549,11 +521,8 @@ class Main(QtGui.QMainWindow):
     ###############################################################################
     def tab_objects_switch(self, idx_tab=0):
         """
-        Switch to selected tab.
+        Switch to the tab page with index idx_tab.
         """
-        #        if idx_tab == self.ui.tab_objects.count() - 1:
-        #            self.add_object()
-        #        else:
         self.ui.tab_objects.setCurrentIndex(idx_tab)
 
     def add_object(self, template=None, label=None, focus_new=True):
@@ -636,14 +605,8 @@ class Main(QtGui.QMainWindow):
     ###############################################################################
     def tab_regions_switch(self, idx_tab=0):
         """
-        Switch to selected tab or create a new tab if the selected tab is
-        the last, which should be the "+" tab. Switching through the tabs with
-        the mousewheel can cause to create a lot of tabs unfortunately.
-        TODO: Mousewheel handling.
+        Switch to the tab page with index idx_tab.
         """
-        #        if idx_tab == self.ui.tab_regions.count() - 1:
-        #            self.add_region()
-        #        else:
         self.ui.tab_regions.setCurrentIndex(idx_tab)
 
     def add_region(self, template=None, label=None, shapes=None, abs_pos=True, focus_new=True):
@@ -745,7 +708,7 @@ if __name__ == "__main__":                                  #
 #############################################################
 
     # Command line parsing
-    ARGDICT = docopt(__doc__, version=None)
+    ARGDICT = docopt.docopt(__doc__, version=None)
     DEBUG = ARGDICT['--DEBUG']
     if DEBUG:
         print(ARGDICT)

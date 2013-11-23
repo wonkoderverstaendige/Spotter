@@ -6,16 +6,9 @@ Created on Sun Jan 13 14:19:24 2013
 
 """
 
-import sys
 from PyQt4 import QtGui, QtCore
-
-sys.path.append('./ui')
 from tab_featuresUi import Ui_tab_features
-
-sys.path.append('./lib')
-import utilities as utils
-
-#tab_type = "newLED"
+import lib.utilities as utils
 
 
 class Tab(QtGui.QWidget, Ui_tab_features):

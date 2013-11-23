@@ -6,5 +6,5 @@ call pyuic4 tab_objectsUi.ui -o tab_objectsUi.py
 call pyuic4 tab_regionsUi.ui -o tab_regionsUi.py
 call pyuic4 tab_serialUi.ui -o tab_serialUi.py
 call pyuic4 statusBarUi.ui -o statusBarUi.py
-call pyuic4 arduino_indicator_widget.ui -o arduino_indicator_widget.py
+call pyuic4 serialIndicatorUi.ui -o serialIndicatorUi.py
 call pyrcc4 icons.qrc -o icons_rc.py

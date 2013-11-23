@@ -25,17 +25,13 @@ import time
 import sys
 import numpy as np
 
-#project libraries
-sys.path.append('./lib')
-import utilities as utils
-import geometry as geom
+import lib.utilities as utils
+import lib.geometry as geom
 import trackables as trkbl
-
-#command line handling
-sys.path.append('./lib/docopt')
-from docopt import docopt
+from lib.docopt import docopt
 
 DEBUG = True
+
 
 class Tracker:
     """ Performs tracking and returns positions of found LEDs """

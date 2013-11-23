@@ -11,7 +11,88 @@ import numpy as np
 import cv2
 import math
 import time
+import re
+import platform
 
+os_str = platform.system().lower()
+if len(os_str) > 0:
+    if os_str.find('linux') > -1 or os_str.find('darwin') > -1:
+        is_nix = True
+        is_win = False
+    else:
+        is_nix = False  # os_str.find("win") > -1
+        is_win = True
+
+if is_nix:
+    from serial.tools import list_ports
+elif is_win:
+    import _winreg as winreg
+    import itertools
+else:
+    raise EnvironmentError("Operating system not recognized!")
+
+
+###############################################################################
+# These two methods are directly taken from Eli Bendersky's example code:
+# http://eli.thegreenplace.net/2009/07/31/listing-all-serial-ports-on-windows-with-python
+###############################################################################
+def get_port_list():
+    """
+    List all serial visible serial ports.
+
+    On Windows, serial.tools.comports() does not return all ports, and
+    seems to reliably miss the serial port of the Arduinos. Not sure why,
+    it seems to be widely used in examples. Maybe I am not using the
+    iterator correctly. So for Windows, I'm using code from the always
+    interesting Mr. Bendersky.
+
+    Remove unlikely ports like Bluetooth modems etc. and sort in descending
+    likelihood of usefulness.
+    """
+    if is_nix:
+        ports = [p for p in list_ports.comports()]
+    if is_win:
+        ports = [(p, full_port_name(p)) for p in enum_win_ports()]
+
+    if is_nix:
+        for p in ports:
+            print p
+    else:
+        ports.reverse()
+
+    return ports
+
+
+def enum_win_ports():
+    """
+    Uses the Win32 registry to return an iterator of serial (COM) ports
+    existing on this computer.
+    """
+    path = 'HARDWARE\\DEVICEMAP\\SERIALCOMM'
+    try:
+        key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, path)
+    except WindowsError:
+        return
+
+    for i in itertools.count():
+        try:
+            val = winreg.EnumValue(key, i)
+            yield str(val[1])
+        except EnvironmentError:
+            break
+
+
+def full_port_name(port_name):
+    """ Given a port-name (of the form COM7, COM12, CNCA0, etc.) returns a full
+        name suitable for opening with the Serial class.
+    """
+    m = re.match("^COM(\d+)$", port_name)
+    if m and int(m.group(1)) < 10:
+        return port_name
+    return '\\\\.\\' + port_name
+
+
+###############################################################################
 
 def time_string():
     """ Return string of current time and date """
