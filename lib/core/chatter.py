@@ -28,41 +28,15 @@ To do:
 """
 
 import sys
-#import serial
-import re
 import time
-import platform
 from random import randint
 
-os_str = platform.system().lower()
-if len(os_str) > 0:
-    if os_str.find('linux') > -1 or os_str.find('darwin') > -1:
-        is_nix = True
-        is_win = False
-    else:
-        is_nix = False #os_str.find("win") > -1
-        is_win = True
+import lib.utilities as utils
+import lib.geometry as geom
+from lib.docopt import docopt
 
-if is_nix:
-    from serial.tools import list_ports
-elif is_win:
-    import _winreg as winreg
-    import itertools
-else:
-    raise EnvironmentError("Operating system not recognized!")
+from lib.core import arduino
 
-
-#project libraries
-sys.path.append('./lib')
-import utilities as utils
-import geometry as geom
-
-#command line handling
-sys.path.append('./lib/docopt')
-from docopt import docopt
-
-sys.path.append('./arduino')
-import arduino
 
 #TODO:
 #    - Find proper port by trying to connect to all ports on list till
@@ -70,7 +44,7 @@ import arduino
 #    - get required data from Arduino (i.e. all hardware specifics)
 #    - define data protocol (i.e. RS232 like?)
 
-N_TRIES = 5
+N_TRIES = 2
 
 
 class Chatter:
@@ -99,19 +73,18 @@ class Chatter:
     def auto_connect(self, port=None):
         """
         Try to connect to specific port. If no port specified, try to connect
-        to all ports on the portlist. If any of them replies correctly, stop
+        to all ports on the port_list. If any of them replies correctly, stop
         and be happy about the connection!
         """
         if port:
             if isinstance(port, basestring):
-                portlist = [(port, port)]
+                port_list = [(port, port)]
             else:
-                portlist = [port]
+                port_list = [port]
         else:
-            portlist = self.list_ports()
-#        print portlist
+            port_list = utils.get_port_list()
 
-        for p in portlist:
+        for p in port_list:
             try:
                 if self.open_serial(p[1]) and self.test_connection():
                     self.serial_port = p[1]
@@ -131,22 +104,22 @@ class Chatter:
             self.serial_port = port
         return self.serial_device.is_open()
 
-    def test_connection(self, test_vals=None):
+    def test_connection(self, test_values=None):
         """
-        Sends values from list test_vals to Arduino and compares response.
-        If no response or reponse not matching, the test fails.
+        Sends values from list test_values to Arduino and compares response.
+        If no response or response not matching, the test fails.
         """
-        if not test_vals:
-            test_vals = [0, self.range_dac[0], randint(0, 4095)]
+        if not test_values:
+            test_values = [0, self.range_dac[0], randint(0, 4095)]
         instructions = []
-        for v in test_vals:
+        for v in test_values:
             instructions.append([0, 0, v])
 
         for n in xrange(N_TRIES):
             self.serial_device.send_instructions(instructions)
             time.sleep(0.1)
             if self.bytes_available():
-                if test_vals == map(int, self.read_all().splitlines()):
+                if test_values == map(int, self.read_all().splitlines()):
                     if self.serial_device.get_pins():
                         return True
         return False
@@ -164,7 +137,7 @@ class Chatter:
                 data = s.state(s.state_idx)
                 if s.type == 'digital':
                     if data:
-                        data = 100 # pin HIGH if larger 0
+                        data = 100  # pin HIGH if larger 0
                     else:
                         data = 0
                 elif s.type == 'dac':
@@ -234,69 +207,6 @@ class Chatter:
         else:
             return []
 
-###############################################################################
-# These two methods are directly taken from Eli Bendersky's example code:
-# http://eli.thegreenplace.net/2009/07/31/listing-all-serial-ports-on-windows-with-python
-###############################################################################
-    def enum_win_ports(self):
-        """ Uses the Win32 registry to return an
-            iterator of serial (COM) ports
-            existing on this computer.
-        """
-        path = 'HARDWARE\\DEVICEMAP\\SERIALCOMM'
-        try:
-            key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, path)
-        except WindowsError:
-            return
-#            raise EnvironmentError
-
-        for i in itertools.count():
-            try:
-                val = winreg.EnumValue(key, i)
-                yield str(val[1])
-            except EnvironmentError:
-                break
-
-    def full_port_name(self, portname):
-        """ Given a port-name (of the form COM7,
-            COM12, CNCA0, etc.) returns a full
-            name suitable for opening with the
-            Serial class.
-        """
-        m = re.match('^COM(\d+)$', portname)
-        if m and int(m.group(1)) < 10:
-            return portname
-        return '\\\\.\\' + portname
-###############################################################################
-
-    def list_ports(self):
-        """
-        List all serial visible serial ports.
-
-        On Windows, serial.tools.comports() does not return all ports, and
-        seems to reliable miss the Serial port of the Arduinos. Not sure why,
-        it seems to be widely used in examples. Maybe I am not using the
-        iterator correctly. So for Windows, I'm using code from the always
-        interesting Eli Bendersky, see above.
-        """
-        if is_nix:
-            portlist = [p for p in list_ports.comports()]
-        if is_win:
-            portlist = [(p, self.full_port_name(p)) for p in self.enum_win_ports()]
-        return self.clean_portlist(portlist)
-
-    def clean_portlist(self, portlist):
-        """
-        Remove unlikely ports like Bluetooth modems etc. and sort in descending
-        likelihood of usefulness.
-        """
-        if is_nix:
-            for p in portlist:
-                print p
-        else:
-            portlist.reverse()
-
-        return portlist
 
     def test_scan_frame(self, stepsize=4):
         """
@@ -326,7 +236,6 @@ class Chatter:
         self.serial_device.send_instructions([[1, 0, 0], [1, 1, 0]])
         self.read_all()
         time.sleep(0.5)
-
 
     def close(self):
         """

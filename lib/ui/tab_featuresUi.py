@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'tab_featuresUi.ui'
 #
-# Created: Thu Nov 21 18:00:32 2013
-#      by: PyQt4 UI code generator 4.10.3
+# Created: Sat Nov 23 00:27:47 2013
+#      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
 

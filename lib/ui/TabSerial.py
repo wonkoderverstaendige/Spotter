@@ -6,17 +6,10 @@ Created on Sun Jan 18 21:13:54 2013
 
 """
 
-import sys
-from time import sleep
 from PyQt4 import QtGui, QtCore
-
-sys.path.append('./lib')
-import utilities as utils
-
-sys.path.append('./ui')
+import lib.utilities as utils
 from tab_serialUi import Ui_tab_serial
 
-tab_type = "region"
 
 class Tab(QtGui.QWidget, Ui_tab_serial):
 
@@ -25,15 +18,15 @@ class Tab(QtGui.QWidget, Ui_tab_serial):
     accept_events = False
     tab_type = "serial"
 
-    def __init__(self, parent, serial_handle, label = None):
+    def __init__(self, parent, serial_handle, label=None):
+        super(QtGui.QWidget, self).__init__(parent)
         self.serial = serial_handle
-        if label == None:
+        if label is None:
             self.label = self.serial.label
         else:
             self.label = label
             self.serial.label = label
 
-        super(QtGui.QWidget, self).__init__(parent)
         self.parent = parent
         self.setupUi(self)
 
@@ -43,7 +36,6 @@ class Tab(QtGui.QWidget, Ui_tab_serial):
 
         self.refresh_port_list()
         self.update()
-
 
     def update(self):
         if self.serial.is_connected():
@@ -67,20 +59,19 @@ class Tab(QtGui.QWidget, Ui_tab_serial):
         """
         candidate = None
         for i in range(self.combo_serialports.count()):
-            self.combo_serialports.removeItem(i)
-        for p in self.serial.list_ports():
+            self.combo_serialports.removeItem(0)
+        for p in utils.get_port_list():
             if len(p) > 2 and "USB" in p[2]:
                 candidate = p
             self.combo_serialports.addItem(p[0])
         if candidate:
             self.combo_serialports.setCurrentIndex(self.combo_serialports.findText(candidate[0]))
 
-
     def toggle_connection(self):
         """
         Toggle button to either connect or disconnect serial connection.
         """
-        # This test is inversed. When the function is called the button is
+        # This test is inverted. When the function is called the button is
         # already pressed, i.e. checked -> representing future state, not past
         if not self.btn_serial_connect.isChecked():
             self.btn_serial_connect.setText('Connect')
@@ -90,11 +81,9 @@ class Tab(QtGui.QWidget, Ui_tab_serial):
         else:
             self.serial.serial_port = str(self.combo_serialports.currentText())
             try:
-#                sc = self.serial.open_serial(self.serial.serial_port)
                 sc = self.serial.auto_connect(self.serial.serial_port)
-            except:
-                print "Connection failed! But I won't tell you why..."
-#                self.btn_serial_connect.setText('Connect')
+            except Exception, e:
+                print e
                 self.btn_serial_connect.setChecked(False)
                 return
             if sc:

@@ -21,6 +21,8 @@ DONE- No features/objects at start, except if a standard template is selected
 
     - Allow switching between video source and static image
 
+    - Settings. Set all the things (warnings ON/OFF, Dialog confirmations, etc)
+
 GL Frame:
 =========
     - use double buffering to reduce flickering, esp. when drawing into the
@@ -73,7 +75,7 @@ Physical Out:
 ============
 
     - non-editable combo box with all objects being tracked. Choose one whose
-    position will be sent to the analog out via Arduino/Funker
+    position will be sent to the analog out via Arduino/Chatter
 
     - the collision check should be as close as possible to the detection to
     reduce further delays
@@ -95,6 +97,8 @@ Physical Out:
 Modules:
 ========
 
+    - Move all modules into appropriate paths and import from there, rather than using the
+    crude path append way
 DONE- rename writer_process to just writer
 
 Performance/Timings:

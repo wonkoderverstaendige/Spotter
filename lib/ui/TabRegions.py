@@ -8,14 +8,9 @@ Created on Sun Jan 13 14:19:24 2013
 
 import sys
 from PyQt4 import QtGui, QtCore
-#import math
-#import random
 
-sys.path.append('./ui')
 from tab_regionsUi import Ui_tab_regions
-
-sys.path.append('./lib')
-import geometry as geom
+import lib.geometry as geom
 
 
 class Tab(QtGui.QWidget, Ui_tab_regions):

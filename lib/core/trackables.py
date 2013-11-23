@@ -6,10 +6,11 @@ Created on Tue Dec 04 21:41:19 2012
 Trackable object class.
 """
 
-import geometry as geom
-import random
-import utilities as utils
 import math
+import random
+import lib.utilities as utils
+import lib.geometry as geom
+
 
 class Shape:
     """ Geometrical shape that comprise ROIs. ROIs can be made of several
