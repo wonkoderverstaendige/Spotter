@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Sat Nov 23 02:16:53 2013
+# Created: Sun Nov 24 00:22:29 2013
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
-        MainWindow.resize(594, 388)
+        MainWindow.resize(605, 388)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -182,7 +182,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addLayout(self.frame_parameters)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 594, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 605, 21))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menu_File = QtGui.QMenu(self.menubar)
         self.menu_File.setObjectName(_fromUtf8("menu_File"))
@@ -209,9 +209,8 @@ class Ui_MainWindow(object):
         MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
         self.actionE_xit = QtGui.QAction(MainWindow)
         self.actionE_xit.setObjectName(_fromUtf8("actionE_xit"))
-        self.actionDevice = QtGui.QAction(MainWindow)
-        self.actionDevice.setEnabled(False)
-        self.actionDevice.setObjectName(_fromUtf8("actionDevice"))
+        self.actionCamera = QtGui.QAction(MainWindow)
+        self.actionCamera.setObjectName(_fromUtf8("actionCamera"))
         self.actionFile = QtGui.QAction(MainWindow)
         self.actionFile.setObjectName(_fromUtf8("actionFile"))
         self.actionSave = QtGui.QAction(MainWindow)
@@ -247,7 +246,7 @@ class Ui_MainWindow(object):
         self.actionResetConfig.setEnabled(False)
         self.actionResetConfig.setObjectName(_fromUtf8("actionResetConfig"))
         self.menu_Open.addAction(self.actionFile)
-        self.menu_Open.addAction(self.actionDevice)
+        self.menu_Open.addAction(self.actionCamera)
         self.menu_Save.addAction(self.action_Transcode_Video)
         self.menu_Save.addAction(self.actionParameters)
         self.menuLoad.addAction(self.action_Parameters)
@@ -295,7 +294,7 @@ class Ui_MainWindow(object):
         self.menuTemplate.setTitle(_translate("MainWindow", "Configuration", None))
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar", None))
         self.actionE_xit.setText(_translate("MainWindow", "E&xit", None))
-        self.actionDevice.setText(_translate("MainWindow", "&Device", None))
+        self.actionCamera.setText(_translate("MainWindow", "&Camera", None))
         self.actionFile.setText(_translate("MainWindow", "&File", None))
         self.actionSave.setText(_translate("MainWindow", "&Transcode", None))
         self.action_Parameters.setText(_translate("MainWindow", "&Parameters", None))

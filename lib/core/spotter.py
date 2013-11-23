@@ -69,7 +69,7 @@ class Spotter:
     scale_resize = 1.0
     scale_tracking = 1.0
 
-    def __init__(self, source=None, dst=None, fps=None, serial=None, *args, **kwargs):
+    def __init__(self, serial=None, *args, **kwargs):
         """
 
         :param source:
@@ -78,65 +78,45 @@ class Spotter:
         :param size:
         :param serial:
         """
-        #source = kwargs['source'] if 'source' in kwargs else None
-        #destination = kwargs['destination'] if 'destination' in kwargs else None
-
         self.log = logging.getLogger(__name__)
         self.log.info(str(multiprocessing.cpu_count()) + ' CPUs found')
 
         # Setup frame grabber object, fills frame buffer
         self.log.debug('Instantiating grabber...')
-        self.grabber = grabber.Grabber(source, fps, *args, **kwargs)
+        self.grabber = grabber.Grabber(*args, **kwargs)
 
         # Writer writes frames from buffer to video file in a separate process.
         self.log.debug('Instantiating writer...')
         self.writer_queue = multiprocessing.Queue(16)
         self.writer_pipe, child_pipe = multiprocessing.Pipe()
-        self.writer = multiprocessing.Process(
-                    target = writer.Writer,
-                    args = (self.grabber.fps,
-                            self.grabber.size,
-                            self.writer_queue,
-                            child_pipe,))
+        self.writer = multiprocessing.Process(target=writer.Writer,
+                                              args=(self.grabber.fps, self.grabber.size,
+                                                    self.writer_queue, child_pipe,))
         self.log.debug('Starting writer...')
         self.writer.start()
 
         # tracker object finds LEDs in frames
+        self.log.debug('Instantiating tracker...')
         self.tracker = tracker.Tracker(adaptive_tracking=True)
 
         # chatter handles serial communication
+        self.log.debug('Instantiating chatter...')
         self.chatter = chatter.Chatter(serial, auto=True)
-        self.timings = []
-
-        # histogram instance required to do... nothing for now?
-#        self.hist = utils.HSVHist()
 
     def update(self):
-        # Get new frame
-#       if not self.paused and
-#            self.newest_frame = self.grabber.framebuffer.pop()
-        self.newest_frame = self.grabber.grab_next()
-        if self.newest_frame is None:
-            return
-        else:
-            t = self.newest_frame.timestamp
-            time_text = time.strftime("%d-%b-%y %H:%M:%S", time.localtime(t))
-            ms = "{0:03d}".format(int((t-int(t))*1000))
-            time_text = ".".join([time_text, ms])
 
+        # Get new frame
+        self.newest_frame = self.grabber.grab()
+        if self.newest_frame is not None:
             # resize frame if necessary
             if self.scale_resize < 1.0:
-                self.newest_frame.img = cv2.resize(self.newest_frame.img,
-                                                  (0, 0),
-                                                  fx=self.scale_resize,
-                                                  fy=self.scale_resize,
-                                                  interpolation=cv2.INTER_LINEAR)
+                self.newest_frame.img = cv2.resize(self.newest_frame.img, (0, 0), fx=self.scale_resize,
+                                                   fy=self.scale_resize, interpolation=cv2.INTER_LINEAR)
 
+            #with timerclass.Timer(False, self.timings) as t:
             # Find and update position of tracked object
-            with timerclass.Timer(False, self.timings) as t:
-                self.tracker.track_feature(self.newest_frame,
-                                           method = 'hsv_thresh',
-                                           scale=self.scale_tracking*self.scale_resize)
+            self.tracker.track_feature(self.newest_frame, method='hsv_thresh',
+                                       scale=self.scale_tracking*self.scale_resize)
 
             slots = []
             messages = []
@@ -145,10 +125,10 @@ class Spotter:
                 o.update_slots(self.chatter)
                 o.update_state()
                 slots.extend(o.linked_slots())
-                messages.append('\t'.join([time_text, str(o.label), str(o.position)]))
+                messages.append('\t'.join([self.newest_frame.time_text, str(o.label), str(o.position)]))
 
             for l in self.tracker.leds:
-                messages.append('\t'.join([time_text, str(l.label), str(l.position())]))
+                messages.append('\t'.join([self.newest_frame.time_text, str(l.label), str(l.position())]))
 
             # Check Object-Region collisions
             for r in self.tracker.rois:
@@ -158,44 +138,21 @@ class Spotter:
 
             self.chatter.update_pins(slots)
 
-            # Add timestamp to image if from a live source
-            if self.source_type == 'device':
-                cv2.putText(img=self.newest_frame.img,
-                            text=time_text,
-                            org=(3, 12),
-                            fontFace=cv2.FONT_HERSHEY_PLAIN,
-                            fontScale=0.8,
-                            color=(255, 255, 255),
-                            thickness=1,
-                            lineType=cv2.CV_AA)
-
-            # Check on writer process to prevent data loss
-            # Copy object, or reference deleted before written out
+            # Check on writer process to prevent data loss and preserve reference
             if self.check_writer():
                 if self.recording:
                     self.writer_pipe.send('record')
                     item = (copy.deepcopy(self.newest_frame),
                             copy.deepcopy(messages))
                     self.writer_queue.put(item)
-                else:
-                    self.writer_pipe.send('alive')
-                # required, or may crash?
-#                time.sleep(0.001)
-            return True
+#               time.sleep(0.001)  # required, or may crash?
 
-#        total_elapsed = (time.clock() - self.grabber.ts_last_frame) * 1000
-#        t = int(1000/self.grabber.fps - total_elapsed) - 1
-#        if t <= 0:
-##            log.info('Missed next frame by: ' + str( t * -1. ) + ' ms')
-#            t = 1
+        self.writer_pipe.send('alive')
+        return self.newest_frame
 
     @property
     def source_type(self):
-        if self.newest_frame is None:
-            return None
-        else:
-            return self.newest_frame.source_type
-
+        return self.newest_frame.source_type if self.newest_frame else None
 
     def check_writer(self):
         """ True if alive """
@@ -222,12 +179,15 @@ class Spotter:
         # closing grabber is straight forward, will release capture object
         if self.grabber is not None:
             self.grabber.close()
+
         # tracker has no volatile things to handle either
         if self.tracker is not None:
             self.tracker.close()
+
         # chatter HAS to close serial connection or all hell breaks loose!
         if self.chatter is not None:
             self.chatter.close()
+
         # writer is a bit trickier, may have frames left to stow away
         if self.writer is not None and self.writer.is_alive():
             self.writer_pipe.send('terminate')
@@ -239,11 +199,12 @@ class Spotter:
         try:
             fc = self.grabber.frame_count
             tt = (time.clock() - self.ts_start)
-            log.info('Done! Grabbed ' + str(fc) + ' frames in ' + str(tt) + 's, with ' + str(fc/tt) + ' fps')
+            self.log.info('Done! Grabbed ' + str(fc) + ' frames in ' + str(tt) + 's, with ' + str(fc/tt) + ' fps')
         except Exception, e:
             print e
-        outfile = open(timingfname, "wb")
-        pickle.dump(self.timings, outfile)
+
+        #outfile = open(timingfname, "wb")
+        #pickle.dump(self.timings, outfile)
 
         sys.exit(1)
 

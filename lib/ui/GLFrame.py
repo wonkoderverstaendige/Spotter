@@ -38,9 +38,11 @@ class GLFrame(QtOpenGL.QGLWidget):
         self.jobs = []
         self.spotter = None
 
-    def update_world(self):
-        if self.spotter is None:
+    def update_world(self, spotter):
+        if spotter is None:
             return
+        else:
+            self.spotter = spotter
 
         self.frame = self.spotter.newest_frame.img
         if self.frame is None:

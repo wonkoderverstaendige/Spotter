@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>594</width>
+    <width>605</width>
     <height>388</height>
    </rect>
   </property>
@@ -345,7 +345,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>594</width>
+     <width>605</width>
      <height>21</height>
     </rect>
    </property>
@@ -358,7 +358,7 @@
       <string>&amp;Open</string>
      </property>
      <addaction name="actionFile"/>
-     <addaction name="actionDevice"/>
+     <addaction name="actionCamera"/>
     </widget>
     <widget class="QMenu" name="menu_Save">
      <property name="enabled">
@@ -428,12 +428,9 @@
     <string>E&amp;xit</string>
    </property>
   </action>
-  <action name="actionDevice">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
+  <action name="actionCamera">
    <property name="text">
-    <string>&amp;Device</string>
+    <string>&amp;Camera</string>
    </property>
   </action>
   <action name="actionFile">

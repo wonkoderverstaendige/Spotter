@@ -7,8 +7,8 @@ Created on Sat Dec 15 21:14:43 2012
 Track position LEDs and sync signal from camera or video file.
 
 Usage:
-    spotter.py --source SRC [--outfile DST] [options]
-    spotter.py -h | --help
+    spotterQt.py [--source SRC --outfile DST] [options]
+    spotterQt.py -h | --help
 
 Options:
     -h --help           Show this screen
@@ -68,6 +68,7 @@ class Main(QtGui.QMainWindow):
     gui_refresh_offset = 0
 
     def __init__(self, *args, **kwargs):  # , source, destination, fps, size, gui, serial
+        self.log = logging.getLogger(__name__)
         QtGui.QMainWindow.__init__(self)
 
         self.ui = Ui_MainWindow()
@@ -80,8 +81,9 @@ class Main(QtGui.QMainWindow):
         self.statusBar().addWidget(self.sbw)
 
         # Side bar widget
-        self.side_bar = SideBar.SideBar(self)
-        self.ui.frame_parameters.addWidget(self.side_bar)
+        self.side_bar = None
+        #self.side_bar = SideBar.SideBar(self)
+        #self.ui.frame_parameters.addWidget(self.side_bar)
 
         # Exit Signals
         self.ui.actionE_xit.setShortcut('Ctrl+Q')
@@ -93,7 +95,9 @@ class Main(QtGui.QMainWindow):
 
         # Menu Bar items
         #   File
-        self.connect(self.ui.actionFile, QtCore.SIGNAL('triggered()'), self.file_dialog_video)
+        self.connect(self.ui.actionFile, QtCore.SIGNAL('triggered()'), self.file_open_video)
+        self.connect(self.ui.actionCamera, QtCore.SIGNAL('triggered()'), self.file_open_device)
+
         #   Configuration
         self.connect(self.ui.actionLoadConfig, QtCore.SIGNAL('triggered()'), self.load_config)
         self.connect(self.ui.actionSaveConfig, QtCore.SIGNAL('triggered()'), self.save_config)
@@ -109,8 +113,6 @@ class Main(QtGui.QMainWindow):
         self.gl_frame = GLFrame()
         self.ui.frame_video.addWidget(self.gl_frame)
         self.gl_frame.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-        # hand the gl frame the spotter object
-        # self.gl_frame.spotter = self.spotter
 
         # handling mouse events by the tabs for selection of regions etc.
         self.gl_frame.sig_event.connect(self.mouse_event_to_tab)
@@ -162,18 +164,19 @@ class Main(QtGui.QMainWindow):
         t = self.stopwatch.restart()
         if t != 0:
             self.gui_fps = self.gui_fps*0.9 + 0.1*1000./t
-            self.sbw.lbl_fps.setText('FPS: {:.1f}'.format(self.gui_fps))
+            if self.gui_fps > 100:
+                self.sbw.lbl_fps.setText('FPS: {:.0f}'.format(self.gui_fps))
+            else:
+                self.sbw.lbl_fps.setText('FPS: {:.1f}'.format(self.gui_fps))
 
         if self.spotter.update() is None:
-            #self.spotter.exitMain()
-            #self.close()
             return
 
         if not (self.gl_frame.width and self.gl_frame.height):
             return
 
         # update the OpenGL frame
-        self.gl_frame.update_world()
+        self.gl_frame.update_world(self.spotter)
 
         # Update the currently open tab
         self.update_current_tab()
@@ -202,7 +205,10 @@ class Main(QtGui.QMainWindow):
         else:
             if not self.sbw.sb_offset.isEnabled():
                 self.sbw.sb_offset.setEnabled(True)
-            interval = int(1000.0/self.spotter.grabber.fps) + self.gui_refresh_offset
+            try:
+                interval = int(1000.0/self.spotter.grabber.fps) + self.gui_refresh_offset
+            except (ValueError, TypeError):
+                interval = 0
             if interval < 0:
                 interval = 1
                 self.sbw.sb_offset.setValue(interval - int(1000.0/self.spotter.grabber.fps))
@@ -269,7 +275,7 @@ class Main(QtGui.QMainWindow):
         Removing is trickier, as it has to delete the features/objects
         from the tracker!
         """
-        print "Removing a tab", idx
+        print "NOT removing tab", idx
 
     def get_top_tab_label(self):
         """ Return label of the top level tab. """
@@ -311,7 +317,7 @@ class Main(QtGui.QMainWindow):
             for t in tab_list:
                 t.update()
 
-    def file_dialog_video(self):
+    def file_open_video(self):
         """
         Open a video file. Should finish current spotter if any by closing
         it to allow all frames/settings to be saved properly. Then instantiate
@@ -319,11 +325,17 @@ class Main(QtGui.QMainWindow):
         TODO: Open file dialog in a useful folder. E.g. store the last used one
         """
         # Windows 7 uses 'HOMEPATH' instead of 'HOME'
-        path = os.getenv('HOME')
-        if not path:
-            path = os.getenv('HOMEPATH')
-        filename = QtGui.QFileDialog.getOpenFileName(self, 'Open Video', path)
-        print filename
+        #path = os.getenv('HOME')
+        #if not path:
+        #    path = os.getenv('HOMEPATH')
+        filename = QtGui.QFileDialog.getOpenFileName(self, 'Open Video', './recordings')  # path
+        if len(filename):
+            self.log.debug('File dialog given %s', str(filename))
+            self.spotter.grabber.start(str(filename))
+
+    def file_open_device(self):
+        """ Open camera as frame source """
+        self.spotter.grabber.start(source=0, size=(320, 180))
 
     def closeEvent(self, event):
         """
@@ -515,7 +527,8 @@ class Main(QtGui.QMainWindow):
                                                   range_area,
                                                   fixed_pos)
         new_tab = self.add_tab(self.ui.tab_features, TabFeatures, feature, focus_new)
-        self.side_bar.features_page.add_item(feature)
+        if self.side_bar is not None:
+            self.side_bar.features_page.add_item(feature)
         self.feature_tabs.append(new_tab)
 
     ###############################################################################
@@ -599,7 +612,8 @@ class Main(QtGui.QMainWindow):
                     object_.analog_dir = True
 
         new_tab = self.add_tab(self.ui.tab_objects, TabObjects, object_, focus_new)
-        self.side_bar.objects_page.add_item(object_)
+        if self.side_bar is not None:
+            self.side_bar.objects_page.add_item(object_)
         self.object_tabs.append(new_tab)
 
     ###############################################################################
