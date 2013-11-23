@@ -17,6 +17,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
     tab_type = "object"
 
     def __init__(self, parent, object_handle, label=None):
+        super(QtGui.QWidget, self).__init__(parent)
         self.object = object_handle
         self.parent = parent
 
@@ -28,7 +29,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         else:
             self.label = label
             self.object.label = label
-        super(QtGui.QWidget, self).__init__(parent)
+
         self.setupUi(self)
 
         self.combo_label.setEditText(self.label)

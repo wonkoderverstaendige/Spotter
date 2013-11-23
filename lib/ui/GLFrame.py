@@ -29,7 +29,7 @@ class GLFrame(QtOpenGL.QGLWidget):
 
     sig_event = QtCore.pyqtSignal(str, object)
 
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
         QtOpenGL.QGLWidget.__init__(self, *args)
         self.setMouseTracking(True)
         self.setCursor(QtGui.QCursor(QtCore.Qt.BlankCursor))

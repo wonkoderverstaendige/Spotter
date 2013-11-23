@@ -17,7 +17,6 @@ Options:
     -S --Serial         Serial port to uC [default: None]
     -o --outfile DST    Path to video out file [default: None]
     -d --dims DIMS      Frame size [default: 640x360]
-    -H --Headless       Run without interface
     -D --DEBUG          Verbose output
 
 To do:
@@ -68,7 +67,7 @@ class Main(QtGui.QMainWindow):
     gui_fps = 20
     gui_refresh_offset = 0
 
-    def __init__(self, source, destination, fps, size, gui, serial):
+    def __init__(self, *args, **kwargs):  # , source, destination, fps, size, gui, serial
         QtGui.QMainWindow.__init__(self)
 
         self.ui = Ui_MainWindow()
@@ -104,14 +103,14 @@ class Main(QtGui.QMainWindow):
         self.connect(self.ui.actionRecord, QtCore.SIGNAL('toggled(bool)'), self.record_video)
 
         # Spotter main class, handles Grabber, Writer, Tracker, Chatter
-        self.spotter = Spotter(source, destination, fps, size, gui, serial)
+        self.spotter = Spotter(*args, **kwargs)
 
         # OpenGL frame
         self.gl_frame = GLFrame()
         self.ui.frame_video.addWidget(self.gl_frame)
         self.gl_frame.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         # hand the gl frame the spotter object
-        self.gl_frame.spotter = self.spotter
+        # self.gl_frame.spotter = self.spotter
 
         # handling mouse events by the tabs for selection of regions etc.
         self.gl_frame.sig_event.connect(self.mouse_event_to_tab)
@@ -160,12 +159,14 @@ class Main(QtGui.QMainWindow):
     ##  FRAME REFRESH
     ###############################################################################
     def refresh(self):
-        self.gui_fps = self.gui_fps*0.9 + 0.1*1000./self.stopwatch.restart()
-        self.sbw.lbl_fps.setText('FPS: {:.1f}'.format(self.gui_fps))
+        t = self.stopwatch.restart()
+        if t != 0:
+            self.gui_fps = self.gui_fps*0.9 + 0.1*1000./t
+            self.sbw.lbl_fps.setText('FPS: {:.1f}'.format(self.gui_fps))
 
         if self.spotter.update() is None:
-            self.spotter.exitMain()
-            self.close()
+            #self.spotter.exitMain()
+            #self.close()
             return
 
         if not (self.gl_frame.width and self.gl_frame.height):
@@ -696,9 +697,9 @@ class Main(QtGui.QMainWindow):
 
 
 #############################################################
-def main(source, destination, fps, size, gui, serial):
+def main(*args, **kwargs):
     app = QtGui.QApplication([])
-    window = Main(source, destination, fps, size, gui, serial)
+    window = Main(*args, **kwargs)
     window.show()
     window.raise_()  # needed on OSX?
 
@@ -714,26 +715,26 @@ if __name__ == "__main__":                                  #
     if DEBUG:
         print(ARGDICT)
 
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     # Debug logging
-    log = logging.getLogger('ledtrack')
-    log_handle = logging.StreamHandler()  # logging.FileHandler('ledtrack.log')
-    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-    log_handle.setFormatter(formatter)
-    log.addHandler(log_handle)
-    if DEBUG:
-        log.setLevel(logging.INFO)  # INFOERROR
-    else:
-        log.setLevel(logging.ERROR)  # INFOERROR
+    #log = logging.getLogger('ledtrack')
+    #log_handle = logging.StreamHandler()  # logging.FileHandler('ledtrack.log')
+    #formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    #log_handle.setFormatter(formatter)
+    #log.addHandler(log_handle)
+    #if DEBUG:
+    #    log.setLevel(logging.INFO)  # INFOERROR
+    #else:
+    #    log.setLevel(logging.ERROR)  # INFOERROR
 
     # Frame size parameter string 'WIDTHxHEIGHT' to size tuple (WIDTH, HEIGHT)
     size = (0, 0) if not ARGDICT['--dims'] else tuple(ARGDICT['--dims'].split('x'))
 
-    gui = 'Qt' if not ARGDICT['--Headless'] else ARGDICT['--Headless']
+    main()
 
     # Qt main window which instantiates spotter class with all parameters
-    main(source=ARGDICT['--source'],
-         destination=utils.dst_file_name(ARGDICT['--outfile']),
-         fps=ARGDICT['--fps'],
-         size=size,
-         gui=gui,
-         serial=ARGDICT['--Serial'])
+    #main(source=ARGDICT['--source'],
+    #     destination=utils.dst_file_name(ARGDICT['--outfile']),
+    #     fps=ARGDICT['--fps'],
+    #     size=size,
+    #     serial=ARGDICT['--Serial'])

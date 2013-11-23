@@ -69,21 +69,36 @@ class Spotter:
     scale_resize = 1.0
     scale_tracking = 1.0
 
-    def __init__(self, source, destination, fps, size, gui, serial=None):
-        # Setup frame grabber object, fills framebuffer
-        self.grabber = grabber.Grabber(source, fps, size)
+    def __init__(self, source=None, dst=None, fps=None, serial=None, *args, **kwargs):
+        """
+
+        :param source:
+        :param dst:
+        :param fps:
+        :param size:
+        :param serial:
+        """
+        #source = kwargs['source'] if 'source' in kwargs else None
+        #destination = kwargs['destination'] if 'destination' in kwargs else None
+
+        self.log = logging.getLogger(__name__)
+        self.log.info(str(multiprocessing.cpu_count()) + ' CPUs found')
+
+        # Setup frame grabber object, fills frame buffer
+        self.log.debug('Instantiating grabber...')
+        self.grabber = grabber.Grabber(source, fps, *args, **kwargs)
 
         # Writer writes frames from buffer to video file in a separate process.
-#        print str(multiprocessing.cpu_count()) + ' CPUs found'
+        self.log.debug('Instantiating writer...')
         self.writer_queue = multiprocessing.Queue(16)
         self.writer_pipe, child_pipe = multiprocessing.Pipe()
-
         self.writer = multiprocessing.Process(
                     target = writer.Writer,
                     args = (self.grabber.fps,
                             self.grabber.size,
                             self.writer_queue,
                             child_pipe,))
+        self.log.debug('Starting writer...')
         self.writer.start()
 
         # tracker object finds LEDs in frames
@@ -102,8 +117,7 @@ class Spotter:
 #            self.newest_frame = self.grabber.framebuffer.pop()
         self.newest_frame = self.grabber.grab_next()
         if self.newest_frame is None:
-            print 'No new frame returned!!! What does it mean??? We are going to die! Eventually!!!'
-            return None
+            return
         else:
             t = self.newest_frame.timestamp
             time_text = time.strftime("%d-%b-%y %H:%M:%S", time.localtime(t))
@@ -226,8 +240,8 @@ class Spotter:
             fc = self.grabber.frame_count
             tt = (time.clock() - self.ts_start)
             log.info('Done! Grabbed ' + str(fc) + ' frames in ' + str(tt) + 's, with ' + str(fc/tt) + ' fps')
-        except:
-            pass
+        except Exception, e:
+            print e
         outfile = open(timingfname, "wb")
         pickle.dump(self.timings, outfile)
 
@@ -237,80 +251,80 @@ class Spotter:
 #############################################################
 if __name__ == "__main__":                                  #
 #############################################################
-#    pass
-    # Command line parsing
-    ARGDICT = docopt( __doc__, version=None )
-    DEBUG   = ARGDICT['--DEBUG']
-    if DEBUG: print( ARGDICT )
-
-    # Debug logging
-    log = logging.getLogger('ledtrack')
-    loghdl = logging.StreamHandler()#logging.FileHandler('ledtrack.log')
-    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s') #
-    loghdl.setFormatter( formatter )
-    log.addHandler( loghdl )
-    if DEBUG:
-        log.setLevel( logging.INFO ) #INFOERROR
-    else:
-        log.setLevel( logging.ERROR ) #INFOERROR
-
-    # no GUI, may later select GUI backend, i.e., Qt or cv2.highgui etc.
-    guistring = 'cv2.highgui' if not ARGDICT['--Headless'] else ARGDICT['--Headless']
-
-    # Frame size parameter string 'WIDTHxHEIGHT' to size tupple (WIDTH, HEIGHT)
-    size = (0, 0) if not ARGDICT['--dims'] else tuple( ARGDICT['--dims'].split('x') )
-
-    # Instantiating main class ... no shit, Sherlock!
-    main = Spotter( source      = ARGDICT['--source'],
-                    destination = utils.dst_file_name( ARGDICT['--outfile'] ),
-                    fps         = ARGDICT['--fps'],
-                    size        = size,
-                    gui         = guistring,
-                    serial      = ARGDICT['--Serial'])
-
-    # It's Math. 3rd grade Math. Wait time between frames, if any left
-    log.debug( 'fps: ' + str(main.grabber.fps) )
-    t = int(1000/main.grabber.fps)
-
-    # Main loop, runs until EOF or <ESCAPE> key pressed
-    log.debug( 'starting main loop' )
-    main.ts_start = time.clock()
-
-    while True:
-
-        # Get new frame
-        if main.grabber.grab_next():
-            main.newest_frame = main.grabber.framebuffer.pop()
-
-            # Check if writer process is still alive
-            # Otherwise might lose data without knowing!
-            # Copy numpy array, otherwise queue references same object
-            # like frame that will be worked on
-            if not main.writer == None and main.check_writer():
-                main.write_queue.put( main.newest_frame.copy() )
-                time.sleep( 0.001 ) # required, or may crash?
-
-            # Find and update position of tracked object
-            main.hsv_frame = cv2.cvtColor( main.newest_frame, cv2.COLOR_BGR2HSV )
-            main.tracker.trackLeds( main.hsv_frame, method = 'hsv_thresh' )
-#            main.Object.updatePosition()
-
-            # send position of tracked object to serial port
-#            if not main.Object.position is None:
-#                main.tracker.chatter.send( main.Object.position )
-
-            # freezes frame being shown, but not frame being processed/written
-            main.gui.update( main.newest_frame )
-
-        else:
-            print 'No new frame returned!!! What does it mean??? We are going to die! Eventually!!!'
-
-        total_elapsed = ( time.clock() - main.grabber.ts_last_frame ) * 1000
-        t = int( 1000/main.grabber.fps - total_elapsed ) - 1
-        if t <= 0:
-            log.info('Missed next frame by: ' + str( t * -1. ) + ' ms')
-            t = 1
-#        main.update()
-        main.gui.onKey( cv2.waitKey(t) )
-
-#    sys.exit(app.exec_())
+    pass
+#    # Command line parsing
+#    ARGDICT = docopt( __doc__, version=None )
+#    DEBUG   = ARGDICT['--DEBUG']
+#    if DEBUG: print( ARGDICT )
+#
+#    # Debug logging
+#    log = logging.getLogger('ledtrack')
+#    loghdl = logging.StreamHandler()#logging.FileHandler('ledtrack.log')
+#    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s') #
+#    loghdl.setFormatter(formatter)
+#    log.addHandler(loghdl)
+#    if DEBUG:
+#        log.setLevel( logging.INFO ) #INFOERROR
+#    else:
+#        log.setLevel( logging.ERROR ) #INFOERROR
+#
+#    # no GUI, may later select GUI backend, i.e., Qt or cv2.highgui etc.
+#    guistring = 'cv2.highgui' if not ARGDICT['--Headless'] else ARGDICT['--Headless']
+#
+#    # Frame size parameter string 'WIDTHxHEIGHT' to size tupple (WIDTH, HEIGHT)
+#    size = (0, 0) if not ARGDICT['--dims'] else tuple( ARGDICT['--dims'].split('x') )
+#
+#    # Instantiating main class ... no shit, Sherlock!
+#    main = Spotter( source      = ARGDICT['--source'],
+#                    destination = utils.dst_file_name( ARGDICT['--outfile'] ),
+#                    fps         = ARGDICT['--fps'],
+#                    size        = size,
+#                    gui         = guistring,
+#                    serial      = ARGDICT['--Serial'])
+#
+#    # It's Math. 3rd grade Math. Wait time between frames, if any left
+#    log.debug( 'fps: ' + str(main.grabber.fps) )
+#    t = int(1000/main.grabber.fps)
+#
+#    # Main loop, runs until EOF or <ESCAPE> key pressed
+#    log.debug( 'starting main loop' )
+#    main.ts_start = time.clock()
+#
+#    while True:
+#
+#        # Get new frame
+#        if main.grabber.grab_next():
+#            main.newest_frame = main.grabber.framebuffer.pop()
+#
+#            # Check if writer process is still alive
+#            # Otherwise might lose data without knowing!
+#            # Copy numpy array, otherwise queue references same object
+#            # like frame that will be worked on
+#            if not main.writer == None and main.check_writer():
+#                main.write_queue.put( main.newest_frame.copy() )
+#                time.sleep( 0.001 ) # required, or may crash?
+#
+#            # Find and update position of tracked object
+#            main.hsv_frame = cv2.cvtColor( main.newest_frame, cv2.COLOR_BGR2HSV )
+#            main.tracker.trackLeds( main.hsv_frame, method = 'hsv_thresh' )
+##            main.Object.updatePosition()
+#
+#            # send position of tracked object to serial port
+##            if not main.Object.position is None:
+##                main.tracker.chatter.send( main.Object.position )
+#
+#            # freezes frame being shown, but not frame being processed/written
+#            main.gui.update( main.newest_frame )
+#
+#        else:
+#            print 'No new frame returned!!! What does it mean??? We are going to die! Eventually!!!'
+#
+#        total_elapsed = ( time.clock() - main.grabber.ts_last_frame ) * 1000
+#        t = int( 1000/main.grabber.fps - total_elapsed ) - 1
+#        if t <= 0:
+#            log.info('Missed next frame by: ' + str( t * -1. ) + ' ms')
+#            t = 1
+##        main.update()
+#        main.gui.onKey( cv2.waitKey(t) )
+#
+##    sys.exit(app.exec_())
