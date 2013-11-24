@@ -72,11 +72,15 @@ class Writer:
         self.codec = kwargs['codec'] if 'codec' in kwargs else self.codecs[0]
         self.loop()
 
-    def start(self, dst=None):
+    def start(self, dst=None, size=None):
         # check if output file exists
         if dst is None:
             dst = 'recordings/' + utils.time_string() + '.avi'
         destination = utils.dst_file_name(dst)
+
+        if size is None and self.size is None:
+            self.log.error('Video size not specified, writer would fail.')
+
         if os.path.isfile(destination) and not OVERWRITE:
             self.log.error('Destination file %s exists.', destination)
             return
@@ -91,11 +95,16 @@ class Writer:
                                       fps=self.fps, frameSize=self.size, isColor=True)
 
         self.video_logger = logging.getLogger(destination)
+        self.video_logger.handlers = []
         self.video_logger.addHandler(logging.FileHandler(''.join([destination, '.log'])))
         self.video_logger.setLevel(logging.INFO)
+        self.video_logger.propagate = False
 
+        self.video_logger.info('Start recording: %s fps, %s, %s, %s',
+                               str(self.fps), str(self.size), self.codec, self.destination)
+
+        self.log.debug('Recording running...')
         self.recording = True
-        self.log.debug('Started destination: %s', self.destination)
 
     def stop(self):
         self.destination = None
