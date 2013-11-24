@@ -388,7 +388,7 @@ class Main(QtGui.QMainWindow):
         if not len(filename):
             return None
 
-        print "Opening template", filename
+        self.log.debug("Opening template %s", filename)
         template = self.parse_config(filename)
         if template is not None:
             abs_pos = template['TEMPLATE']['absolute_positions']

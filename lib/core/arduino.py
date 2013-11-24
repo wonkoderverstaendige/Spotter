@@ -8,6 +8,7 @@ A lot of the handling is done the way Firmata handles the boards
 
 TODO: How does the non-blocking pass_time function work exactly?
 """
+import logging
 
 import sys
 import serial
@@ -34,9 +35,13 @@ class Pin(object):
 class Arduino(object):
     firmware_version = None
     connected = False
+    name = 'Arduino'
 
-    def __init__(self, port, baudrate=57600):
-        self.sp = serial.Serial(port, baudrate)
+    def __init__(self, port, baud_rate=57600):
+
+        self.log = logging.getLogger(__name__)
+
+        self.sp = serial.Serial(port, baud_rate)
         self.pass_time(3)
 
         self.bytes_sent = 0
@@ -73,8 +78,8 @@ class Arduino(object):
             # Digital Pins are type 2
             self.pins['digital'].extend(dig_pins)
 
-            print '   --> SPI_DAC pins available:', len(self.pins['dac'])
-            print '   --> Digital pins available:', len(self.pins['digital'])
+            self.log.info('%d DAC pins available', len(self.pins['dac']))
+            self.log.info('%d digital output pins available', len(self.pins['digital']))
             return True
         return False
 
@@ -114,10 +119,10 @@ class Arduino(object):
         O DAC.7     W DO.7
         """
         msg = ''
-        cmd_vals = [0, ord('H'), ord('P')]
+        cmd_values = [0, ord('H'), ord('P')]
         for i in instruction_list:
             # instruction and address
-            msg += chr(cmd_vals[i[0]] + i[1])
+            msg += chr(cmd_values[i[0]] + i[1])
             data = i[2] if i[2] is not None else 0
             msg = msg + struct.pack('H', data) + '\n'
 
@@ -127,7 +132,8 @@ class Arduino(object):
             return False
         try:
             self.sp.write(msg)
-        except serial.serialutil.SerialTimeoutException:  # or writeTimeoutError
+        except serial.serialutil.SerialTimeoutException, error:  # or writeTimeoutError
+            self.log.error(error)
             self.sp = None
             self.close()
             return False
@@ -137,7 +143,7 @@ class Arduino(object):
 
     def close(self):
         """ Call this to exit a bit cleaner. """
-        print "Closing Serial..."
+        self.log.info("Closing Serial")
         if hasattr(self, 'sp') and self.sp is not None:
             self.null_pins()
             self.sp.close()
@@ -145,19 +151,18 @@ class Arduino(object):
         self.bytes_sent = 0
 
     def null_pins(self):
-        """ Reset the given pins to zero (0, low). If no pins given, do all."""
+        """ Reset the given pins to zero (0, low). If no pins given, do all. """
         if self.is_open():
             instr = []
-            for pkey in self.pins.iterkeys():
-                for p in self.pins[pkey]:
+            for pin_key in self.pins.iterkeys():
+                for p in self.pins[pin_key]:
                     instr.append([p.type_id, p.id, 0])
             self.send_instructions(instr)
 
-    def pass_time(self, t):
-        """
-        Non-blocking time-out for t seconds.
-        """
-        cont = time.time() + t
+    @staticmethod
+    def pass_time(duration):
+        """ Non-blocking time-out for t seconds. """
+        cont = time.time() + duration
         while time.time() < cont:
             time.sleep(0)
 
@@ -165,16 +170,16 @@ class Arduino(object):
 #############################################################
 if __name__ == "__main__":
 #############################################################
-    testboard = Arduino(sys.argv[1])
+    test_board = Arduino(sys.argv[1])
 #    while True:
-#        if testboard.bytes_available():
-#            byte = ord(testboard.sp.read(1))
+#        if test_board.bytes_available():
+#            byte = ord(test_board.sp.read(1))
 #            if byte == 2:
 #                print "RIGHT"
 #            if byte == 1:
 #                print "LEFT"
 #            if byte == 3:
 #                print "BOTH"
-#            testboard.sp.flushInput()
+#            test_board.sp.flushInput()
 #            time.sleep(0.005)
     sys.exit(0)
