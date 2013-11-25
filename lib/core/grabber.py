@@ -95,9 +95,9 @@ class Grabber:
 
         # if source_type is 'device': Otherwise does nothing
         if not self.source_type == 'file':
-            self.capture.set(cv.CV_CAP_PROP_FPS, float(self.fps_init))
-            self.capture.set(cv.CV_CAP_PROP_FRAME_WIDTH, float(self.size_init[0]))
-            self.capture.set(cv.CV_CAP_PROP_FRAME_HEIGHT, float(self.size_init[1]))
+            self.capture.set(cv2.cv.CV_CAP_PROP_FPS, float(self.fps_init))
+            self.capture.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, float(self.size_init[0]))
+            self.capture.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, float(self.size_init[1]))
 
         # Grab first frame, don't append to framebuffer
         # TODO: That's nasty for video file, losing first frame! I.e. transcoding
