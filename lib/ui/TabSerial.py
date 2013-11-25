@@ -5,6 +5,7 @@ Created on Sun Jan 18 21:13:54 2013
 
 
 """
+import logging
 
 from PyQt4 import QtGui, QtCore
 import lib.utilities as utils
@@ -18,22 +19,24 @@ class Tab(QtGui.QWidget, Ui_tab_serial):
     accept_events = False
     tab_type = "serial"
 
-    def __init__(self, serial_handle, label=None, *args, **kwargs):
-        QtGui.QWidget.__init__(self)
+    def __init__(self, serial_ref, label=None, *args, **kwargs):
         #super(QtGui.QWidget, self).__init__(parent)
-        print serial_handle
-        self.serial = serial_handle
+        QtGui.QWidget.__init__(self)
+        self.log = logging.getLogger(__name__)
+        self.setupUi(self)
+        self.serial = serial_ref
+
+        assert 'spotter' in kwargs
+        self.spotter = kwargs['spotter']
+
         if label is None:
             self.label = self.serial.label
         else:
             self.label = label
             self.serial.label = label
 
-        #self.parent = parent
-        self.setupUi(self)
-
-        assert 'spotter' in kwargs
-        self.spotter = kwargs['spotter']
+        assert 'update_all_tabs' in kwargs
+        self.refresh_sidebar = kwargs['update_all_tabs']
 
         self.connect(self.btn_serial_refresh, QtCore.SIGNAL('clicked()'), self.refresh_port_list)
         self.connect(self.btn_serial_connect, QtCore.SIGNAL('clicked()'), self.toggle_connection)
@@ -82,7 +85,7 @@ class Tab(QtGui.QWidget, Ui_tab_serial):
             self.btn_serial_connect.setText('Connect')
             self.btn_serial_connect.setChecked(False)
             self.serial.close()
-            self.parent.update_all_tabs()
+            self.update_all_tabs()
         else:
             self.serial.serial_port = str(self.combo_serialports.currentText())
             try:
@@ -94,4 +97,4 @@ class Tab(QtGui.QWidget, Ui_tab_serial):
             if sc:
                 self.btn_serial_connect.setText('Disconnect')
                 self.btn_serial_connect.setChecked(True)
-                self.parent.update_all_tabs()
+                self.update_all_tabs()

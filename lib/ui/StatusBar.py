@@ -14,3 +14,5 @@ class StatusBar(QtGui.QWidget, Ui_statusBar):
     def __init__(self, parent):
         super(QtGui.QWidget, self).__init__(parent)
         self.setupUi(self)
+
+        self.lbl_fps.setStyleSheet(' QLabel {color: red}')

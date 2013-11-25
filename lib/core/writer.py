@@ -70,6 +70,7 @@ class Writer:
             pass
 
         self.codec = kwargs['codec'] if 'codec' in kwargs else self.codecs[0]
+        self.log.info('Starting loop with size %s', str(size))
         self.loop()
 
     def start(self, dst=None, size=None):

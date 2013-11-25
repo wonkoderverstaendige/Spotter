@@ -7,20 +7,20 @@ Created on Sun Jan 13 14:19:24 2013
 """
 
 from PyQt4 import QtGui, QtCore
-from main_tab_pageUi import Ui_main_tab
+from main_tab_pageUi import Ui_main_tab_page
 
 
-class Page(QtGui.QWidget, Ui_main_tab):
+class MainTabPage(QtGui.QWidget, Ui_main_tab_page):
 
     def __init__(self, label=None, sub_page_class=None, *args, **kwargs):
         QtGui.QWidget.__init__(self)
         #super(QtGui.QWidget, self).__init__(parent)
 
-        assert 'spotter' in kwargs
-        self.spotter = kwargs['spotter']
-
         self.label = label
         self.sub_page_class = sub_page_class
+
+        assert 'spotter' in kwargs
+        self.spotter = kwargs['spotter']
 
         self.setupUi(self)
         self.btn_new_page.setText("New " + self.label)

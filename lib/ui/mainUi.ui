@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>605</width>
+    <width>647</width>
     <height>388</height>
    </rect>
   </property>
@@ -31,16 +31,7 @@
     <property name="spacing">
      <number>0</number>
     </property>
-    <property name="leftMargin">
-     <number>9</number>
-    </property>
-    <property name="topMargin">
-     <number>0</number>
-    </property>
-    <property name="rightMargin">
-     <number>0</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>0</number>
     </property>
     <item>
@@ -90,7 +81,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>605</width>
+     <width>647</width>
      <height>21</height>
     </rect>
    </property>
@@ -167,24 +158,6 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionRecord"/>
-  </widget>
-  <widget class="QDockWidget" name="dockWidget_2">
-   <attribute name="dockWidgetArea">
-    <number>1</number>
-   </attribute>
-   <widget class="QWidget" name="dockWidgetContents_2">
-    <widget class="QWidget" name="">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>95</width>
-       <height>313</height>
-      </rect>
-     </property>
-     <layout class="QHBoxLayout" name="new_parameters"/>
-    </widget>
-   </widget>
   </widget>
   <action name="actionE_xit">
    <property name="text">

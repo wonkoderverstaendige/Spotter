@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'tab_regionsUi.ui'
 #
-# Created: Sat Nov 23 02:16:54 2013
-#      by: PyQt4 UI code generator 4.9.6
+# Created: Mon Nov 25 22:32:41 2013
+#      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_tab_regions(object):
     def setupUi(self, tab_regions):
         tab_regions.setObjectName(_fromUtf8("tab_regions"))
-        tab_regions.resize(241, 324)
+        tab_regions.resize(241, 387)
         self.gridLayout = QtGui.QGridLayout(tab_regions)
         self.gridLayout.setMargin(0)
         self.gridLayout.setSpacing(0)
@@ -40,7 +40,7 @@ class Ui_tab_regions(object):
         self.toolBox.setLineWidth(0)
         self.toolBox.setObjectName(_fromUtf8("toolBox"))
         self.page_regions_overview = QtGui.QWidget()
-        self.page_regions_overview.setGeometry(QtCore.QRect(0, 0, 239, 259))
+        self.page_regions_overview.setGeometry(QtCore.QRect(0, 0, 239, 322))
         self.page_regions_overview.setObjectName(_fromUtf8("page_regions_overview"))
         self.gridLayout_6 = QtGui.QGridLayout(self.page_regions_overview)
         self.gridLayout_6.setMargin(0)
@@ -109,7 +109,7 @@ class Ui_tab_regions(object):
         self.gridLayout_6.addLayout(self.gridLayout_5, 0, 0, 1, 1)
         self.toolBox.addItem(self.page_regions_overview, _fromUtf8(""))
         self.page_regions_collisions = QtGui.QWidget()
-        self.page_regions_collisions.setGeometry(QtCore.QRect(0, 0, 239, 259))
+        self.page_regions_collisions.setGeometry(QtCore.QRect(0, 0, 239, 322))
         self.page_regions_collisions.setObjectName(_fromUtf8("page_regions_collisions"))
         self.gridLayout_8 = QtGui.QGridLayout(self.page_regions_collisions)
         self.gridLayout_8.setMargin(0)
@@ -145,7 +145,7 @@ class Ui_tab_regions(object):
         self.gridLayout_8.addLayout(self.gridLayout_10, 0, 0, 1, 1)
         self.toolBox.addItem(self.page_regions_collisions, _fromUtf8(""))
         self.page_regions_IO = QtGui.QWidget()
-        self.page_regions_IO.setGeometry(QtCore.QRect(0, 0, 239, 259))
+        self.page_regions_IO.setGeometry(QtCore.QRect(0, 0, 239, 322))
         self.page_regions_IO.setObjectName(_fromUtf8("page_regions_IO"))
         self.gridLayout_7 = QtGui.QGridLayout(self.page_regions_IO)
         self.gridLayout_7.setMargin(0)
@@ -154,21 +154,26 @@ class Ui_tab_regions(object):
         self.gridLayout_9 = QtGui.QGridLayout()
         self.gridLayout_9.setObjectName(_fromUtf8("gridLayout_9"))
         self.combo_label = QtGui.QComboBox(self.page_regions_IO)
+        self.combo_label.setEnabled(False)
         self.combo_label.setEditable(True)
         self.combo_label.setObjectName(_fromUtf8("combo_label"))
         self.gridLayout_9.addWidget(self.combo_label, 0, 1, 1, 2)
         self.pushButton_15 = QtGui.QPushButton(self.page_regions_IO)
+        self.pushButton_15.setEnabled(False)
         self.pushButton_15.setObjectName(_fromUtf8("pushButton_15"))
         self.gridLayout_9.addWidget(self.pushButton_15, 1, 1, 1, 1)
         self.pushButton_14 = QtGui.QPushButton(self.page_regions_IO)
+        self.pushButton_14.setEnabled(False)
         self.pushButton_14.setObjectName(_fromUtf8("pushButton_14"))
         self.gridLayout_9.addWidget(self.pushButton_14, 2, 1, 1, 1)
         self.pushButton_13 = QtGui.QPushButton(self.page_regions_IO)
+        self.pushButton_13.setEnabled(False)
         self.pushButton_13.setObjectName(_fromUtf8("pushButton_13"))
         self.gridLayout_9.addWidget(self.pushButton_13, 2, 2, 1, 1)
         spacerItem2 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.gridLayout_9.addItem(spacerItem2, 3, 1, 2, 2)
         self.pushButton_12 = QtGui.QPushButton(self.page_regions_IO)
+        self.pushButton_12.setEnabled(False)
         self.pushButton_12.setObjectName(_fromUtf8("pushButton_12"))
         self.gridLayout_9.addWidget(self.pushButton_12, 1, 2, 1, 1)
         self.gridLayout_7.addLayout(self.gridLayout_9, 0, 2, 1, 1)
@@ -183,7 +188,7 @@ class Ui_tab_regions(object):
 
     def retranslateUi(self, tab_regions):
         tab_regions.setWindowTitle(_translate("tab_regions", "Form", None))
-        self.btn_add_shape.setStatusTip(_translate("tab_regions", "Drag: Rectangle. Shift+drag: Line. Ctrl+drag: Circle.", None))
+        self.btn_add_shape.setStatusTip(_translate("tab_regions", "Drag: Rectangle. Shift+drag: Circle. Ctrl+drag: Line.", None))
         self.btn_add_shape.setText(_translate("tab_regions", "&Add", None))
         self.btn_remove_shape.setText(_translate("tab_regions", "&Remove", None))
         self.ckb_trigger.setText(_translate("tab_regions", "Trigger", None))

@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'tab_featuresUi.ui'
 #
-# Created: Sat Nov 23 02:16:54 2013
-#      by: PyQt4 UI code generator 4.9.6
+# Created: Mon Nov 25 22:32:41 2013
+#      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_tab_features(object):
     def setupUi(self, tab_features):
         tab_features.setObjectName(_fromUtf8("tab_features"))
-        tab_features.resize(241, 324)
+        tab_features.resize(241, 387)
         self.gridLayout = QtGui.QGridLayout(tab_features)
         self.gridLayout.setMargin(0)
         self.gridLayout.setSpacing(0)
@@ -37,7 +37,7 @@ class Ui_tab_features(object):
         self.toolBox = QtGui.QToolBox(tab_features)
         self.toolBox.setObjectName(_fromUtf8("toolBox"))
         self.page_feature_detection = QtGui.QWidget()
-        self.page_feature_detection.setGeometry(QtCore.QRect(0, 0, 239, 259))
+        self.page_feature_detection.setGeometry(QtCore.QRect(0, 0, 239, 322))
         self.page_feature_detection.setObjectName(_fromUtf8("page_feature_detection"))
         self.gridLayout_6 = QtGui.QGridLayout(self.page_feature_detection)
         self.gridLayout_6.setMargin(2)
@@ -219,7 +219,7 @@ class Ui_tab_features(object):
         self.gridLayout_6.addWidget(self.line, 8, 0, 1, 1)
         self.toolBox.addItem(self.page_feature_detection, _fromUtf8(""))
         self.page_feature_restriction = QtGui.QWidget()
-        self.page_feature_restriction.setGeometry(QtCore.QRect(0, 0, 239, 259))
+        self.page_feature_restriction.setGeometry(QtCore.QRect(0, 0, 239, 322))
         self.page_feature_restriction.setObjectName(_fromUtf8("page_feature_restriction"))
         self.gridLayout_8 = QtGui.QGridLayout(self.page_feature_restriction)
         self.gridLayout_8.setObjectName(_fromUtf8("gridLayout_8"))
@@ -232,7 +232,7 @@ class Ui_tab_features(object):
         self.gridLayout_8.addWidget(self.ckb_fixed_pos, 1, 0, 1, 1)
         self.toolBox.addItem(self.page_feature_restriction, _fromUtf8(""))
         self.page_feature_IO = QtGui.QWidget()
-        self.page_feature_IO.setGeometry(QtCore.QRect(0, 0, 239, 259))
+        self.page_feature_IO.setGeometry(QtCore.QRect(0, 0, 239, 322))
         self.page_feature_IO.setObjectName(_fromUtf8("page_feature_IO"))
         self.gridLayout_7 = QtGui.QGridLayout(self.page_feature_IO)
         self.gridLayout_7.setMargin(0)
@@ -240,18 +240,23 @@ class Ui_tab_features(object):
         self.gridLayout_9 = QtGui.QGridLayout()
         self.gridLayout_9.setObjectName(_fromUtf8("gridLayout_9"))
         self.pushButton_12 = QtGui.QPushButton(self.page_feature_IO)
+        self.pushButton_12.setEnabled(False)
         self.pushButton_12.setObjectName(_fromUtf8("pushButton_12"))
         self.gridLayout_9.addWidget(self.pushButton_12, 1, 1, 1, 1)
         self.pushButton_13 = QtGui.QPushButton(self.page_feature_IO)
+        self.pushButton_13.setEnabled(False)
         self.pushButton_13.setObjectName(_fromUtf8("pushButton_13"))
         self.gridLayout_9.addWidget(self.pushButton_13, 2, 1, 1, 1)
         self.pushButton_14 = QtGui.QPushButton(self.page_feature_IO)
+        self.pushButton_14.setEnabled(False)
         self.pushButton_14.setObjectName(_fromUtf8("pushButton_14"))
         self.gridLayout_9.addWidget(self.pushButton_14, 2, 0, 1, 1)
         self.pushButton_15 = QtGui.QPushButton(self.page_feature_IO)
+        self.pushButton_15.setEnabled(False)
         self.pushButton_15.setObjectName(_fromUtf8("pushButton_15"))
         self.gridLayout_9.addWidget(self.pushButton_15, 1, 0, 1, 1)
         self.combo_label = QtGui.QComboBox(self.page_feature_IO)
+        self.combo_label.setEnabled(False)
         self.combo_label.setEditable(True)
         self.combo_label.setObjectName(_fromUtf8("combo_label"))
         self.gridLayout_9.addWidget(self.combo_label, 0, 0, 1, 2)

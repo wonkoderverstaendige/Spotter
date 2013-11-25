@@ -5,10 +5,9 @@ Created on Sun Jan 13 14:19:24 2013
 
 
 """
+import logging
 
-import sys
 from PyQt4 import QtGui, QtCore
-
 from tab_regionsUi import Ui_tab_regions
 import lib.geometry as geom
 
@@ -27,24 +26,21 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
     coords_end = None
     button_start = None
 
-    def __init__(self, region_handle, label=None, *args, **kwargs):
-        #self.parent = parent
-        QtGui.QWidget.__init__(self)
+    def __init__(self, region_ref, label=None, *args, **kwargs):
         #super(QtGui.QWidget, self).__init__(parent)
+        QtGui.QWidget.__init__(self)
+        self.log = logging.getLogger(__name__)
         self.setupUi(self)
-
+        self.region = region_ref
 
         assert 'spotter' in kwargs
         self.spotter = kwargs['spotter']
 
-        self.region = region_handle
         if label is None:
             self.label = self.region.label
         else:
             self.label = label
             self.region.label = label
-
-        self.combo_label.setEditText(self.label)
 
         # Fill tree/list with all available shapes
         for s in self.region.shapes:
@@ -435,10 +431,10 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         availabilities.
         """
         enable = []
-        pins = self.parent.spotter.chatter.pins_for_slot(slot)
+        pins = self.spotter.chatter.pins_for_slot(slot)
         for p in pins:
             if p.slot and not (p.slot is slot):
                 enable.append(0)
             else:
-                enable.append(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)#33
+                enable.append(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
         return pins, enable

@@ -252,6 +252,14 @@
         </layout>
        </widget>
        <widget class="QWidget" name="page_objects_slots">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>259</width>
+          <height>322</height>
+         </rect>
+        </property>
         <attribute name="label">
          <string>Analog Out Slots</string>
         </attribute>
@@ -362,6 +370,9 @@
           <layout class="QGridLayout" name="gridLayout_3">
            <item row="1" column="1">
             <widget class="QPushButton" name="pushButton_8">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Save</string>
              </property>
@@ -369,6 +380,9 @@
            </item>
            <item row="2" column="1">
             <widget class="QPushButton" name="pushButton_5">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Delete</string>
              </property>
@@ -376,6 +390,9 @@
            </item>
            <item row="2" column="0">
             <widget class="QPushButton" name="pushButton_4">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Clone</string>
              </property>
@@ -383,6 +400,9 @@
            </item>
            <item row="1" column="0">
             <widget class="QPushButton" name="pushButton_9">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Open</string>
              </property>
@@ -390,6 +410,9 @@
            </item>
            <item row="0" column="0" colspan="2">
             <widget class="QComboBox" name="combo_label">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="editable">
               <bool>true</bool>
              </property>

@@ -52,13 +52,9 @@ from lib.configobj import configobj, validate
 
 from PyQt4 import QtGui, QtCore
 from lib.core import Spotter
-import lib.geometry as geom
-import lib.utilities as utils
 from lib.ui.mainUi import Ui_MainWindow
 from lib.ui import GLFrame
-from lib.ui import TabFeatures, TabObjects, TabRegions, TabSerial
 from lib.ui import SerialIndicator, StatusBar, SideBar
-from lib.ui import MainTabPage
 
 sys.path.append(DIR_TEMPLATES)
 
@@ -76,14 +72,15 @@ class Main(QtGui.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
+        # Spotter main class, handles Grabber, Writer, Tracker, Chatter
+        self.__spotter_ref = Spotter(*args, **kwargs)
+
         # Status Bar
         self.sbw = StatusBar(self)
-        self.sbw.lbl_fps.setStyleSheet(' QLabel {color: red}')
         self.statusBar().addWidget(self.sbw)
 
         # Side bar widget
-        self.side_bar = None
-        self.side_bar = SideBar.SideBar(self, spotter=self.spotter)
+        self.side_bar = SideBar.SideBar(self)
         self.ui.frame_parameters.addWidget(self.side_bar)
 
         # Exit Signals
@@ -107,9 +104,6 @@ class Main(QtGui.QMainWindow):
         # Toolbar items
         self.connect(self.ui.actionRecord, QtCore.SIGNAL('toggled(bool)'), self.record_video)
 
-        # Spotter main class, handles Grabber, Writer, Tracker, Chatter
-        self.__spotter_ref = Spotter(*args, **kwargs)
-
         # OpenGL frame
         self.gl_frame = GLFrame()
         self.ui.frame_video.addWidget(self.gl_frame)
@@ -123,42 +117,23 @@ class Main(QtGui.QMainWindow):
         self.template_default = self.parse_config(default_path, True)
         #list_of_files = [f for f in os.listdir(DIR_TEMPLATES) if f.lower().endswith('ini')]
 
-        # Features tab widget
-        self.feature_tabs = []
-        self.connect(self.ui.tab_features, QtCore.SIGNAL('currentChanged(int)'), self.tab_features_switch)
-        self.connect(self.ui.btn_new_feature_tab, QtCore.SIGNAL('clicked()'), self.add_feature)
-
-        # Objects tab widget
-        self.object_tabs = []
-        self.connect(self.ui.tab_objects, QtCore.SIGNAL('currentChanged(int)'), self.tab_objects_switch)
-        self.connect(self.ui.btn_new_object_tab, QtCore.SIGNAL('clicked()'), self.add_object)
-
-        # Regions tab widget
-        self.region_tabs = []
-        self.connect(self.ui.tab_regions, QtCore.SIGNAL('currentChanged(int)'), self.tab_regions_switch)
-        self.connect(self.ui.btn_new_region_tab, QtCore.SIGNAL('clicked()'), self.add_region)
-        self.ui.tab_regions.tabCloseRequested.connect(self.remove_tab)
-
-        # Serial tab widget
-        self.serial_tabs = []
-        self.add_serial(self.spotter.chatter)
-
         # Serial/Arduino Connection status indicator
         self.arduino_indicator = SerialIndicator(self.spotter.chatter)
         self.ui.toolBar.addWidget(self.arduino_indicator)
-        self.serial_timer = QtCore.QTimer(self)
-        self.serial_timer.timeout.connect(self.serial_check)
-        self.serial_timer.start(1000)
+        # TODO: Move to page specific code
+        #self.serial_timer = QtCore.QTimer(self)
+        #self.serial_timer.timeout.connect(self.serial_check)
+        #self.serial_timer.start(1000)
 
         self.center_window()
-
-        self.stopwatch = QtCore.QElapsedTimer()
-        self.stopwatch.start()
 
         # Starts main frame grabber loop
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.refresh)
         self.timer.start(GUI_REFRESH_INTERVAL)
+
+        self.stopwatch = QtCore.QElapsedTimer()
+        self.stopwatch.start()
 
     @property
     def spotter(self):
@@ -186,7 +161,7 @@ class Main(QtGui.QMainWindow):
         self.gl_frame.update_world(self.spotter)
 
         # Update the currently open tab
-        self.update_current_tab()
+        self.side_bar.update_current_tab()
 
         # check if the refresh rate needs adjustment
         self.adjust_refresh_rate()
@@ -239,7 +214,7 @@ class Main(QtGui.QMainWindow):
         Hand the mouse event to the active tab. Tabs may handle mouse events
         differently, and depending on internal states (e.g. selections)
         """
-        current_tab = self.get_child_tab()
+        current_tab = self.side_bar.get_child_tab()
         if current_tab and current_tab.accept_events:
             current_tab.process_event(event_type, event)
 
@@ -262,67 +237,6 @@ class Main(QtGui.QMainWindow):
         screen = QtGui.QDesktopWidget().screenGeometry()
         window_size = self.geometry()
         self.move((screen.width() - window_size.width()) / 2, (screen.height() - window_size.height()) / 2)
-
-    def add_tab(self, tab_widget, new_tab_class, tab_equivalent, focus_new=True):
-        """
-        Add new tab with Widget new_tab_class and switches to it. The
-        tab_equivalent is the object that is being represented by the tab,
-        for example an LED or Object.
-        """
-        new_tab = new_tab_class.Tab(tab_equivalent, spotter=self.spotter)
-        tab_widget.insertTab(tab_widget.count() - 1, new_tab, new_tab.label)
-        if focus_new:
-            tab_widget.setCurrentIndex(tab_widget.count() - 2)
-        else:
-            tab_widget.setCurrentIndex(0)
-        return new_tab
-
-    def remove_tab(self, idx):
-        """
-        Removing is trickier, as it has to delete the features/objects
-        from the tracker!
-        """
-        print "NOT removing tab", idx
-
-    def get_top_tab_label(self):
-        """ Return label of the top level tab. """
-        return self.ui.tab_parameters.tabText(self.ui.tab_parameters.currentIndex())
-
-    def get_child_tab(self):
-        active_top_tab_label = self.get_top_tab_label()
-        if active_top_tab_label == "Features" and (self.ui.tab_features.count() > 1):
-            return self.ui.tab_features.widget(self.ui.tab_features.currentIndex())
-        elif active_top_tab_label == "Objects" and (self.ui.tab_objects.count() > 1):
-            return self.ui.tab_objects.widget(self.ui.tab_objects.currentIndex())
-        elif active_top_tab_label == "ROIs" and (self.ui.tab_regions.count() > 1):
-            return self.ui.tab_regions.widget(self.ui.tab_regions.currentIndex())
-        elif active_top_tab_label == "Serial":
-            return self.ui.tab_serial.widget(self.ui.tab_serial.currentIndex())
-        else:
-            return None
-
-    def update_current_tab(self):
-        """
-        Currently visible tab is the only one that requires to be updated
-        live when parameters of its associated object change, e.g. coordinates
-        of tracked objects or LEDs. The rest should happen behind the scenes
-        in the spotter sub-classes.
-        """
-        current_tab = self.get_child_tab()
-        try:
-            current_tab.update()
-        except AttributeError:
-            pass
-
-    def update_all_tabs(self):
-        """
-        This is potentially very expensive! Best only trigger on 'large'
-        event or introduce some selectivity, i.e. only update affected tabs as
-        far as one can tell.
-        """
-        for tab_list in [self.feature_tabs, self.object_tabs, self.region_tabs]:
-            for t in tab_list:
-                t.update()
 
     def file_open_video(self):
         """
@@ -401,16 +315,16 @@ class Main(QtGui.QMainWindow):
             abs_pos = template['TEMPLATE']['absolute_positions']
 
             for f_key, f_val in template['FEATURES'].items():
-                self.add_feature(f_val, f_key, focus_new=False)
+                self.side_bar.add_feature(f_val, f_key, focus_new=False)
 
             for o_key, o_val in template['OBJECTS'].items():
-                self.add_object(o_val, o_key, focus_new=False)
+                self.side_bar.add_object(o_val, o_key, focus_new=False)
 
             for r_key, r_val in template['REGIONS'].items():
-                self.add_region(r_val, r_key,
-                                shapes=template['SHAPES'],
-                                abs_pos=abs_pos,
-                                focus_new=False)
+                self.side_bar.add_region(r_val, r_key,
+                                         shapes=template['SHAPES'],
+                                         abs_pos=abs_pos,
+                                         focus_new=False)
 
     def save_config(self, filename=None, directory=DIR_TEMPLATES):
         """
@@ -497,220 +411,6 @@ class Main(QtGui.QMainWindow):
         """
         pass
         # loop over all tabs, call their close methods and they will take over
-
-    ###############################################################################
-    ##  FEATURES Tab Updates
-    ###############################################################################
-    def tab_features_switch(self, idx_tab=0):
-        """
-        Switch to the tab page with index idx_tab.
-        """
-        self.ui.tab_features.setCurrentIndex(idx_tab)
-
-    def add_feature(self, template=None, label=None, focus_new=True):
-        """
-        Create a feature from trackables and add a corresponding tab to
-        the tab widget, which is linked to show and edit feature properties.
-        TODO: Create new templates when running out by fitting them into
-        the color space somehow.
-        """
-        if not template:
-            key = self.template_default['FEATURES'].iterkeys().next()
-            template = self.template_default['FEATURES'][key]
-            label = 'LED_' + str(len(self.spotter.tracker.leds))
-
-        if not template['type'].lower() == 'led':
-            return
-        else:
-            range_hue = map(int, template['range_hue'])
-            range_sat = map(int, template['range_sat'])
-            range_val = map(int, template['range_val'])
-            range_area = map(int, template['range_area'])
-            fixed_pos = template.as_bool('fixed_pos')
-            feature = self.spotter.tracker.addLED(label,
-                                                  range_hue,
-                                                  range_sat,
-                                                  range_val,
-                                                  range_area,
-                                                  fixed_pos)
-        new_tab = self.add_tab(self.ui.tab_features, TabFeatures, feature, focus_new)
-        if self.side_bar is not None:
-            self.side_bar.features_page.add_item(feature)
-        self.feature_tabs.append(new_tab)
-
-    ###############################################################################
-    ##  OBJECTS Tab Updates
-    ###############################################################################
-    def tab_objects_switch(self, idx_tab=0):
-        """
-        Switch to the tab page with index idx_tab.
-        """
-        self.ui.tab_objects.setCurrentIndex(idx_tab)
-
-    def add_object(self, template=None, label=None, focus_new=True):
-        """
-        Create a new object that will be linked to LEDs and/r ROIs to
-        track and trigger events.
-        TODO: Create new objects even when running out of templates for example
-        by randomizing offsets.
-        """
-        if not template:
-            key = self.template_default['OBJECTS'].iterkeys().next()
-            template = self.template_default['OBJECTS'][key]
-            label = 'Object_' + str(len(self.spotter.tracker.oois))
-
-        features = []
-        for n in xrange(min(len(self.spotter.tracker.leds), len(template['features']))):
-            for l in self.spotter.tracker.leds:
-                if template['features'][n] == l.label:
-                    features.append(l)
-
-        analog_out = template['analog_out']
-        if analog_out:
-            # Magnetic objects from collision list
-            signal_names = template['analog_signal']
-            pin_prefs = template['pin_pref']
-            if pin_prefs is None:
-                pin_prefs = []
-            magnetic_signals = []
-            if template['pin_pref_strict']:
-                # If pin preference is strict but no/not enough pins given,
-                # reject all/those without given pin preference
-                if len(pin_prefs) == 0:
-                    signal_names = []
-            else:
-                # if not strict but also not enough given, fill 'em up with -1
-                # which sets those objects to being indifferent in their pin pref
-                if len(pin_prefs) < len(signal_names):
-                    pin_prefs[-(len(signal_names) - len(pin_prefs))] = -1
-
-            # Reject all objects that still don't have a corresponding pin pref
-            signal_names = signal_names[0:min(len(pin_prefs), len(signal_names))]
-
-            # Those still in the race, assemble into
-            # List of [object label, object, pin preference]
-            for isig, sn in enumerate(signal_names):
-            # Does an object with this name exist? If so, link its reference!
-            #                obj = None
-            #                for o in self.spotter.tracker.oois:
-            #                    if o.label == on:
-            #                        obj = o
-                magnetic_signals.append([sn, pin_prefs[isig]])
-        else:
-            magnetic_signals = None
-
-        trace = template['trace']
-        track = template['track']
-        object_ = self.spotter.tracker.addOOI(features,
-                                              label,
-                                              trace,
-                                              track,
-                                              magnetic_signals)
-
-        if analog_out:
-            if any(template['analog_signal']):
-                if 'x position' in template['analog_signal']:
-                    object_.analog_pos = True
-                if 'y position' in template['analog_signal']:
-                    object_.analog_pos = True
-                if 'speed' in template['analog_signal']:
-                    object_.analog_spd = True
-                if 'direction' in template['analog_signal']:
-                    object_.analog_dir = True
-
-        new_tab = self.add_tab(self.ui.tab_objects, TabObjects, object_, focus_new)
-        if self.side_bar is not None:
-            self.side_bar.objects_page.add_item(object_)
-        self.object_tabs.append(new_tab)
-
-    ###############################################################################
-    ##  REGIONS Tab Updates
-    ###############################################################################
-    def tab_regions_switch(self, idx_tab=0):
-        """
-        Switch to the tab page with index idx_tab.
-        """
-        self.ui.tab_regions.setCurrentIndex(idx_tab)
-
-    def add_region(self, template=None, label=None, shapes=None, abs_pos=True, focus_new=True):
-        """
-        Create a new region of interest that will be that will be linked
-        to Objects with conditions to trigger events.
-        TODO: New regions created empty!
-        """
-        # Defaults if nothing else given
-        if not template:
-            key = self.template_default['REGIONS'].iterkeys().next()
-            template = self.template_default['REGIONS'][key]
-            label = 'ROI_' + str(len(self.spotter.tracker.rois))
-        if not shapes:
-            shapes = self.template_default['SHAPES']
-
-        # extract shapes from shape templates
-        shape_list = []
-        for s_key in template['shapes']:
-            if s_key in shapes:
-                shape_type = shapes[s_key]['type']
-                if abs_pos:
-                    points = [shapes[s_key]['p1'], shapes[s_key]['p2']]
-                else:
-                    points = geom.scale_points([shapes[s_key]['p1'],
-                                                shapes[s_key]['p2']],
-                                               (self.gl_frame.width,
-                                                self.gl_frame.height))
-                shape_list.append([shape_type, points, s_key])
-
-        # Magnetic objects from collision list
-        obj_names = template['digital_collision']
-        pin_prefs = template['pin_pref']
-        if pin_prefs is None:
-            pin_prefs = []
-        magnetic_objects = []
-        if template['pin_pref_strict']:
-            # If pin preference is strict but no/not enough pins given,
-            # reject all/those without given pin preference
-            if len(pin_prefs) == 0:
-                obj_names = []
-        else:
-            # if not strict but also not enough given, fill 'em up with -1
-            # which sets those objects to being indifferent in their pin pref
-            if len(pin_prefs) < len(obj_names):
-                pin_prefs[-(len(obj_names) - len(pin_prefs))] = -1
-
-        # Reject all objects that still don't have a corresponding pin pref
-        obj_names = obj_names[0:min(len(pin_prefs), len(obj_names))]
-
-        # Those still in the race, assemble into
-        # List of [object label, object, pin preference]
-        for io, on in enumerate(obj_names):
-            # Does an object with this name exist? If so, link its reference!
-            obj = None
-            for o in self.spotter.tracker.oois:
-                if o.label == on:
-                    obj = o
-            magnetic_objects.append([obj, pin_prefs[io]])
-
-        color = template['color']
-
-        region = self.spotter.tracker.addROI(shape_list, label, color, magnetic_objects)
-        new_tab = self.add_tab(self.ui.tab_regions, TabRegions, region, focus_new)
-        if self.side_bar is not None:
-            self.side_bar.objects_page.add_item(region)
-        self.region_tabs.append(new_tab)
-
-    ###############################################################################
-    ##  SERIAL Tab Updates
-    ###############################################################################
-    def serial_check(self):
-        if self.spotter.chatter.is_open():
-            self.spotter.chatter.read_all()
-
-    def add_serial(self, serial_object, label=None):
-        """
-        Serial object tab. Probably an Arduino compatible board linked to it.
-        """
-        new_tab = self.add_tab(self.ui.tab_serial, TabSerial, serial_object)
-        self.serial_tabs.append(new_tab)
 
 
 #############################################################

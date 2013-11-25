@@ -16,18 +16,15 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
     accept_events = False
     tab_type = "object"
 
-    def __init__(self, object_handle, label=None, *args, **kwargs):
-        QtGui.QWidget.__init__(self)
+    def __init__(self, object_ref, label=None, *args, **kwargs):
         #super(QtGui.QWidget, self).__init__(parent)
+        QtGui.QWidget.__init__(self)
         self.log = logging.getLogger(__name__)
-        self.object = object_handle
+        self.setupUi(self)
+        self.object = object_ref
 
         assert 'spotter' in kwargs
         self.spotter = kwargs['spotter']
-        print label, self.spotter
-
-        self.all_features = self.spotter.tracker.leds
-        self.all_regions = self.spotter.tracker.rois
 
         if label is None:
             self.label = self.object.label
@@ -35,9 +32,8 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
             self.label = label
             self.object.label = label
 
-        self.setupUi(self)
-
-        self.combo_label.setEditText(self.label)
+        self.all_features = self.spotter.tracker.leds
+        self.all_regions = self.spotter.tracker.rois
 
         self.populate_feature_list()
         self.connect(self.tree_link_features, QtCore.SIGNAL('itemChanged(QTreeWidgetItem *, int)'), self.feature_item_changed)

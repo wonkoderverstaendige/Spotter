@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'tab_objectsUi.ui'
 #
-# Created: Sat Nov 23 02:16:54 2013
-#      by: PyQt4 UI code generator 4.9.6
+# Created: Mon Nov 25 22:32:41 2013
+#      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -125,6 +125,7 @@ class Ui_tab_objects(object):
         self.gridLayout_6.addLayout(self.gridLayout_5, 0, 1, 1, 1)
         self.toolBox.addItem(self.page_objects_tracking, _fromUtf8(""))
         self.page_objects_slots = QtGui.QWidget()
+        self.page_objects_slots.setGeometry(QtCore.QRect(0, 0, 259, 322))
         self.page_objects_slots.setObjectName(_fromUtf8("page_objects_slots"))
         self.gridLayout_8 = QtGui.QGridLayout(self.page_objects_slots)
         self.gridLayout_8.setMargin(0)
@@ -179,18 +180,23 @@ class Ui_tab_objects(object):
         self.gridLayout_3 = QtGui.QGridLayout()
         self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
         self.pushButton_8 = QtGui.QPushButton(self.page_objects_IO)
+        self.pushButton_8.setEnabled(False)
         self.pushButton_8.setObjectName(_fromUtf8("pushButton_8"))
         self.gridLayout_3.addWidget(self.pushButton_8, 1, 1, 1, 1)
         self.pushButton_5 = QtGui.QPushButton(self.page_objects_IO)
+        self.pushButton_5.setEnabled(False)
         self.pushButton_5.setObjectName(_fromUtf8("pushButton_5"))
         self.gridLayout_3.addWidget(self.pushButton_5, 2, 1, 1, 1)
         self.pushButton_4 = QtGui.QPushButton(self.page_objects_IO)
+        self.pushButton_4.setEnabled(False)
         self.pushButton_4.setObjectName(_fromUtf8("pushButton_4"))
         self.gridLayout_3.addWidget(self.pushButton_4, 2, 0, 1, 1)
         self.pushButton_9 = QtGui.QPushButton(self.page_objects_IO)
+        self.pushButton_9.setEnabled(False)
         self.pushButton_9.setObjectName(_fromUtf8("pushButton_9"))
         self.gridLayout_3.addWidget(self.pushButton_9, 1, 0, 1, 1)
         self.combo_label = QtGui.QComboBox(self.page_objects_IO)
+        self.combo_label.setEnabled(False)
         self.combo_label.setEditable(True)
         self.combo_label.setObjectName(_fromUtf8("combo_label"))
         self.gridLayout_3.addWidget(self.combo_label, 0, 0, 1, 2)

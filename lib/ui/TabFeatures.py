@@ -5,6 +5,7 @@ Created on Sun Jan 13 14:19:24 2013
 
 
 """
+import logging
 
 from PyQt4 import QtGui, QtCore
 from tab_featuresUi import Ui_tab_features
@@ -18,19 +19,20 @@ class Tab(QtGui.QWidget, Ui_tab_features):
     accept_events = False
     tab_type = "feature"
 
-    def __init__(self, feature, label=None, *args, **kwargs):
+    def __init__(self, feature_ref, label=None, *args, **kwargs):
+        #super(QtGui.QWidget, self).__init__(parent)
         QtGui.QWidget.__init__(self)
-        self.feature = feature
+        self.log = logging.getLogger(__name__)
+        self.setupUi(self)
+        self.feature = feature_ref
+
+        assert 'spotter' in kwargs
+        self.spotter = kwargs['spotter']
+
         if label is None:
             self.label = self.feature.label
         else:
             self.label = label
-
-        #super(QtGui.QWidget, self).__init__(parent)
-        self.setupUi(self)
-
-        assert 'spotter' in kwargs
-        self.spotter = kwargs['spotter']
 
         self.combo_label.setEditText(self.label)
 
