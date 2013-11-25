@@ -5,7 +5,7 @@ Created on Sun Jan 13 14:19:24 2013
 
 
 """
-
+import logging
 from PyQt4 import QtGui, QtCore
 from tab_objectsUi import Ui_tab_objects
 
@@ -16,13 +16,18 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
     accept_events = False
     tab_type = "object"
 
-    def __init__(self, parent, object_handle, label=None):
-        super(QtGui.QWidget, self).__init__(parent)
+    def __init__(self, object_handle, label=None, *args, **kwargs):
+        QtGui.QWidget.__init__(self)
+        #super(QtGui.QWidget, self).__init__(parent)
+        self.log = logging.getLogger(__name__)
         self.object = object_handle
-        self.parent = parent
 
-        self.all_features = self.parent.spotter.tracker.leds
-        self.all_regions = self.parent.spotter.tracker.rois
+        assert 'spotter' in kwargs
+        self.spotter = kwargs['spotter']
+        print label, self.spotter
+
+        self.all_features = self.spotter.tracker.leds
+        self.all_regions = self.spotter.tracker.rois
 
         if label is None:
             self.label = self.object.label
@@ -49,7 +54,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
 
     def update(self):
         if self.label is None:
-            print "empty tab"
+            self.log.debug("Updating empty tab")
             return
 
         self.refresh_feature_list()
@@ -80,7 +85,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
 
     def update_object(self):
         if self.label is None:
-            print "Empty object tab! This should not have happened!"
+            self.log.debug("Empty object tab! This should not have happened!")
             return
         self.object.tracked = self.ckb_track.isChecked()
         self.object.traced = self.ckb_trace.isChecked()
@@ -97,7 +102,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         for f in self.object.linked_leds:
             feature_item = QtGui.QTreeWidgetItem([f.label])
             feature_item.feature = f
-            feature_item.setCheckState(0,QtCore.Qt.Checked)
+            feature_item.setCheckState(0, QtCore.Qt.Checked)
             self.tree_link_features.addTopLevelItem(feature_item)
             feature_item.setFlags(feature_item.flags() | QtCore.Qt.ItemIsEditable)
 
@@ -138,14 +143,15 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         feature_item = QtGui.QTreeWidgetItem([f.label])
         feature_item.feature = f
         if feature_item.feature in self.object.linked_leds:
-            feature_item.setCheckState(0,QtCore.Qt.Checked)
+            feature_item.setCheckState(0, QtCore.Qt.Checked)
         else:
-            feature_item.setCheckState(0,QtCore.Qt.Unchecked)
+            feature_item.setCheckState(0, QtCore.Qt.Unchecked)
         self.tree_link_features.addTopLevelItem(feature_item)
         feature_item.setFlags(feature_item.flags() | QtCore.Qt.ItemIsEditable)
 
     def remove_feature(self, f):
         """ Remove feature from feature list. """
+        # TODO: <int> Parameter missing to method removeItemWidget(<widget>, <int>)
         self.tree_link_features.removeItemWidget(f)
 
     def link_feature(self, feature):
@@ -217,7 +223,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
             pins, enabled = self.available_pins(self.object.slots[row])
             cbx = self.table_slots.cellWidget(row, 1)
             for i in xrange(len(pins)):
-                j = cbx.model().index(i,0)
+                j = cbx.model().index(i, 0)
                 cbx.model().setData(j, QtCore.QVariant(enabled[i]), QtCore.Qt.UserRole-1)
 
     def slot_table_changed(self):
@@ -233,7 +239,8 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
                 if slot.pin:
                     slot.detach_pin()
 
-    def _table_slot_row(self, row):
+    @staticmethod
+    def _table_slot_row(row):
         """List of row widget items."""
         item_list = []
         for i in xrange(len(row)):
@@ -286,7 +293,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
             cbx.addItem(p.label)
             # Disable all pins already in use somewhere
             # From: http://stackoverflow.com/questions/11099975/pyqt-set-enabled-property-of-a-row-of-qcombobox
-            j = cbx.model().index(i,0)
+            j = cbx.model().index(i, 0)
             cbx.model().setData(j, QtCore.QVariant(enable[i]), QtCore.Qt.UserRole-1)
         cbx.insertSeparator(len(pins))
         cbx.addItem('None')
@@ -300,11 +307,13 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         Return list of pins suitable for a specific slot and list of flags of
         availabilities.
         """
+        if self.spotter is None:
+            return [], []
         enable = []
-        pins = self.parent.spotter.chatter.pins(slot.type)
+        pins = self.spotter.chatter.pins(slot.type)
         for p in pins:
             if p.slot and not (p.slot is slot):
                 enable.append(0)
             else:
-                enable.append(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)#33
+                enable.append(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
         return pins, enable

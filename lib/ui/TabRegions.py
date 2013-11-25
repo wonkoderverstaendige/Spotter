@@ -27,18 +27,22 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
     coords_end = None
     button_start = None
 
-    def __init__(self, parent, region_handle, label=None):
+    def __init__(self, region_handle, label=None, *args, **kwargs):
+        #self.parent = parent
+        QtGui.QWidget.__init__(self)
+        #super(QtGui.QWidget, self).__init__(parent)
+        self.setupUi(self)
+
+
+        assert 'spotter' in kwargs
+        self.spotter = kwargs['spotter']
+
         self.region = region_handle
         if label is None:
             self.label = self.region.label
         else:
             self.label = label
             self.region.label = label
-
-        self.parent = parent
-
-        super(QtGui.QWidget, self).__init__(parent)
-        self.setupUi(self)
 
         self.combo_label.setEditText(self.label)
 

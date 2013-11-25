@@ -67,13 +67,14 @@ class Main(QtGui.QMainWindow):
     gui_fps = 20
     gui_refresh_offset = 0
 
+    __spotter_ref = None
+
     def __init__(self, *args, **kwargs):  # , source, destination, fps, size, gui, serial
         self.log = logging.getLogger(__name__)
         QtGui.QMainWindow.__init__(self)
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.center_window()
 
         # Status Bar
         self.sbw = StatusBar(self)
@@ -82,8 +83,8 @@ class Main(QtGui.QMainWindow):
 
         # Side bar widget
         self.side_bar = None
-        #self.side_bar = SideBar.SideBar(self)
-        #self.ui.frame_parameters.addWidget(self.side_bar)
+        self.side_bar = SideBar.SideBar(self, spotter=self.spotter)
+        self.ui.frame_parameters.addWidget(self.side_bar)
 
         # Exit Signals
         self.ui.actionE_xit.setShortcut('Ctrl+Q')
@@ -107,7 +108,7 @@ class Main(QtGui.QMainWindow):
         self.connect(self.ui.actionRecord, QtCore.SIGNAL('toggled(bool)'), self.record_video)
 
         # Spotter main class, handles Grabber, Writer, Tracker, Chatter
-        self.spotter = Spotter(*args, **kwargs)
+        self.__spotter_ref = Spotter(*args, **kwargs)
 
         # OpenGL frame
         self.gl_frame = GLFrame()
@@ -149,6 +150,8 @@ class Main(QtGui.QMainWindow):
         self.serial_timer.timeout.connect(self.serial_check)
         self.serial_timer.start(1000)
 
+        self.center_window()
+
         self.stopwatch = QtCore.QElapsedTimer()
         self.stopwatch.start()
 
@@ -156,6 +159,10 @@ class Main(QtGui.QMainWindow):
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.refresh)
         self.timer.start(GUI_REFRESH_INTERVAL)
+
+    @property
+    def spotter(self):
+        return self.__spotter_ref
 
     ###############################################################################
     ##  FRAME REFRESH
@@ -262,7 +269,7 @@ class Main(QtGui.QMainWindow):
         tab_equivalent is the object that is being represented by the tab,
         for example an LED or Object.
         """
-        new_tab = new_tab_class.Tab(self, tab_equivalent)
+        new_tab = new_tab_class.Tab(tab_equivalent, spotter=self.spotter)
         tab_widget.insertTab(tab_widget.count() - 1, new_tab, new_tab.label)
         if focus_new:
             tab_widget.setCurrentIndex(tab_widget.count() - 2)
@@ -685,14 +692,10 @@ class Main(QtGui.QMainWindow):
 
         color = template['color']
 
-        region = self.spotter.tracker.addROI(shape_list,
-                                             label,
-                                             color,
-                                             magnetic_objects)
-        new_tab = self.add_tab(self.ui.tab_regions,
-                               TabRegions,
-                               region,
-                               focus_new)
+        region = self.spotter.tracker.addROI(shape_list, label, color, magnetic_objects)
+        new_tab = self.add_tab(self.ui.tab_regions, TabRegions, region, focus_new)
+        if self.side_bar is not None:
+            self.side_bar.objects_page.add_item(region)
         self.region_tabs.append(new_tab)
 
     ###############################################################################
@@ -744,7 +747,7 @@ if __name__ == "__main__":                                  #
     # Frame size parameter string 'WIDTHxHEIGHT' to size tuple (WIDTH, HEIGHT)
     size = (0, 0) if not ARGDICT['--dims'] else tuple(ARGDICT['--dims'].split('x'))
 
-    main()
+    main(source=ARGDICT['--source'])
 
     # Qt main window which instantiates spotter class with all parameters
     #main(source=ARGDICT['--source'],

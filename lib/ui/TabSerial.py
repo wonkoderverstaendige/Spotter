@@ -18,8 +18,10 @@ class Tab(QtGui.QWidget, Ui_tab_serial):
     accept_events = False
     tab_type = "serial"
 
-    def __init__(self, parent, serial_handle, label=None):
-        super(QtGui.QWidget, self).__init__(parent)
+    def __init__(self, serial_handle, label=None, *args, **kwargs):
+        QtGui.QWidget.__init__(self)
+        #super(QtGui.QWidget, self).__init__(parent)
+        print serial_handle
         self.serial = serial_handle
         if label is None:
             self.label = self.serial.label
@@ -27,8 +29,11 @@ class Tab(QtGui.QWidget, Ui_tab_serial):
             self.label = label
             self.serial.label = label
 
-        self.parent = parent
+        #self.parent = parent
         self.setupUi(self)
+
+        assert 'spotter' in kwargs
+        self.spotter = kwargs['spotter']
 
         self.connect(self.btn_serial_refresh, QtCore.SIGNAL('clicked()'), self.refresh_port_list)
         self.connect(self.btn_serial_connect, QtCore.SIGNAL('clicked()'), self.toggle_connection)

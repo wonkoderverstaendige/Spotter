@@ -18,17 +18,19 @@ class Tab(QtGui.QWidget, Ui_tab_features):
     accept_events = False
     tab_type = "feature"
 
-    def __init__(self, parent, feature, label=None):
+    def __init__(self, feature, label=None, *args, **kwargs):
+        QtGui.QWidget.__init__(self)
         self.feature = feature
         if label is None:
             self.label = self.feature.label
         else:
             self.label = label
 
-        super(QtGui.QWidget, self).__init__(parent)
+        #super(QtGui.QWidget, self).__init__(parent)
         self.setupUi(self)
 
-        self.parent = parent
+        assert 'spotter' in kwargs
+        self.spotter = kwargs['spotter']
 
         self.combo_label.setEditText(self.label)
 
@@ -97,6 +99,6 @@ class Tab(QtGui.QWidget, Ui_tab_features):
         if event_type == 'mousePress':
             x = int(event.x())
             y = int(event.y())
-            pixel = self.parent.spotter.newest_frame.img[y, x, :]
+            pixel = self.spotter.newest_frame.img[y, x, :]
             #print pixel
             print "[X,Y][B G R](H, S, V):", [x, y], pixel, utils.BGRpix2HSV(pixel)
