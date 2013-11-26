@@ -123,6 +123,7 @@ class LED:
     def updateHistory(self, coords):
         pass
 
+    @property
     def position(self):
         if len(self.pos_hist):
             return self.pos_hist[-1]
@@ -418,11 +419,8 @@ class ROI:
 
     def link_object(self, obj):
         if obj in self.oois:
-            self.slots.append(Slot(label=obj.label,
-                                   type_='digital',
-                                   state=self.test_collision,
-                                   state_idx=self.oois.index(obj),
-                                   ref=obj))
+            self.slots.append(Slot(label=obj.label, type_='digital', state=self.test_collision,
+                                   state_idx=self.oois.index(obj), ref=obj))
 
     def unlink_object(self, obj):
         for s in self.slots:
@@ -437,9 +435,8 @@ class ROI:
         """ Test if a line between start and end would somewhere collide with
         any shapes of this ROI. Simple AND values in the collision detection
         array on the line.
-        TODO: Only checks of the point is within the bounding box of shapes!!!
-
         """
+        # TODO: Only checks of the point is within the bounding box of shapes?
         if point1 is not None:
             collision = False
             for s in self.shapes:
@@ -478,16 +475,18 @@ class ROI:
         c2 = random.uniform(0, 1.0-c1)
         c3 = 1.0-c1-c2
         vals = random.sample([c1, c2, c3], 3)
-        return (vals[0], vals[1], vals[2], self.alpha)
+        return vals[0], vals[1], vals[2], self.alpha
 
-    def scale_color(self, color, max_val):
+    @staticmethod
+    def scale_color(color, max_val):
         if len(color) == 3:
-            return (int(color[0]*max_val), int(color[1]*max_val), int(color[2]*max_val))
+            return int(color[0]*max_val), int(color[1]*max_val), int(color[2]*max_val)
         elif len(color) == 4:
-            return (int(color[0]*max_val), int(color[1]*max_val), int(color[2]*max_val), int(color[3]*max_val))
+            return int(color[0]*max_val), int(color[1]*max_val), int(color[2]*max_val), int(color[3]*max_val)
 
-    def normalize_color(self, color):
+    @staticmethod
+    def normalize_color(color):
         if len(color) == 3:
-            return (color[0]/255., color[1]/255., color[2]/255.)
+            return color[0]/255., color[1]/255., color[2]/255.
         elif len(color) == 4:
-            return (color[0]/255., color[1]/255., color[2]/255., color[3]/255.)
+            return color[0]/255., color[1]/255., color[2]/255., color[3]/255.

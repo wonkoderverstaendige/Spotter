@@ -60,7 +60,6 @@ sys.path.append(DIR_TEMPLATES)
 
 
 class Main(QtGui.QMainWindow):
-    gui_fps = 20
     gui_refresh_offset = 0
 
     __spotter_ref = None
@@ -76,8 +75,8 @@ class Main(QtGui.QMainWindow):
         self.__spotter_ref = Spotter(*args, **kwargs)
 
         # Status Bar
-        self.sbw = StatusBar(self)
-        self.statusBar().addWidget(self.sbw)
+        self.status_bar = StatusBar(self)
+        self.statusBar().addWidget(self.status_bar)
 
         # Side bar widget
         self.side_bar = SideBar.SideBar(self)
@@ -143,22 +142,17 @@ class Main(QtGui.QMainWindow):
     ##  FRAME REFRESH
     ###############################################################################
     def refresh(self):
-        t = self.stopwatch.restart()
-        if t != 0:
-            self.gui_fps = self.gui_fps*0.9 + 0.1*1000./t
-            if self.gui_fps > 100:
-                self.sbw.lbl_fps.setText('FPS: {:.0f}'.format(self.gui_fps))
-            else:
-                self.sbw.lbl_fps.setText('FPS: {:.1f}'.format(self.gui_fps))
+        # TODO: I ain't got no clue as to why reducing the interval drastically improves the frame rate
+        # TODO: Maybe the interval immediately resets the counter and starts it up?
+        elapsed = self.stopwatch.restart()
 
         if self.spotter.update() is None:
             return
 
-        if not (self.gl_frame.width and self.gl_frame.height):
-            return
-
         # update the OpenGL frame
         #self.log.debug("Updating GL")
+        if not (self.gl_frame.width and self.gl_frame.height):
+            return
         self.gl_frame.update_world(self.spotter)
 
         # Update the currently open tab
@@ -166,37 +160,41 @@ class Main(QtGui.QMainWindow):
         self.side_bar.update_current_page()
 
         # check if the refresh rate needs adjustment
-        #self.log.debug("Updating refresh rate")
+        #self.log.debug("Updating GUI refresh rate")
         self.adjust_refresh_rate()
+
+        # based on stopwatch, show GUI refresh rate
+        #self.log.debug("Updating GUI refresh rate display")
+        self.status_bar.update_fps(elapsed)
 
     def adjust_refresh_rate(self, forced=None):
         """
         Change GUI refresh rate according to frame rate of video source, or keep at
         1000/GUI_REFRESH_INTERVAL Hz for cameras to not miss too many frames
         """
-        self.gui_refresh_offset = self.sbw.sb_offset.value()
+        self.gui_refresh_offset = self.status_bar.sb_offset.value()
 
         if forced:
             self.timer.setInterval(forced)
             return
 
         if self.spotter.source_type is not 'file':
-            if self.sbw.sb_offset.isEnabled():
-                self.sbw.sb_offset.setEnabled(False)
-                self.sbw.sb_offset.setValue(0)
+            if self.status_bar.sb_offset.isEnabled():
+                self.status_bar.sb_offset.setEnabled(False)
+                self.status_bar.sb_offset.setValue(0)
             if self.timer.interval() != GUI_REFRESH_INTERVAL:
                 self.timer.setInterval(GUI_REFRESH_INTERVAL)
                 self.log.debug("Changed main loop update rate to be fast. New: %d", self.timer.interval())
         else:
-            if not self.sbw.sb_offset.isEnabled():
-                self.sbw.sb_offset.setEnabled(True)
+            if not self.status_bar.sb_offset.isEnabled():
+                self.status_bar.sb_offset.setEnabled(True)
             try:
                 interval = int(1000.0/self.spotter.grabber.fps) + self.gui_refresh_offset
             except (ValueError, TypeError):
                 interval = 0
             if interval < 0:
                 interval = 1
-                self.sbw.sb_offset.setValue(interval - int(1000.0/self.spotter.grabber.fps))
+                self.status_bar.sb_offset.setValue(interval - int(1000.0/self.spotter.grabber.fps))
 
             if self.spotter.grabber.fps != 0 and self.timer.interval() != interval:
                 self.timer.setInterval(interval)
@@ -218,7 +216,7 @@ class Main(QtGui.QMainWindow):
         Hand the mouse event to the active tab. Tabs may handle mouse events
         differently, and depending on internal states (e.g. selections)
         """
-        current_tab = self.side_bar.get_child_tab()
+        current_tab = self.side_bar.get_child_page()
         if current_tab and current_tab.accept_events:
             current_tab.process_event(event_type, event)
 
@@ -277,7 +275,7 @@ class Main(QtGui.QMainWindow):
                                                QtGui.QMessageBox.Yes,
                                                QtGui.QMessageBox.No)
         if reply == QtGui.QMessageBox.Yes:
-            self.spotter.exitMain()
+            self.spotter.exit()
             event.accept()
         else:
             event.ignore()
@@ -331,9 +329,7 @@ class Main(QtGui.QMainWindow):
                                          focus_new=False)
 
     def save_config(self, filename=None, directory=DIR_TEMPLATES):
-        """
-        Store a full set of configuration to file.
-        """
+        """ Store a full set of configuration to file. """
         config = configobj.ConfigObj(indent_type='    ')
 
         if filename is None:

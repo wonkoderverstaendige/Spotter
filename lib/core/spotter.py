@@ -43,7 +43,7 @@ from lib import utilities as utils, timerclass
 from lib.core import grabber, tracker, writer, chatter
 
 from lib.docopt import docopt
-timingfname = 'tracking_3LEDs.p'
+timings_filename = 'tracking_3LEDs.p'
 
 
 class Spotter:
@@ -80,6 +80,11 @@ class Spotter:
         """
         self.log = logging.getLogger(__name__)
         self.log.info(str(multiprocessing.cpu_count()) + ' CPUs found')
+
+        try:
+            import zmq  # ZeroMQ python bindings
+        except ImportError:
+            zmq = None
 
         # Setup frame grabber object, fills frame buffer
         self.log.debug('Instantiating grabber...')
@@ -128,7 +133,7 @@ class Spotter:
                 messages.append('\t'.join([self.newest_frame.time_text, str(o.label), str(o.position)]))
 
             for l in self.tracker.leds:
-                messages.append('\t'.join([self.newest_frame.time_text, str(l.label), str(l.position())]))
+                messages.append('\t'.join([self.newest_frame.time_text, str(l.label), str(l.position)]))
 
             # Check Object-Region collisions
             for r in self.tracker.rois:
@@ -162,7 +167,7 @@ class Spotter:
 #        if not self.writer.is_alive():
 #            print('Writing to disk failed.')
 #            log.error('Writing to disk failed.')
-#            self.exitMain()
+#            self.exit()
 #        else:
 #            return True
 
@@ -174,7 +179,7 @@ class Spotter:
         self.writer_pipe.send('stop')
         self.recording = False
 
-    def exitMain(self):
+    def exit(self):
         """ Graceful exit. Ha. Ha. Ha. Bottle of root beer anyone? """
         # closing grabber is straight forward, will release capture object
         if self.grabber is not None:

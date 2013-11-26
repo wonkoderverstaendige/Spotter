@@ -89,16 +89,16 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
         # TODO: Unused?
         return self.tabs_main.tabText(self.tabs_main.currentIndex())
 
-    def get_child_tab(self):
+    def get_child_page(self):
         active_top_tab_label = self.tabs_main.tabText(self.tabs_main.currentIndex())
         if active_top_tab_label == "Features" and (self.tabs_main.count() > 1):
-            return self.features_page
+            return self.features_page.current_page_widget()
         elif active_top_tab_label == "Objects" and (self.tabs_main.count() > 1):
-            return self.tabs_main.widget(self.tabs_main.currentIndex())
+            return self.objects_page.current_page_widget()
         elif active_top_tab_label == "Regions" and (self.tabs_main.count() > 1):
-            return self.tabs_main.widget(self.tabs_main.currentIndex())
+            return self.regions_page.current_page_widget()
         elif active_top_tab_label == "Serial":
-            return self.tabs_main.widget(self.tabs_main.currentIndex())
+            return self.serial_page.current_page_widget()
         else:
             return None
 
@@ -109,9 +109,9 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
         of tracked objects or LEDs. The rest should happen behind the scenes
         in the spotter sub-classes.
         """
-        current_page = self.get_child_tab()
+        current_page = self.get_child_page()
         if current_page is not None:
-            current_page.tabs_sub.widget(current_page.tabs_sub.currentIndex()).update()
+            current_page.update()
 
 
     def update_all_tabs(self):

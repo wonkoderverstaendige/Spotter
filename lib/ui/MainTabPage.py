@@ -41,3 +41,6 @@ class MainTabPage(QtGui.QWidget, Ui_main_tab_page):
             self.tabs_sub.setCurrentIndex(0)
 
         return new_tab
+
+    def current_page_widget(self):
+        return self.tabs_sub.widget(self.tabs_sub.currentIndex())

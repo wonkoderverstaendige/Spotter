@@ -7,6 +7,7 @@ Created on Sun Jan 13 14:19:24 2013
 """
 import logging
 
+import cv2
 from PyQt4 import QtGui, QtCore
 from tab_featuresUi import Ui_tab_features
 import lib.utilities as utils
@@ -69,8 +70,6 @@ class Tab(QtGui.QWidget, Ui_tab_features):
 
         self.connect(self.btn_pick_color, QtCore.SIGNAL('toggled(bool)'), self.pick_color)
 
-        self.update_color_space()
-
         self.update()
 
     def update(self):
@@ -89,6 +88,7 @@ class Tab(QtGui.QWidget, Ui_tab_features):
             self.lbl_y.setText('---')
 
         self.update_color_space()
+        self.update_zoom()
 
     def update_led(self):
         self.feature.range_hue = (self.spin_hue_min.value(), self.spin_hue_max.value())
@@ -100,13 +100,13 @@ class Tab(QtGui.QWidget, Ui_tab_features):
         self.feature.marker_visible = self.ckb_marker.isChecked()
 
     def update_color_space(self):
-        """ Make the fancy rainbow color thingy. """
-
-        # base string
-        style_sheet = "background-color:qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0"
-
+        """ Update fancy color thingy if range_hue of feature has changed. """
         if self.current_range_hue == self.feature.range_hue:
             return
+        self.log.debug("Mowing unicorn meadows.")
+
+        # base CSS string
+        style_sheet = "background-color:qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0"
 
         self.current_range_hue = self.feature.range_hue
         min_h = int(self.current_range_hue[0]*2)
@@ -129,42 +129,60 @@ class Tab(QtGui.QWidget, Ui_tab_features):
 
         # TODO: Check that min_h and max_h are not equal
 
-        #print "Stop list:", stops
         if min_h in stops_hue:
             idx = stops_hue.index(min_h)
             stops.insert(idx+1, (stops_pos[idx]+epsilon, min_h, sv_inner))
-            #print "min is stop!"
         else:
             idx = int(min_h/60+1)
             stops.insert(idx, (min_h/360., min_h, sv_outer))
             stops.insert(idx, (min_h/360.+epsilon, min_h, sv_inner))
-            #print "min is not a stop!"
 
         if max_h in stops_hue:
             idx = stops_hue.index(max_h)
             stops.insert(idx+1, (stops_pos[idx]-epsilon, max_h, sv_inner))
-            #print "max is stop!"
         else:
             idx = int(max_h/60+1) + (2 if min_h not in stops_hue else 1)
             stops.insert(idx, (max_h/360.-epsilon, max_h, sv_inner))
             stops.insert(idx+1, (max_h/360., max_h, sv_outer))
-            #print "max is not a stop!"
 
         for idx, stop in enumerate(stops):
             if min_h < stop[1] < max_h:
                 stops[idx] = (stop[0], stop[1], sv_inner)
-
-        #print "Stop list:", stops
-
         for stop in stops:
             style_sheet += ", stop:{0[0]} hsva({0[1]}, {0[2]}, {0[2]}, 255)".format(stop)
-
         style_sheet += ");"
-        #print style_sheet
         self.lbl_colorspace.setStyleSheet(style_sheet)
 
     def pick_color(self, state):
         self.accept_events = state
+
+    def update_zoom(self, size=24):
+        size /= 2
+        if not None in [self.spotter.newest_frame, self.feature.position]:
+            x, y = map(int, self.feature.position)
+            (ax, ay), (bx, by) = (x-size, y-size), (x+size, y+size)
+            h, w = self.spotter.newest_frame.img.shape[0:2]
+
+            # check if box is too far left or right:
+            # Esther says to do it the stupid way as I am wasting my time...
+            if ax < 0:
+                ax = 0
+            if bx >= w-1:
+                bx = w-1
+
+            if ay < 0:
+                ay = 0
+            if by >= h-1:
+                by = h-1
+
+            # grab slice/view from numpy image array
+            cutout = self.spotter.newest_frame.img[ay:by, ax:bx, :]
+            cutout = cv2.cvtColor(cutout, cv2.cv.CV_BGR2RGB)
+            cutout = cv2.resize(cutout, (self.lbl_zoom.width(), self.lbl_zoom.height()), interpolation=cv2.INTER_NEAREST)
+            #convert numpy mat to pixmap image
+            if cutout is not None:
+                qimg = QtGui.QImage(cutout.data, cutout.shape[1], cutout.shape[0], QtGui.QImage.Format_RGB888)
+                self.lbl_zoom.setPixmap(QtGui.QPixmap.fromImage(qimg))
 
     def process_event(self, event_type, event):
         #print event_type
