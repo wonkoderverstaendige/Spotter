@@ -86,12 +86,13 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
 
     def get_top_tab_label(self):
         """ Return label of the top level tab. """
+        # TODO: Unused?
         return self.tabs_main.tabText(self.tabs_main.currentIndex())
 
     def get_child_tab(self):
-        active_top_tab_label = self.get_top_tab_label()
+        active_top_tab_label = self.tabs_main.tabText(self.tabs_main.currentIndex())
         if active_top_tab_label == "Features" and (self.tabs_main.count() > 1):
-            return self.tabs_main.widget(self.tabs_main.currentIndex())
+            return self.features_page
         elif active_top_tab_label == "Objects" and (self.tabs_main.count() > 1):
             return self.tabs_main.widget(self.tabs_main.currentIndex())
         elif active_top_tab_label == "Regions" and (self.tabs_main.count() > 1):
@@ -101,18 +102,17 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
         else:
             return None
 
-    def update_current_tab(self):
+    def update_current_page(self):
         """
         Currently visible tab is the only one that requires to be updated
         live when parameters of its associated object change, e.g. coordinates
         of tracked objects or LEDs. The rest should happen behind the scenes
         in the spotter sub-classes.
         """
-        current_tab = self.get_child_tab()
-        try:
-            current_tab.update()
-        except AttributeError:
-            pass
+        current_page = self.get_child_tab()
+        if current_page is not None:
+            current_page.tabs_sub.widget(current_page.tabs_sub.currentIndex()).update()
+
 
     def update_all_tabs(self):
         """

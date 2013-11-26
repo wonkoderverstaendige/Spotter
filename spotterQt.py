@@ -158,12 +158,15 @@ class Main(QtGui.QMainWindow):
             return
 
         # update the OpenGL frame
+        #self.log.debug("Updating GL")
         self.gl_frame.update_world(self.spotter)
 
         # Update the currently open tab
-        self.side_bar.update_current_tab()
+        #self.log.debug("Updating side bar")
+        self.side_bar.update_current_page()
 
         # check if the refresh rate needs adjustment
+        #self.log.debug("Updating refresh rate")
         self.adjust_refresh_rate()
 
     def adjust_refresh_rate(self, forced=None):
@@ -183,7 +186,7 @@ class Main(QtGui.QMainWindow):
                 self.sbw.sb_offset.setValue(0)
             if self.timer.interval() != GUI_REFRESH_INTERVAL:
                 self.timer.setInterval(GUI_REFRESH_INTERVAL)
-                #print "Changed main loop update rate to be fast. New: ", self.timer.interval()
+                self.log.debug("Changed main loop update rate to be fast. New: %d", self.timer.interval())
         else:
             if not self.sbw.sb_offset.isEnabled():
                 self.sbw.sb_offset.setEnabled(True)
@@ -197,13 +200,14 @@ class Main(QtGui.QMainWindow):
 
             if self.spotter.grabber.fps != 0 and self.timer.interval() != interval:
                 self.timer.setInterval(interval)
-                #print "Changed main loop update rate to match file. New: ", self.timer.interval()
+                self.log.debug("Changed main loop update rate to match file. New: %d", self.timer.interval())
 
     def record_video(self, state, filename=None):
         """
         Control recording of grabbed video.
         TODO: Select output video file name.
         """
+        self.log.debug("Toggling writer recording state")
         if state:
             self.spotter.start_writer()
         else:

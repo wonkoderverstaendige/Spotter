@@ -47,15 +47,15 @@
         </attribute>
         <layout class="QGridLayout" name="gridLayout_6">
          <property name="margin">
-          <number>2</number>
+          <number>0</number>
          </property>
          <property name="spacing">
-          <number>2</number>
+          <number>0</number>
          </property>
          <item row="10" column="0">
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <property name="spacing">
-            <number>1</number>
+            <number>0</number>
            </property>
            <item>
             <widget class="QLabel" name="lbl_colorspace">
@@ -64,6 +64,12 @@
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>32</height>
+              </size>
              </property>
              <property name="styleSheet">
               <string notr="true">background-color:qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0,stop:0 hsva(0, 255, 255, 255),stop:0.49 hsva(60, 255, 255, 255),stop:0.5 hsva(60, 255, 255, 255),stop:1 hsva(180, 255, 255, 255));</string>
@@ -84,7 +90,7 @@
              <property name="sizeHint" stdset="0">
               <size>
                <width>20</width>
-               <height>20</height>
+               <height>0</height>
               </size>
              </property>
             </spacer>
@@ -106,14 +112,20 @@
              </property>
              <property name="sizeHint" stdset="0">
               <size>
-               <width>40</width>
-               <height>20</height>
+               <width>0</width>
+               <height>0</height>
               </size>
              </property>
             </spacer>
            </item>
            <item row="1" column="0">
             <layout class="QVBoxLayout" name="verticalLayout">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <property name="leftMargin">
+              <number>2</number>
+             </property>
              <property name="topMargin">
               <number>0</number>
              </property>
@@ -134,8 +146,8 @@
              <property name="topMargin">
               <number>0</number>
              </property>
-             <property name="horizontalSpacing">
-              <number>6</number>
+             <property name="spacing">
+              <number>0</number>
              </property>
              <item row="1" column="0">
               <widget class="QLabel" name="lbl_y_lbl">
@@ -183,6 +195,9 @@
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
+               <property name="margin">
+                <number>1</number>
+               </property>
               </widget>
              </item>
              <item row="1" column="1">
@@ -211,6 +226,9 @@
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
+               <property name="margin">
+                <number>1</number>
+               </property>
               </widget>
              </item>
             </layout>
@@ -226,10 +244,7 @@
          </item>
          <item row="9" column="0">
           <layout class="QGridLayout" name="layout_feature_parameters">
-           <property name="horizontalSpacing">
-            <number>2</number>
-           </property>
-           <property name="verticalSpacing">
+           <property name="spacing">
             <number>0</number>
            </property>
            <item row="0" column="3">
@@ -249,6 +264,9 @@
             <widget class="QLabel" name="lbl_val">
              <property name="text">
               <string>Val</string>
+             </property>
+             <property name="margin">
+              <number>2</number>
              </property>
             </widget>
            </item>
@@ -276,14 +294,14 @@
              <property name="text">
               <string>Sat</string>
              </property>
+             <property name="margin">
+              <number>2</number>
+             </property>
             </widget>
            </item>
            <item row="1" column="2">
             <widget class="QSpinBox" name="spin_hue_min">
              <property name="wrapping">
-              <bool>true</bool>
-             </property>
-             <property name="frame">
               <bool>true</bool>
              </property>
              <property name="buttonSymbols">
@@ -353,6 +371,9 @@
              <property name="text">
               <string>Hue</string>
              </property>
+             <property name="margin">
+              <number>2</number>
+             </property>
             </widget>
            </item>
            <item row="2" column="3">
@@ -396,32 +417,10 @@
            <item row="4" column="0">
             <widget class="QLabel" name="lbl_min_area">
              <property name="text">
-              <string>area</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;px&lt;span style=&quot; vertical-align:super;&quot;&gt;2&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
-            </widget>
-           </item>
-           <item row="5" column="2" colspan="2">
-            <widget class="QPushButton" name="btn_pick_color">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="toolTip">
-              <string>Pick thresholds from image by dragging frame around the spot of interest</string>
-             </property>
-             <property name="statusTip">
-              <string>Pick range from image</string>
-             </property>
-             <property name="text">
-              <string>&amp;Pick</string>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-             <property name="flat">
-              <bool>false</bool>
+             <property name="margin">
+              <number>2</number>
              </property>
             </widget>
            </item>
@@ -453,11 +452,36 @@
              </property>
              <property name="sizeHint" stdset="0">
               <size>
-               <width>40</width>
-               <height>20</height>
+               <width>0</width>
+               <height>0</height>
               </size>
              </property>
             </spacer>
+           </item>
+           <item row="5" column="0" colspan="4">
+            <widget class="QPushButton" name="btn_pick_color">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Pick thresholds from image by dragging frame around the spot of interest</string>
+             </property>
+             <property name="statusTip">
+              <string>Pick range from image</string>
+             </property>
+             <property name="text">
+              <string>&amp;Pick</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="flat">
+              <bool>false</bool>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>

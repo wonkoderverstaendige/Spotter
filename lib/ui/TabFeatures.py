@@ -10,6 +10,7 @@ import logging
 from PyQt4 import QtGui, QtCore
 from tab_featuresUi import Ui_tab_features
 import lib.utilities as utils
+import math
 
 
 class Tab(QtGui.QWidget, Ui_tab_features):
@@ -18,6 +19,7 @@ class Tab(QtGui.QWidget, Ui_tab_features):
     feature = None
     accept_events = False
     tab_type = "feature"
+    current_range_hue = (None, None)
 
     def __init__(self, feature_ref, label=None, *args, **kwargs):
         #super(QtGui.QWidget, self).__init__(parent)
@@ -86,6 +88,8 @@ class Tab(QtGui.QWidget, Ui_tab_features):
             self.lbl_x.setText('---')
             self.lbl_y.setText('---')
 
+        self.update_color_space()
+
     def update_led(self):
         self.feature.range_hue = (self.spin_hue_min.value(), self.spin_hue_max.value())
         self.feature.range_sat = (self.spin_sat_min.value(), self.spin_sat_max.value())
@@ -99,56 +103,65 @@ class Tab(QtGui.QWidget, Ui_tab_features):
         """ Make the fancy rainbow color thingy. """
 
         # base string
-        base_string = "background-color:qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0"
-        # individual color
-        gradient_stops = [(1.0/6*p, (60*p) % 359) for p in xrange(0, 7)]
+        style_sheet = "background-color:qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0"
 
-        for color_stop in gradient_stops:
-            stop_h = int(color_stop[0]*360)
-            min_h = int(self.feature.range_hue[0]*2)
-            max_h = int(self.feature.range_hue[1]*2)
+        if self.current_range_hue == self.feature.range_hue:
+            return
 
-            if stop_h < min_h:  # or self.feature.range_hue[1]*2 <= stop[1]
-                print "Initial", stop_h, min_h
-                base_string += ", stop:{0[0]} hsva({0[1]}, 0, 0, 255)".format(color_stop)
-            else:
-                if stop_h - min_h <= 60:
-                    if stop_h - min_h < 60:
-                        print "First break", stop_h, min_h, stop_h - min_h
-                        base_string += ", stop:{0} hsva({1}, 0, 0, 255)".format(min_h/360.0-1./1000,
-                                                                                min_h)
-                        base_string += ", stop:{0} hsva({1}, 255, 255, 255)".format(min_h/360.0,
-                                                                                    min_h)
-                        if stop_h != min_h:
-                            print "Making bright"
-                            base_string += ", stop:{0[0]} hsva({0[1]}, 255, 255, 255)".format(color_stop)
-                    else:
-                        print "second stop larger", stop_h, min_h, stop_h - min_h
-                        base_string += ", stop:{0[0]} hsva({0[1]}, 255, 255, 255)".format(color_stop)
-                        #base_string += ", stop:{0} hsva({1}, 255, 255, 255)".format(min_h/360.0,
-                        #                                                            min_h)
-                        #base_string += ", stop:{0} hsva({1}, 255, 255, 255)".format(min_h/360.0,
-                        #                                                            min_h)
-                        #base_string += ", stop:{0[0]} hsva({0[1]}, 255, 255, 255)".format(color_stop)
+        self.current_range_hue = self.feature.range_hue
+        min_h = int(self.current_range_hue[0]*2)
+        max_h = int(self.current_range_hue[1]*2)
 
-                else:
-                    if max_h <= stop_h:
-                        if stop_h - max_h < 60:
-                            print "pew"
-                        else:
-                            print "full brightness", stop_h, max_h
-                            base_string += ", stop:{0[0]} hsva({0[1]}, 255, 255, 255)".format(color_stop)
-                    else:
-                        print "end break", stop_h, max_h
-                        base_string += ", stop:{0} hsva({1}, 255, 255, 255)".format(max_h/360.0,
-                                                                                    max_h)
-                        base_string += ", stop:{0} hsva({1}, 0, 0, 255)".format(max_h/360.0+1./1000,
-                                                                                max_h)
-                        base_string += ", stop:{0[0]} hsva({0[1]}, 0, 0, 255)".format(color_stop)
+        sv_inner = 255
+        sv_outer = 80
 
-        base_string += ");"
-        print base_string
-        self.lbl_colorspace.setStyleSheet(base_string)
+        if min_h > max_h:
+            min_h, max_h = max_h, min_h
+            sv_outer, sv_inner = sv_inner, sv_outer
+
+        epsilon = 0.0001
+
+        stops_pos = [1.0/6*p for p in xrange(0, 7)]
+        stops_hue = [(60*p) % 360 for p in xrange(0, 7)]
+        stops_sv = [sv_outer]*len(stops_hue)
+
+        stops = zip(stops_pos, stops_hue, stops_sv)
+
+        # TODO: Check that min_h and max_h are not equal
+
+        #print "Stop list:", stops
+        if min_h in stops_hue:
+            idx = stops_hue.index(min_h)
+            stops.insert(idx+1, (stops_pos[idx]+epsilon, min_h, sv_inner))
+            #print "min is stop!"
+        else:
+            idx = int(min_h/60+1)
+            stops.insert(idx, (min_h/360., min_h, sv_outer))
+            stops.insert(idx, (min_h/360.+epsilon, min_h, sv_inner))
+            #print "min is not a stop!"
+
+        if max_h in stops_hue:
+            idx = stops_hue.index(max_h)
+            stops.insert(idx+1, (stops_pos[idx]-epsilon, max_h, sv_inner))
+            #print "max is stop!"
+        else:
+            idx = int(max_h/60+1) + (2 if min_h not in stops_hue else 1)
+            stops.insert(idx, (max_h/360.-epsilon, max_h, sv_inner))
+            stops.insert(idx+1, (max_h/360., max_h, sv_outer))
+            #print "max is not a stop!"
+
+        for idx, stop in enumerate(stops):
+            if min_h < stop[1] < max_h:
+                stops[idx] = (stop[0], stop[1], sv_inner)
+
+        #print "Stop list:", stops
+
+        for stop in stops:
+            style_sheet += ", stop:{0[0]} hsva({0[1]}, {0[2]}, {0[2]}, 255)".format(stop)
+
+        style_sheet += ");"
+        #print style_sheet
+        self.lbl_colorspace.setStyleSheet(style_sheet)
 
     def pick_color(self, state):
         self.accept_events = state
