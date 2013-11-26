@@ -67,6 +67,8 @@ class Tab(QtGui.QWidget, Ui_tab_features):
 
         self.connect(self.btn_pick_color, QtCore.SIGNAL('toggled(bool)'), self.pick_color)
 
+        self.update_color_space()
+
         self.update()
 
     def update(self):
@@ -92,6 +94,61 @@ class Tab(QtGui.QWidget, Ui_tab_features):
         self.feature.detection_active = self.ckb_track.isChecked()
         self.feature.fixed_pos = self.ckb_fixed_pos.isChecked()
         self.feature.marker_visible = self.ckb_marker.isChecked()
+
+    def update_color_space(self):
+        """ Make the fancy rainbow color thingy. """
+
+        # base string
+        base_string = "background-color:qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0"
+        # individual color
+        gradient_stops = [(1.0/6*p, (60*p) % 359) for p in xrange(0, 7)]
+
+        for color_stop in gradient_stops:
+            stop_h = int(color_stop[0]*360)
+            min_h = int(self.feature.range_hue[0]*2)
+            max_h = int(self.feature.range_hue[1]*2)
+
+            if stop_h < min_h:  # or self.feature.range_hue[1]*2 <= stop[1]
+                print "Initial", stop_h, min_h
+                base_string += ", stop:{0[0]} hsva({0[1]}, 0, 0, 255)".format(color_stop)
+            else:
+                if stop_h - min_h <= 60:
+                    if stop_h - min_h < 60:
+                        print "First break", stop_h, min_h, stop_h - min_h
+                        base_string += ", stop:{0} hsva({1}, 0, 0, 255)".format(min_h/360.0-1./1000,
+                                                                                min_h)
+                        base_string += ", stop:{0} hsva({1}, 255, 255, 255)".format(min_h/360.0,
+                                                                                    min_h)
+                        if stop_h != min_h:
+                            print "Making bright"
+                            base_string += ", stop:{0[0]} hsva({0[1]}, 255, 255, 255)".format(color_stop)
+                    else:
+                        print "second stop larger", stop_h, min_h, stop_h - min_h
+                        base_string += ", stop:{0[0]} hsva({0[1]}, 255, 255, 255)".format(color_stop)
+                        #base_string += ", stop:{0} hsva({1}, 255, 255, 255)".format(min_h/360.0,
+                        #                                                            min_h)
+                        #base_string += ", stop:{0} hsva({1}, 255, 255, 255)".format(min_h/360.0,
+                        #                                                            min_h)
+                        #base_string += ", stop:{0[0]} hsva({0[1]}, 255, 255, 255)".format(color_stop)
+
+                else:
+                    if max_h <= stop_h:
+                        if stop_h - max_h < 60:
+                            print "pew"
+                        else:
+                            print "full brightness", stop_h, max_h
+                            base_string += ", stop:{0[0]} hsva({0[1]}, 255, 255, 255)".format(color_stop)
+                    else:
+                        print "end break", stop_h, max_h
+                        base_string += ", stop:{0} hsva({1}, 255, 255, 255)".format(max_h/360.0,
+                                                                                    max_h)
+                        base_string += ", stop:{0} hsva({1}, 0, 0, 255)".format(max_h/360.0+1./1000,
+                                                                                max_h)
+                        base_string += ", stop:{0[0]} hsva({0[1]}, 0, 0, 255)".format(color_stop)
+
+        base_string += ");"
+        print base_string
+        self.lbl_colorspace.setStyleSheet(base_string)
 
     def pick_color(self, state):
         self.accept_events = state

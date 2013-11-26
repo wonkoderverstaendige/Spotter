@@ -204,6 +204,10 @@
    </property>
   </action>
   <action name="actionAbout">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icon64.svg</normaloff>:/icon64.svg</iconset>
+   </property>
    <property name="text">
     <string>&amp;About</string>
    </property>

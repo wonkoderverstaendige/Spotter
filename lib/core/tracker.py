@@ -53,32 +53,17 @@ class Tracker:
             roi = trkbl.Shape('rectangle', None, None)
         else:
             roi = trkbl.Shape('rectangle', None, None)
-        led = trkbl.LED(label,
-                        range_hue,
-                        range_sat,
-                        range_val,
-                        range_area,
-                        fixed_pos,
-                        linked_to,
-                        roi)
+        led = trkbl.LED(label, range_hue, range_sat, range_val, range_area, fixed_pos, linked_to, roi)
         self.leds.append(led)
         return led
 
     def addOOI(self, led_list, label, traced=False, tracked=True, magnetic_signals=None):
-        ooi = trkbl.OOI(led_list,
-                        label,
-                        traced,
-                        tracked,
-                        magnetic_signals)
+        ooi = trkbl.OOI(led_list, label, traced, tracked, magnetic_signals)
         self.oois.append(ooi)
         return ooi
 
     def addROI(self, shape_list, label, color=None, magnetic_objects=None):
-        roi = trkbl.ROI(shape_list,
-                        label,
-                        color,
-                        self.oois,
-                        magnetic_objects)
+        roi = trkbl.ROI(shape_list, label, color, self.oois, magnetic_objects)
         self.rois.append(roi)
         return roi
 
@@ -101,12 +86,8 @@ class Tracker:
             if self.scale >= 1.0:
                 self.frame = cv2.cvtColor(frame.img, cv2.COLOR_BGR2HSV)
             else:
-                self.frame = cv2.cvtColor(cv2.resize(frame.img,
-                                                     (0, 0),
-                                                     fx=self.scale,
-                                                     fy=self.scale,
-                                                     interpolation=cv2.INTER_LINEAR),
-                                          cv2.COLOR_BGR2HSV)
+                self.frame = cv2.cvtColor(cv2.resize(frame.img, (0, 0), fx=self.scale, fy=self.scale,
+                                                     interpolation=cv2.INTER_LINEAR), cv2.COLOR_BGR2HSV)
 
             for led in self.leds:
                 if led.detection_active:

@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Mon Nov 25 22:32:41 2013
-#      by: PyQt4 UI code generator 4.10.3
+# Created: Tue Nov 26 05:32:41 2013
+#      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -102,6 +102,7 @@ class Ui_MainWindow(object):
         self.actionParameters.setEnabled(False)
         self.actionParameters.setObjectName(_fromUtf8("actionParameters"))
         self.actionAbout = QtGui.QAction(MainWindow)
+        self.actionAbout.setIcon(icon)
         self.actionAbout.setObjectName(_fromUtf8("actionAbout"))
         self.actionRecord = QtGui.QAction(MainWindow)
         self.actionRecord.setCheckable(True)

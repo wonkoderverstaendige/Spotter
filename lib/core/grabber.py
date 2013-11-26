@@ -144,7 +144,7 @@ class Grabber:
             time.sleep(0.01)
         else:
             self.log.error("Frame retrieval failed after %d" + (' tries' if n_tries-1 else ' try'), n_tries)
-            return
+            return None
 
         # First frame?
         if self.frame_count == 1:
@@ -156,7 +156,6 @@ class Grabber:
 
         #self.log.debug('returning frame')
         return Frame(self.frame_count, img, self.source_type)
-   #            self.framebuffer.appendleft(frame)
 
     def close(self):
         """Close and release frame source."""
