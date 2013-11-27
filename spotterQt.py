@@ -201,10 +201,8 @@ class Main(QtGui.QMainWindow):
                 self.log.debug("Changed main loop update rate to match file. New: %d", self.timer.interval())
 
     def record_video(self, state, filename=None):
-        """
-        Control recording of grabbed video.
-        TODO: Select output video file name.
-        """
+        """ Control recording of grabbed video. """
+        # TODO: Select output video file name.
         self.log.debug("Toggling writer recording state")
         if state:
             self.spotter.start_writer()

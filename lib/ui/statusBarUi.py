@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'statusBarUi.ui'
 #
-# Created: Tue Nov 26 23:54:46 2013
-#      by: PyQt4 UI code generator 4.10.3
+# Created: Wed Nov 27 04:47:40 2013
+#      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -42,7 +42,7 @@ class Ui_statusBar(object):
         self.sb_offset.setAccelerated(True)
         self.sb_offset.setMinimum(-99)
         self.sb_offset.setMaximum(999)
-        self.sb_offset.setProperty("value", -33)
+        self.sb_offset.setProperty("value", -10)
         self.sb_offset.setObjectName(_fromUtf8("sb_offset"))
         self.horizontalLayout_2.addWidget(self.sb_offset)
         spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
