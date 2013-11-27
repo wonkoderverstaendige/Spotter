@@ -217,8 +217,12 @@ class Main(QtGui.QMainWindow):
         differently, and depending on internal states (e.g. selections)
         """
         current_tab = self.side_bar.get_child_page()
-        if current_tab and current_tab.accept_events:
-            current_tab.process_event(event_type, event)
+        if current_tab:
+            try:
+                if current_tab.accept_events:
+                    current_tab.process_event(event_type, event)
+            except AttributeError:
+                pass
 
     def about(self):
         """ About message box. Credits. Links. Jokes. """
@@ -258,7 +262,7 @@ class Main(QtGui.QMainWindow):
 
     def file_open_device(self):
         """ Open camera as frame source """
-        self.spotter.grabber.start(source=0, size=(320, 180))
+        self.spotter.grabber.start(source=0, size=(640, 360))
 
     def closeEvent(self, event):
         """
@@ -269,11 +273,8 @@ class Main(QtGui.QMainWindow):
         if NO_EXIT_CONFIRMATION:
             reply = QtGui.QMessageBox.Yes
         else:
-            reply = QtGui.QMessageBox.question(self,
-                                               'Exiting...',
-                                               'Are you sure?',
-                                               QtGui.QMessageBox.Yes,
-                                               QtGui.QMessageBox.No)
+            reply = QtGui.QMessageBox.question(self, 'Exiting...', 'Are you sure?',
+                                               QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
         if reply == QtGui.QMessageBox.Yes:
             self.spotter.exit()
             event.accept()
@@ -284,9 +285,7 @@ class Main(QtGui.QMainWindow):
     ##  TEMPLATES handling
     ###############################################################################
     def parse_config(self, path, run_validate=True):
-        """
-        Template parsing and validation.
-        """
+        """ Template parsing and validation. """
         template = configobj.ConfigObj(path, file_error=True, stringify=True,
                                        configspec=DIR_SPECIFICATION)
         if run_validate:
@@ -296,9 +295,9 @@ class Main(QtGui.QMainWindow):
                 print "Template error in file ", path
                 for (section_list, key, _) in configobj.flatten_errors(template, results):
                     if key is not None:
-                        print 'The "%s" key in the section "%s" failed validation' % (key, ', '.join(section_list))
+                        self.log.error('The "%s" key in the section "%s" failed validation', key, ', '.join(section_list))
                     else:
-                        print 'The following section was missing:%s ' % ', '.join(section_list)
+                        self.log.error('The following section was missing:%s ', ', '.join(section_list))
                 return None
         return template
 
@@ -425,33 +424,24 @@ def main(*args, **kwargs):
 
 if __name__ == "__main__":                                  #
 #############################################################
+    # TODO: Recover full command-line functionality
+    # TODO: Add config file for general settings
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     # Command line parsing
-    ARGDICT = docopt.docopt(__doc__, version=None)
-    DEBUG = ARGDICT['--DEBUG']
+    arg_dict = docopt.docopt(__doc__, version=None)
+    DEBUG = arg_dict['--DEBUG']
     if DEBUG:
-        print(ARGDICT)
-
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    # Debug logging
-    #log = logging.getLogger('ledtrack')
-    #log_handle = logging.StreamHandler()  # logging.FileHandler('ledtrack.log')
-    #formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-    #log_handle.setFormatter(formatter)
-    #log.addHandler(log_handle)
-    #if DEBUG:
-    #    log.setLevel(logging.INFO)  # INFOERROR
-    #else:
-    #    log.setLevel(logging.ERROR)  # INFOERROR
+        print(arg_dict)
 
     # Frame size parameter string 'WIDTHxHEIGHT' to size tuple (WIDTH, HEIGHT)
-    size = (0, 0) if not ARGDICT['--dims'] else tuple(ARGDICT['--dims'].split('x'))
+    size = None if not arg_dict['--dims'] else tuple(arg_dict['--dims'].split('x'))
 
-    main(source=ARGDICT['--source'])
+    main(source=arg_dict['--source'], size=(640, 360))
 
     # Qt main window which instantiates spotter class with all parameters
-    #main(source=ARGDICT['--source'],
-    #     destination=utils.dst_file_name(ARGDICT['--outfile']),
-    #     fps=ARGDICT['--fps'],
+    #main(source=arg_dict['--source'],
+    #     destination=utils.dst_file_name(arg_dict['--outfile']),
+    #     fps=arg_dict['--fps'],
     #     size=size,
-    #     serial=ARGDICT['--Serial'])
+    #     serial=arg_dict['--Serial'])

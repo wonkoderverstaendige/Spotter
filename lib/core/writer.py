@@ -34,7 +34,6 @@ import logging
 from lib import utilities as utils
 from lib.docopt import docopt
 
-DEBUG = True
 OVERWRITE = False
 #seconds till writer process times out after having received last alive packet
 STILL_ALIVE_TIMEOUT = 10
@@ -74,25 +73,26 @@ class Writer:
         self.loop()
 
     def start(self, dst=None, size=None):
+        if size is None:
+            self.log.error('Video size not specified, writer would fail.')
+            return
+
+        self.size = size
+
         # check if output file exists
         if dst is None:
             dst = 'recordings/' + utils.time_string() + '.avi'
         destination = utils.dst_file_name(dst)
-
-        if size is None and self.size is None:
-            self.log.error('Video size not specified, writer would fail.')
-
         if os.path.isfile(destination) and not OVERWRITE:
             self.log.error('Destination file %s exists.', destination)
             return
         self.destination = destination
 
-        # VideoWriter object
         self.log.info('Start recording: %s fps, %s, %s', str(self.fps), str(self.size), self.destination)
 
+        # VideoWriter object
         cc = list(self.codec)
-        self.writer = cv2.VideoWriter(filename=self.destination,
-                                      fourcc=cv2.cv.CV_FOURCC(cc[0], cc[1], cc[2], cc[3]),
+        self.writer = cv2.VideoWriter(filename=self.destination, fourcc=cv2.cv.CV_FOURCC(cc[0], cc[1], cc[2], cc[3]),
                                       fps=self.fps, frameSize=self.size, isColor=True)
 
         self.video_logger = logging.getLogger(destination)
@@ -120,6 +120,13 @@ class Writer:
         frame = item[0]
         messages = item[1]
 
+        try:
+            assert self.size == (frame.img.shape[1], frame.img.shape[0])
+        except AssertionError:
+            self.log.error('Frame size not correct!')
+            self.log.debug('Frame shape: %s, expected: %s', str(frame.img.shape), str(self.size))
+            self.stop()
+
         for m in messages:
             self.video_logger.info(m)
         self.writer.write(frame.img)
@@ -137,12 +144,18 @@ class Writer:
 
             try:
                 new_pipe_msg = self.pipe.poll()
-            except:
+            except Exception, error:
+                self.log.errpr(error)
                 new_pipe_msg = False
 
             if new_pipe_msg:
                 # any command in the pipe will keep the process alive
-                cmd = self.pipe.recv()
+                full_message = self.pipe.recv()
+                cmd = full_message[0]
+                if len(full_message) > 1:
+                    msg = full_message[1]
+                else:
+                    msg = None
                 self.ts_last = time.clock()
                 if cmd == 'terminate':
                     self.log.debug('Writer received termination signal')
@@ -152,8 +165,8 @@ class Writer:
                     self.log.debug('Writer received stop signal')
                     self.stop()
                 elif cmd == 'start':
-                    self.log.debug('Writer received start signal')
-                    self.start()
+                    self.log.debug('Writer received start signal with size: %s', str(msg))
+                    self.start(size=msg)
                 elif cmd == 'alive':
                     pass
 
@@ -182,15 +195,15 @@ if __name__ == '__main__':                                  #
 #############################################################
     pass
     ## Parsing CLI arguments
-    #ARGDICT = docopt( __doc__, version=None )
-    #DEBUG = ARGDICT['--DEBUG']
-    #if DEBUG: print( ARGDICT )
+    #arg_dict = docopt( __doc__, version=None )
+    #DEBUG = arg_dict['--DEBUG']
+    #if DEBUG: print( arg_dict )
     #
     ## Width and height; WWWxHHH to tuple of floats; cv2 set requires floats
-    #size = (0, 0) if not ARGDICT['--dims'] else tuple( ARGDICT['--dims'].split('x') )
+    #size = (0, 0) if not arg_dict['--dims'] else tuple( arg_dict['--dims'].split('x') )
     #
     ## Codec should be four character code (FOURCC)
-    #codec = ARGDICT['--codec'].upper()
+    #codec = arg_dict['--codec'].upper()
     #if codec:
     #    if not len(codec) == 4:
     #        print 'Codec must be four letter code. E.g. "XVID".'
@@ -199,17 +212,17 @@ if __name__ == '__main__':                                  #
     #        if DEBUG: print 'Using codec FOURCC ' + codec
     #
     ## Run in command line without user interface to slow things down
-    #GUI = not ARGDICT['--Headless']
+    #GUI = not arg_dict['--Headless']
     #
     ## Instantiate frame source to get something to write
     #import grabber
-    #frame_source = grabber.Grabber( ARGDICT['--source'] )
-    #fps = 30.0 if not ARGDICT['--fps'] else frame_source.fps
+    #frame_source = grabber.Grabber( arg_dict['--source'] )
+    #fps = 30.0 if not arg_dict['--fps'] else frame_source.fps
     #
     #if DEBUG: print str( fps ) + ':' + str( size )
     #
     ## Instantiate main video writer class
-    #main = Writer( destination = ARGDICT['--outfile'],
+    #main = Writer( destination = arg_dict['--outfile'],
     #               fps = fps,
     #               size = frame_source.size,
     #               codec = codec )

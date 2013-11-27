@@ -125,8 +125,10 @@ class Grabber:
             # if source_type is 'device': Otherwise does nothing
             if self.source_type == 'device':
                 if self.fps_init is not None:
+                    self.log.debug("Setting fps of capture: {0}".format(float(self.fps_init)))
                     self.capture.set(cv2.cv.CV_CAP_PROP_FPS, float(self.fps_init))
                 if self.size_init is not None:
+                    self.log.debug("Setting frame size of capture: {0[0]}x{0[1]}".format(self.size_init))
                     self.capture.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, float(self.size_init[0]))
                     self.capture.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, float(self.size_init[1]))
 

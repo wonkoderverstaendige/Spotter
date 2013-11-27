@@ -203,19 +203,19 @@ if __name__ == '__main__':                                  #
 #############################################################
     pass
     ## Parsing CLI arguments
-    #ARGDICT = docopt( __doc__, version=None )
-    #DEBUG = ARGDICT['--DEBUG']
-    #if DEBUG: print ARGDICT
+    #arg_dict = docopt( __doc__, version=None )
+    #DEBUG = arg_dict['--DEBUG']
+    #if DEBUG: print arg_dict
     #
     ## Run in command line without user interface to slow things down
-    #GUI = not ARGDICT['--Headless']
+    #GUI = not arg_dict['--Headless']
     #
     ## Instantiate frame source to get something to write
     #import grabber
-    #frame_source = grabber.Grabber( ARGDICT['--source'] )
+    #frame_source = grabber.Grabber( arg_dict['--source'] )
     #fps = frame_source.fps
     #
-    #tracker = Tracker( ARGDICT['--Serial'] )
+    #tracker = Tracker( arg_dict['--Serial'] )
     #
     #tracker.addLED( 'red', ( 160, 5 ) )
     #tracker.addLED( 'sync', ( 15, 90 ), fixed_pos = True )

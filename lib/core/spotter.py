@@ -146,13 +146,13 @@ class Spotter:
             # Check on writer process to prevent data loss and preserve reference
             if self.check_writer():
                 if self.recording:
-                    self.writer_pipe.send('record')
+                    self.writer_pipe.send(['record'])
                     item = (copy.deepcopy(self.newest_frame),
                             copy.deepcopy(messages))
                     self.writer_queue.put(item)
 #               time.sleep(0.001)  # required, or may crash?
 
-        self.writer_pipe.send('alive')
+        self.writer_pipe.send(['alive'])
         return self.newest_frame
 
     @property
@@ -172,11 +172,12 @@ class Spotter:
 #            return True
 
     def start_writer(self):
-        self.writer_pipe.send('start')
+        size = (self.newest_frame.img.shape[1], self.newest_frame.img.shape[0])
+        self.writer_pipe.send(['start', size])
         self.recording = True
 
     def stop_writer(self):
-        self.writer_pipe.send('stop')
+        self.writer_pipe.send(['stop'])
         self.recording = False
 
     def exit(self):
@@ -195,23 +196,23 @@ class Spotter:
 
         # writer is a bit trickier, may have frames left to stow away
         if self.writer is not None and self.writer.is_alive():
-            self.writer_pipe.send('terminate')
+            self.writer_pipe.send(['terminate'])
             # gives the child process one second to finish up
             self.writer.join(1)
             # will be terminated otherwise
             if self.writer.is_alive():
                 self.writer.terminate()
-        try:
-            fc = self.grabber.frame_count
-            tt = (time.clock() - self.ts_start)
-            self.log.info('Done! Grabbed ' + str(fc) + ' frames in ' + str(tt) + 's, with ' + str(fc/tt) + ' fps')
-        except Exception, e:
-            print e
+        #try:
+        #    fc = self.grabber.frame_count
+        #    tt = (time.clock() - self.ts_start)
+        #    self.log.info('Done! Grabbed ' + str(fc) + ' frames in ' + str(tt) + 's, with ' + str(fc/tt) + ' fps')
+        #except Exception, e:
+        #    print e
 
         #outfile = open(timingfname, "wb")
         #pickle.dump(self.timings, outfile)
 
-        sys.exit(1)
+        #sys.exit(0)
 
 
 #############################################################
@@ -219,9 +220,9 @@ if __name__ == "__main__":                                  #
 #############################################################
     pass
 #    # Command line parsing
-#    ARGDICT = docopt( __doc__, version=None )
-#    DEBUG   = ARGDICT['--DEBUG']
-#    if DEBUG: print( ARGDICT )
+#    arg_dict = docopt( __doc__, version=None )
+#    DEBUG   = arg_dict['--DEBUG']
+#    if DEBUG: print( arg_dict )
 #
 #    # Debug logging
 #    log = logging.getLogger('ledtrack')
@@ -235,18 +236,18 @@ if __name__ == "__main__":                                  #
 #        log.setLevel( logging.ERROR ) #INFOERROR
 #
 #    # no GUI, may later select GUI backend, i.e., Qt or cv2.highgui etc.
-#    guistring = 'cv2.highgui' if not ARGDICT['--Headless'] else ARGDICT['--Headless']
+#    guistring = 'cv2.highgui' if not arg_dict['--Headless'] else arg_dict['--Headless']
 #
 #    # Frame size parameter string 'WIDTHxHEIGHT' to size tupple (WIDTH, HEIGHT)
-#    size = (0, 0) if not ARGDICT['--dims'] else tuple( ARGDICT['--dims'].split('x') )
+#    size = (0, 0) if not arg_dict['--dims'] else tuple( arg_dict['--dims'].split('x') )
 #
 #    # Instantiating main class ... no shit, Sherlock!
-#    main = Spotter( source      = ARGDICT['--source'],
-#                    destination = utils.dst_file_name( ARGDICT['--outfile'] ),
-#                    fps         = ARGDICT['--fps'],
+#    main = Spotter( source      = arg_dict['--source'],
+#                    destination = utils.dst_file_name( arg_dict['--outfile'] ),
+#                    fps         = arg_dict['--fps'],
 #                    size        = size,
 #                    gui         = guistring,
-#                    serial      = ARGDICT['--Serial'])
+#                    serial      = arg_dict['--Serial'])
 #
 #    # It's Math. 3rd grade Math. Wait time between frames, if any left
 #    log.debug( 'fps: ' + str(main.grabber.fps) )
