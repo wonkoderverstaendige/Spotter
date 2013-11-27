@@ -94,7 +94,6 @@ class Main(QtGui.QMainWindow):
         #   File
         self.connect(self.ui.actionFile, QtCore.SIGNAL('triggered()'), self.file_open_video)
         self.connect(self.ui.actionCamera, QtCore.SIGNAL('triggered()'), self.file_open_device)
-
         #   Configuration
         self.connect(self.ui.actionLoadConfig, QtCore.SIGNAL('triggered()'), self.load_config)
         self.connect(self.ui.actionSaveConfig, QtCore.SIGNAL('triggered()'), self.save_config)
@@ -102,9 +101,12 @@ class Main(QtGui.QMainWindow):
 
         # Toolbar items
         self.connect(self.ui.actionRecord, QtCore.SIGNAL('toggled(bool)'), self.record_video)
+        # Serial/Arduino Connection status indicator
+        self.arduino_indicator = SerialIndicator(self.spotter.chatter)
+        self.ui.toolBar.addWidget(self.arduino_indicator)
 
         # OpenGL frame
-        self.gl_frame = GLFrame()
+        self.gl_frame = GLFrame(AA=True)
         self.ui.frame_video.addWidget(self.gl_frame)
         self.gl_frame.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
 
@@ -115,14 +117,6 @@ class Main(QtGui.QMainWindow):
         default_path = os.path.join(os.path.abspath(DIR_TEMPLATES), DEFAULT_TEMPLATE)
         self.template_default = self.parse_config(default_path, True)
         #list_of_files = [f for f in os.listdir(DIR_TEMPLATES) if f.lower().endswith('ini')]
-
-        # Serial/Arduino Connection status indicator
-        self.arduino_indicator = SerialIndicator(self.spotter.chatter)
-        self.ui.toolBar.addWidget(self.arduino_indicator)
-        # TODO: Move to page specific code
-        #self.serial_timer = QtCore.QTimer(self)
-        #self.serial_timer.timeout.connect(self.serial_check)
-        #self.serial_timer.start(1000)
 
         self.center_window()
 

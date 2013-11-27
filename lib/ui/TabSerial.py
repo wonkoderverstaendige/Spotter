@@ -45,6 +45,12 @@ class Tab(QtGui.QWidget, Ui_tab_serial):
         self.refresh_port_list()
         self.update()
 
+        # FIXME: Needs watchdog to prevent getting stuck w/o user knowing
+        # from originally spotterQt.py:
+        #self.serial_timer = QtCore.QTimer(self)
+        #self.serial_timer.timeout.connect(self.serial_check)
+        #self.serial_timer.start(1000)
+
     def update(self):
         if self.serial.is_connected():
             if not self.btn_serial_connect.isChecked():
@@ -85,6 +91,7 @@ class Tab(QtGui.QWidget, Ui_tab_serial):
             self.btn_serial_connect.setText('Connect')
             self.btn_serial_connect.setChecked(False)
             self.serial.close()
+            # FIXME: Missing! Connect signal to trigger
             self.update_all_tabs()
         else:
             self.serial.serial_port = str(self.combo_serialports.currentText())
@@ -97,4 +104,5 @@ class Tab(QtGui.QWidget, Ui_tab_serial):
             if sc:
                 self.btn_serial_connect.setText('Disconnect')
                 self.btn_serial_connect.setChecked(True)
+                # FIXME: Missing! Connect signal to trigger
                 self.update_all_tabs()
