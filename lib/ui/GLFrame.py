@@ -9,6 +9,7 @@ from OpenGL.GL import glColor
 
 from PyQt4 import QtGui, QtCore, QtOpenGL
 from OpenGL import GL
+import OpenGL.arrays.vbo as glvbo
 import math
 import numpy as np
 import lib.geometry as geom
@@ -297,6 +298,7 @@ class GLFrame(QtOpenGL.QGLWidget):
         """ Quickly draw approximate circle. Algorithm from:
             http://slabode.exofire.net/circle_draw.shtml
         """
+
         (cx1, cy1), (cx2, cy2) = points
         cx1 *= 1.0/self.width
         cy1 *= 1.0/self.height
@@ -305,17 +307,32 @@ class GLFrame(QtOpenGL.QGLWidget):
         dx = abs(cx1 - cx2)
         dy = abs(cy1 - cy2)
         r = dx if dx > dy else dy
+        if dx > dy:
+            r_vbo = 2 * dx * self.width
+        else:
+            r_vbo = 2 * dy * self.height
 
         if num_segments is None:
             num_segments = int(math.pi*16.0*math.sqrt(r))
 
         if filled:
-            GL.glBegin(GL.GL_TRIANGLE_FAN)
-            GL.glColor4f(*color)
-            for i in xrange(0, num_segments):
-                angle = i * math.pi * 2.0 / num_segments
-                GL.glVertex2f(cx1 + r/self.aspect_ratio * math.cos(angle), cy1 + r * math.sin(angle))
-            GL.glEnd()
+            # TODO: Is that magic number 180 depending on the frame size?
+            # If so, r < 0.25
+            if r_vbo < 180:
+                vbo = glvbo.VBO(np.array([[cx1, cy1]], dtype=np.float32))
+                vbo.bind()
+                GL.glColor4f(*color)
+                GL.glPointSize(r_vbo)
+                GL.glEnableClientState(GL.GL_VERTEX_ARRAY)
+                GL.glVertexPointer(2, GL.GL_FLOAT, 0, vbo)
+                GL.glDrawArrays(GL.GL_POINTS, 0, 1)
+            else:
+                GL.glBegin(GL.GL_TRIANGLE_FAN)
+                GL.glColor4f(*color)
+                for i in xrange(0, num_segments):
+                    angle = i * math.pi * 2.0 / num_segments
+                    GL.glVertex2f(cx1 + r/self.aspect_ratio * math.cos(angle), cy1 + r * math.sin(angle))
+                GL.glEnd()
         else:
             theta = 2 * math.pi / float(num_segments)
             c = math.cos(theta)  # pre-calculate cosine0
