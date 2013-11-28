@@ -46,10 +46,13 @@ class GLFrame(QtOpenGL.QGLWidget):
         if spotter is None:
             return
         else:
-            self.spotter = spotter
+            if not self.spotter is spotter:
+                self.spotter = spotter
 
-        self.frame = self.spotter.newest_frame.img
+        self.frame = self.spotter.newest_frame
         if self.frame is None:
+            return
+        if self.frame.img is None:
             return
 
         self.resize_canvas()
@@ -94,42 +97,45 @@ class GLFrame(QtOpenGL.QGLWidget):
         self.updateGL()
 
     def initializeGL(self):  # , width=1, height=1
-        """ Initialization of the GL frame.
-        TODO: glOrtho should set to size of the frame which would allow
-        using absolute coordinates in range/domain of original frame
-        """
+        """ Initialization of the GL frame. """
+        # TODO: glOrtho should set to size of the frame which would allow using
+        # TODO: absolute coordinates in range/domain of original frame
         GL.glClearColor(0.0, 0.0, 0.0, 1.0)
         GL.glClearDepth(1.0)
         GL.glOrtho(0, 1, 1, 0, -1, 1)
+        #glOrtho(0, width, height, 0, -1, 1)  # DOESN'T WORK!!
         GL.glMatrixMode(GL.GL_PROJECTION)
-
-        # DOESN'T WORK!!
-#        glOrtho(0, width, height, 0, -1, 1)
 
         # Enable rational alpha blending
         GL.glEnable(GL.GL_BLEND)
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
 
-        # TODO: I have no idea what these things are doing...
-
         if self.anti_aliasing:
+            # Points
             GL.glEnable(GL.GL_POINT_SMOOTH)
-            GL.glEnable(GL.GL_LINE_SMOOTH)  # Anti aliasing
-            GL.glEnable(GL.GL_POLYGON_SMOOTH)
-            GL.glHint(GL.GL_LINE_SMOOTH_HINT, GL.GL_NICEST)
-            GL.glHint(GL.GL_PERSPECTIVE_CORRECTION_HINT, GL.GL_NICEST)
             GL.glHint(GL.GL_POINT_SMOOTH_HINT, GL.GL_NICEST)
+
+            # Lines
+            GL.glEnable(GL.GL_LINE_SMOOTH)
+            GL.glHint(GL.GL_LINE_SMOOTH_HINT, GL.GL_NICEST)
+
+            # Polygons, but NOT GL_TRIANGLE_FAN
+            GL.glEnable(GL.GL_POLYGON_SMOOTH)
             GL.glHint(GL.GL_POLYGON_SMOOTH_HINT, GL.GL_NICEST)
+
+            # Not sure...
+            GL.glHint(GL.GL_PERSPECTIVE_CORRECTION_HINT, GL.GL_NICEST)
 
     def paintGL(self):
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
         GL.glLoadIdentity()
 
-        # Draw the numpy array onto the GL frame, stringify first
-        # NB: Currently flips the frame.
-        if self.frame is not None:
-            shape = self.frame.shape
-            GL.glDrawPixels(shape[1], shape[0], GL.GL_RGB, GL.GL_UNSIGNED_BYTE, np.fliplr(self.frame).tostring()[::-1])
+        # Draw the numpy array onto the GL frame
+        if not None in [self.frame, self.frame.img]:
+            shape = self.frame.img.shape
+            # TODO: Flags for horizontal/vertical flipping
+            GL.glDrawPixels(shape[1], shape[0], GL.GL_RGB, GL.GL_UNSIGNED_BYTE,
+                            np.fliplr(self.frame.img).tostring()[::-1])
 
         color = (0.5, 0.5, 0.5, 0.5)
         if self.dragging:
@@ -140,11 +146,11 @@ class GLFrame(QtOpenGL.QGLWidget):
             if modifiers == QtCore.Qt.ShiftModifier:
                 radius = geom.distance(p1, p2)
                 p2_c = (int(p1[0]), p1[1]+radius)
-                self.drawCircle((p1, p2_c), color, 16)
+                self.drawCircle((p1, p2_c), color=color, filled=False, num_segments=16)
             elif modifiers == QtCore.Qt.ControlModifier:
-                self.drawLine((p1, p2), color)
+                self.drawLine((p1, p2), color=color)
             else:
-                self.drawRect((p1, p2), color)
+                self.drawRect((p1, p2), color=color)
 #        else:
         self.drawCross((self.m_x1, self.m_y1), 20, color)
 
@@ -369,7 +375,7 @@ class GLFrame(QtOpenGL.QGLWidget):
             width = 320
             height = 240
         else:
-            width, height = self.frame.shape[1], self.frame.shape[0]
+            width, height = self.frame.img.shape[1], self.frame.img.shape[0]
 
         if not (self.width == width and self.height == height):
             self.width = width

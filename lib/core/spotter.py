@@ -32,17 +32,14 @@ To do:
 """
 
 import cv2
-import sys
 import time
 import multiprocessing
 import logging
 import copy
+from lib.docopt import docopt
+from lib.core import grabber, tracker, writer, chatter
 import pickle
 
-from lib import utilities as utils, timerclass
-from lib.core import grabber, tracker, writer, chatter
-
-from lib.docopt import docopt
 timings_filename = 'tracking_3LEDs.p'
 
 
@@ -81,10 +78,10 @@ class Spotter:
         self.log = logging.getLogger(__name__)
         self.log.info(str(multiprocessing.cpu_count()) + ' CPUs found')
 
-        try:
-            import zmq  # ZeroMQ python bindings
-        except ImportError:
-            zmq = None
+        #try:
+        #    import zmq  # ZeroMQ python bindings
+        #except ImportError:
+        #    zmq = None
 
         # Setup frame grabber object, fills frame buffer
         self.log.debug('Instantiating grabber...')
@@ -109,7 +106,6 @@ class Spotter:
         self.chatter = chatter.Chatter(serial, auto=True)
 
     def update(self):
-
         # Get new frame
         self.newest_frame = self.grabber.grab()
         if self.newest_frame is not None:
@@ -140,7 +136,6 @@ class Spotter:
                 r.update_slots(self.chatter)
                 r.update_state()
                 slots.extend(r.linked_slots)
-
             self.chatter.update_pins(slots)
 
             # Check on writer process to prevent data loss and preserve reference
@@ -152,6 +147,7 @@ class Spotter:
                     self.writer_queue.put(item)
 #               time.sleep(0.001)  # required, or may crash?
 
+        # FIXME: Blocks if buffer runs full when writer crashes/closes
         self.writer_pipe.send(['alive'])
         return self.newest_frame
 

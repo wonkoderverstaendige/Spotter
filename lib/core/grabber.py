@@ -137,6 +137,7 @@ class Grabber:
         image and meta data."""
         if self.capture is None:
             return
+        #self.log.debug("Grabbing frame")
 
         # Only really loops for first frame
         n_tries = 10 if self.frame_count < 1 else 1
@@ -148,6 +149,7 @@ class Grabber:
             time.sleep(0.01)
         else:
             self.log.error("Frame retrieval failed after %d" + (' tries' if n_tries-1 else ' try'), n_tries)
+            self.close()
             return None
 
         # First frame?
@@ -167,7 +169,13 @@ class Grabber:
         self.size = self.fps = self.fourcc = None
         self.frame_count = 0
         if self.capture:
-            self.capture.release()
+            try:
+                self.capture.release()
+                self.log.DEBUG("Capture %s released", str(self.capture))
+            except BaseException, error:
+                self.log.error("Capture %s release exception: [%s]", self.capture, error)
+
+        self.capture = None
 
 
 ##########################

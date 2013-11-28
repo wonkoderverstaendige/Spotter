@@ -135,8 +135,10 @@ class Writer:
         """Writes frames from the queue. If alive flag set to
         false, deletes capture object to allow proper exit
         """
+        # FIXME: The interface initializiation can take longer than the timeout on the writer!
         while 42 and self.alive:
             # Process should terminate if not being talked to for a while
+            #self.log.debug("Alive signal timeout: %s", str(time.clock() - self.ts_last))
             if time.clock() - self.ts_last > STILL_ALIVE_TIMEOUT:
                 self.log.error("Alive signal timed out")
                 self.close()
