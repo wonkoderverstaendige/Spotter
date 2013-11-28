@@ -139,7 +139,7 @@ class Grabber:
             return
 
         # Only really loops for first frame
-        n_tries = 100 if self.frame_count < 1 else 1
+        n_tries = 10 if self.frame_count < 1 else 1
         for trial in xrange(2, n_tries+2):
             rv, img = self.capture.read()
             if rv:
