@@ -106,3 +106,7 @@ class Tab(QtGui.QWidget, Ui_tab_serial):
                 self.btn_serial_connect.setChecked(True)
                 # FIXME: Missing! Connect signal to trigger
                 self.update_all_tabs()
+
+    def closeEvent(self, QCloseEvent):
+        # Arduino Serial tab shall be invincible!
+        return False

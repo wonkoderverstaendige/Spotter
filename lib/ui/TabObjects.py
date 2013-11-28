@@ -42,7 +42,7 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         self.connect(self.ckb_trace, QtCore.SIGNAL('stateChanged(int)'), self.update_object)
         self.connect(self.ckb_analog_pos, QtCore.SIGNAL('stateChanged(int)'), self.update_object)
 
-        self.connect(self.btn_lock_table, QtCore.SIGNAL('toggled(bool)'), self.lock_slot_table)
+        #self.connect(self.btn_lock_table, QtCore.SIGNAL('toggled(bool)'), self.lock_slot_table)
 
         # slot table is static for Object, lists object properties
         self.populate_slot_table()
@@ -110,14 +110,17 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         """
         remove = []
         listed = []
-        for n in xrange(self.tree_link_features.topLevelItemCount()):
-            if not self.tree_link_features.topLevelItem(n).feature in self.all_features:
-                remove.append(self.tree_link_features.topLevelItem(n))
+        for idx in xrange(self.tree_link_features.topLevelItemCount()):
+            list_item = self.tree_link_features.topLevelItem(idx)
+            if not list_item.feature in self.all_features:
+                remove.append(idx)
+                self.unlink_feature(list_item.feature)
+                self.log.debug("Should remove feature %s", remove[-1])
             else:
-                listed.append(self.tree_link_features.topLevelItem(n).feature)
+                listed.append(list_item.feature)
 
-        map(self.remove_feature, [f for f in remove])
-        map(self.add_feature, [f for f in self.all_features if f not in listed])
+        [self.remove_feature(idx) for idx in remove]
+        [self.add_feature(f) for f in self.all_features if f not in listed]
 
     def feature_item_changed(self, item, column):
         """ Checks for differences in checkbox states and linked items.
@@ -145,10 +148,9 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         self.tree_link_features.addTopLevelItem(feature_item)
         feature_item.setFlags(feature_item.flags() | QtCore.Qt.ItemIsEditable)
 
-    def remove_feature(self, f):
+    def remove_feature(self, idx):
         """ Remove feature from feature list. """
-        # TODO: <int> Parameter missing to method removeItemWidget(<widget>, <int>)
-        self.tree_link_features.removeItemWidget(f)
+        self.tree_link_features.takeTopLevelItem(idx)
 
     def link_feature(self, feature):
         """ Link the object to the feature. """
@@ -156,7 +158,10 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
 
     def unlink_feature(self, feature):
         """ Remove a specific feature from the list. """
-        self.object.linked_leds.pop(self.object.linked_leds.index(feature))
+        try:
+            self.object.linked_leds.remove(feature)
+        except ValueError:
+            pass
 
 ###############################################################################
 ## SLOT TABLE
@@ -313,3 +318,6 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
             else:
                 enable.append(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
         return pins, enable
+
+    def closeEvent(self, QCloseEvent):
+        self.spotter.tracker.remove_ooi(self.object)

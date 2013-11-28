@@ -48,24 +48,52 @@ class Tracker:
         self.leds = []
         self.adaptive_tracking = adaptive_tracking
 
-    def addLED(self, label, range_hue, range_sat, range_val, range_area, fixed_pos=False, linked_to=None):
+    def add_led(self, label, range_hue, range_sat, range_val, range_area, fixed_pos=False, linked_to=None):
         if self.adaptive_tracking:
             roi = trkbl.Shape('rectangle', None, None)
         else:
             roi = trkbl.Shape('rectangle', None, None)
         led = trkbl.LED(label, range_hue, range_sat, range_val, range_area, fixed_pos, linked_to, roi)
         self.leds.append(led)
+        self.log.debug("Added feature %s", led)
         return led
 
-    def addOOI(self, led_list, label, traced=False, tracked=True, magnetic_signals=None):
+    def remove_led(self, led):
+        try:
+            self.log.debug("Removing feature %s", led)
+            self.leds.remove(led)
+            for o in self.oois:
+                if led in o.linked_leds:
+                    o.linked_leds.remove(led)
+        except ValueError:
+            self.log.error("Feature to be removed not found")
+
+    def add_ooi(self, led_list, label, traced=False, tracked=True, magnetic_signals=None):
         ooi = trkbl.OOI(led_list, label, traced, tracked, magnetic_signals)
         self.oois.append(ooi)
+        self.log.debug("Added object %s", ooi)
         return ooi
 
-    def addROI(self, shape_list, label, color=None, magnetic_objects=None):
+    def remove_ooi(self, ooi):
+        try:
+            self.oois.remove(ooi)
+            for roi in self.rois:
+                roi.refresh_slot_list()
+        except ValueError:
+            self.log.error("Object to be removed not found")
+
+    def add_roi(self, shape_list, label, color=None, magnetic_objects=None):
         roi = trkbl.ROI(shape_list, label, color, self.oois, magnetic_objects)
         self.rois.append(roi)
+        self.log.debug("Added region %s", roi)
         return roi
+
+    def remove_roi(self, roi):
+        try:
+            del roi.shapes[:]
+            self.rois.remove(roi)
+        except ValueError:
+            self.log.error("Region to be removed not found")
 
     def track_feature(self, frame, method='hsv_thresh', scale=1.0):
         """
@@ -86,8 +114,9 @@ class Tracker:
             if self.scale >= 1.0:
                 self.frame = cv2.cvtColor(frame.img, cv2.COLOR_BGR2HSV)
             else:
+                # TODO: Performance impact of INTER_LINEAR vs. INTER_NEAREST?
                 self.frame = cv2.cvtColor(cv2.resize(frame.img, (0, 0), fx=self.scale, fy=self.scale,
-                                                     interpolation=cv2.INTER_LINEAR), cv2.COLOR_BGR2HSV)
+                                                     interpolation=cv2.INTER_NEAREST), cv2.COLOR_BGR2HSV)
 
             for led in self.leds:
                 if led.detection_active:
@@ -179,9 +208,7 @@ class Tracker:
         Return contour with largest area. Returns None if no contour within
         admissible range_area is found.
         """
-        contours, hierarchy = cv2.findContours(frame,
-                                               cv2.RETR_LIST,
-                                               cv2.CHAIN_APPROX_SIMPLE)
+        contours, hierarchy = cv2.findContours(frame, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         largest_area = 0
         best_cnt = None
         min_area = range_area[0]
@@ -217,9 +244,9 @@ if __name__ == '__main__':                                  #
     #
     #tracker = Tracker( arg_dict['--Serial'] )
     #
-    #tracker.addLED( 'red', ( 160, 5 ) )
-    #tracker.addLED( 'sync', ( 15, 90 ), fixed_pos = True )
-    #tracker.addLED( 'blue', ( 105, 135 ) )
+    #tracker.add_led( 'red', ( 160, 5 ) )
+    #tracker.add_led( 'sync', ( 15, 90 ), fixed_pos = True )
+    #tracker.add_led( 'blue', ( 105, 135 ) )
     #
     #tracker.addObjectOfInterest( [tracker.leds[0],
     #                              tracker.leds[2]],

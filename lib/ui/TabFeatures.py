@@ -181,8 +181,8 @@ class Tab(QtGui.QWidget, Ui_tab_features):
             cutout = cv2.resize(cutout, (self.lbl_zoom.width(), self.lbl_zoom.height()), interpolation=cv2.INTER_NEAREST)
             #convert numpy mat to pixmap image
             if cutout is not None:
-                qimg = QtGui.QImage(cutout.data, cutout.shape[1], cutout.shape[0], QtGui.QImage.Format_RGB888)
-                self.lbl_zoom.setPixmap(QtGui.QPixmap.fromImage(qimg))
+                img = QtGui.QImage(cutout.data, cutout.shape[1], cutout.shape[0], QtGui.QImage.Format_RGB888)
+                self.lbl_zoom.setPixmap(QtGui.QPixmap.fromImage(img))
 
     def process_event(self, event_type, event):
         #print event_type
@@ -192,3 +192,6 @@ class Tab(QtGui.QWidget, Ui_tab_features):
             pixel = self.spotter.newest_frame.img[y, x, :]
             #print pixel
             print "[X,Y][B G R](H, S, V):", [x, y], pixel, utils.BGRpix2HSV(pixel)
+
+    def closeEvent(self, QCloseEvent):
+        self.spotter.tracker.remove_led(self.feature)

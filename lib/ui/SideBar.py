@@ -37,21 +37,21 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
         self.tabs_main.insertTab(-1, self.features_page, self.features_page.label)
         self.connect(self.features_page, QtCore.SIGNAL('currentChanged(int)'), self.tab_features_switch)
         self.connect(self.features_page.btn_new_page, QtCore.SIGNAL('clicked()'), self.add_feature)
-        self.features_page.tabs_sub.tabCloseRequested.connect(self.remove_page)
+        #self.features_page.tabs_sub.tabCloseRequested.connect(self.remove_page)
 
         self.log.debug('Opening objects main tab')
         self.objects_page = MainTabPage("Objects", TabObjects.Tab, spotter=self.spotter, *args, **kwargs)
         self.tabs_main.insertTab(-1, self.objects_page, self.objects_page.label)
         self.connect(self.objects_page, QtCore.SIGNAL('currentChanged(int)'), self.tab_objects_switch)
         self.connect(self.objects_page.btn_new_page, QtCore.SIGNAL('clicked()'), self.add_object)
-        self.objects_page.tabs_sub.tabCloseRequested.connect(self.remove_page)
+        #self.objects_page.tabs_sub.tabCloseRequested.connect(self.remove_page)
 
         self.log.debug('Opening regions main tab')
         self.regions_page = MainTabPage("Regions", TabRegions.Tab, spotter=self.spotter, *args, **kwargs)
         self.tabs_main.insertTab(-1, self.regions_page, self.regions_page.label)
         self.connect(self.regions_page, QtCore.SIGNAL('currentChanged(int)'), self.tab_regions_switch)
         self.connect(self.regions_page.btn_new_page, QtCore.SIGNAL('clicked()'), self.add_region)
-        self.regions_page.tabs_sub.tabCloseRequested.connect(self.remove_page)
+        #self.regions_page.tabs_sub.tabCloseRequested.connect(self.remove_page)
 
         self.log.debug('Opening serial main tab')
         self.serial_page = MainTabPage("Serial", TabSerial.Tab, spotter=self.spotter, *args, **kwargs)
@@ -72,17 +72,6 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
         else:
             tab_widget.setCurrentIndex(0)
         return new_tab
-
-    @staticmethod
-    def remove_page(tab_widget, idx):
-        """
-        Removing is trickier, as it has to delete the features/objects
-        from the tracker!
-        """
-        # call the close method of the page
-        print tab_widget.tabText(idx)
-        # remove tab from tab widget
-        print "NOT removing page", idx
 
     def get_top_tab_label(self):
         """ Return label of the top level tab. """
@@ -113,15 +102,14 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
         if current_page is not None:
             current_page.update()
 
-
     def update_all_tabs(self):
         """
         This is potentially very expensive! Best only trigger on 'large'
         event or introduce some selectivity, i.e. only update affected tabs as
         far as one can tell.
         """
-        return
         self.log.debug('Updating all tabs')
+        return
         #for main_tab in [self.features_page, self.objects_page, self.regions_page]:
         #    for tab in main_tab.tabs_sub:
         #        tab.update()
@@ -155,9 +143,9 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
             range_val = map(int, template['range_val'])
             range_area = map(int, template['range_area'])
             fixed_pos = template.as_bool('fixed_pos')
-            feature = self.spotter.tracker.addLED(label, range_hue, range_sat, range_val,
+            feature = self.spotter.tracker.add_led(label, range_hue, range_sat, range_val,
                                                   range_area, fixed_pos)
-        self.features_page.add_item(feature)
+        self.features_page.add_item(feature, focus_new)
 
     ###############################################################################
     ##  OBJECTS Tab Updates
@@ -222,8 +210,8 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
 
         trace = template['trace']
         track = template['track']
-        object_ = self.spotter.tracker.addOOI(features, label, trace, track, magnetic_signals)
-        self.objects_page.add_item(object_)
+        object_ = self.spotter.tracker.add_ooi(features, label, trace, track, magnetic_signals)
+        self.objects_page.add_item(object_, focus_new)
 
         if analog_out:
             if any(template['analog_signal']):
@@ -305,8 +293,8 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
 
         color = template['color']
 
-        region = self.spotter.tracker.addROI(shape_list, label, color, magnetic_objects)
-        self.regions_page.add_item(region)
+        region = self.spotter.tracker.add_roi(shape_list, label, color, magnetic_objects)
+        self.regions_page.add_item(region, focus_new)
 
     ###############################################################################
     ##  SERIAL Tab Updates

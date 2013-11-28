@@ -84,18 +84,27 @@ class Shape:
             return False
 
 
-class LED:
-    """ Each instance is a spot to track in the image. """
+class Feature:
+    """ General class holding a feature to be tracked with whatever tracking
+    algorithm is appropriate.
+    """
+
+    def __init__(self):
+        pass
+
+
+class LED(Feature):
+    """ Each instance is a spot defined by ranges in a color space. """
 
     hue_hist = None
 
     def __init__(self, label, range_hue, range_sat, range_val, range_area, fixed_pos, linked_to, roi=None):
+        Feature.__init__(self)
         self.label = label
         self.detection_active = True
         self.marker_visible = True
 
         # feature description ranges
-        # np.array uint8 of (lowerBound, higherBound)
         self.range_hue = range_hue
         self.range_sat = range_sat
         self.range_val = range_val
@@ -132,13 +141,25 @@ class LED:
 
 
 class Slot:
-    def __init__(self, label, type_, state=None, state_idx=None, ref=None):
+    def __init__(self, label, slot_type, state=None, state_idx=None, ref=None):
+
+        # While nice, should be used for style, not for identity testing
+        # FIXME: Use instance comparisons vs. label comparisons
         self.label = label
-        self.type = type_
+
+        # analog (dac) or digital
+        self.type = slot_type
+
+        # The physical device pin
         self.pin = None
         self.pin_pref = None
-        self.state = state          # reference to output value
-        self.state_idx = state_idx  # index of output value if iterable
+
+        # reference to output value
+        self.state = state
+        # index of output value if iterable
+        # for example, the position could be x or y position
+        # TODO: Unnecessary with proper use of @property decorators
+        self.state_idx = state_idx
         self.ref = ref              # reference to object representing slot
 
     def attach_pin(self, pin):
@@ -151,13 +172,15 @@ class Slot:
         self.pin.slot = None
         self.pin = None
 
+    def __del__(self):
+        print "Removing slot", self
+
 
 class OOI:
     """
     Object Of Interest. Collection of features to be tracked together and
     report state and behavior, or trigger events upon conditions.
     """
-
     # TODO: Use general "features" rather than LEDs specifically
 
     linked_leds = None
@@ -202,12 +225,11 @@ class OOI:
         self.position = self._position()
         self.angle = self.direction()
 
-        uidx = 0
-        minstep = 25
+        min_step = 25
         # go back max. n frames to find last position, else search full frame
         for p in range(0, min(len(self.pos_hist), 10)):
             if self.pos_hist[-p-1] is not None:
-                uidx = (p+1) * minstep
+                uidx = (p+1) * min_step
                 pos = map(int, self.pos_hist[-p-1])
                 roi = [(pos[0]-uidx, pos[1]-uidx), (pos[0]+uidx, pos[1]+uidx)]
                 break
@@ -216,36 +238,38 @@ class OOI:
 
         for l in self.linked_leds:
             if l.fixed_pos:
-                l.search_roi.move_to([(0, 259), (100, 359)])#[(0, 259), (100, 359)]
+                l.search_roi.move_to([(0, 259), (100, 359)])
             else:
                 l.search_roi.move_to(roi)
 
     def update_slots(self, chatter):
-        for s in self.slots:
+        for slot in self.slots:
             for ms in self.magnetic_signals:
-                # Check that pin prefs are set correctly
-                if s.label == ms[0]:
-                    if not s.pin_pref == ms[1]:
-                        s.pin_pref = ms[1]
+                # Check that pin preferences are set correctly
+                if slot.label == ms[0]:
+                    if not slot.pin_pref == ms[1]:
+                        slot.pin_pref = ms[1]
 
-            if (s.pin_pref is not None) and (s.pin is None):
+            if (slot.pin_pref is not None) and (slot.pin is None):
                 # If pin pref and not connected to pin
-                pins = chatter.pins_for_slot(s)
-                for p in pins:
-                    if p.id == s.pin_pref:
-                        s.attach_pin(p)
+                pins = chatter.pins_for_slot(slot)
+                for pin in pins:
+                    if pin.id == slot.pin_pref:
+                        slot.attach_pin(pin)
 
     def _position(self):
-        """ Calculate position from detected features linked to object. """
+        """
+        Calculate position from detected features linked to object.
+        """
+        # TODO: Now that I know about @property decorators...
         if self.tracked:
             feature_coords = []
             for feature in self.linked_leds:
                 if feature.pos_hist[-1] is not None:
                     feature_coords.append(feature.pos_hist[-1])
-
             # find !mean! coordinates
-            self.pos_hist.append( geom.middle_point( feature_coords ) )
-            return geom.guessedPosition( self.pos_hist )
+            self.pos_hist.append(geom.middle_point(feature_coords))
+            return geom.guessedPosition(self.pos_hist)
         else:
             return None
 
@@ -258,6 +282,7 @@ class OOI:
 
     def speed(self, *args):
         """Return movement speed in pixel/s."""
+        # TODO: Allow for a calibration of the field of view of cameras
         return None
 
     def direction(self):
@@ -276,8 +301,7 @@ class OOI:
 
         feature_coords = []
         for feature in self.linked_leds:
-            if (len(feature.pos_hist) > 0) and (feature.pos_hist[-1] is not None):
-#                print self.label, self.linked_leds, len(self.linked_leds), feature.label, feature.pos_hist[-1]
+            if len(feature.pos_hist) > 0 and feature.pos_hist[-1] is not None:
                 feature_coords.append(feature.pos_hist[-1])
 
         if len(feature_coords) == 2:
@@ -286,35 +310,12 @@ class OOI:
             x2 = feature_coords[1][0]*1.0
             y2 = feature_coords[1][1]*1.0
 
-#            print feature_coords
             angle = math.degrees(math.atan2(x1 - x2, y2 - y1))
             return int(angle+179)
-#            print angle
-#            dx = p2[0] - p1[0]
-#            dy = p2[1] - p1[1]
-#
-#            ldx = dy
-#            ldy = -dx
-#
-#            line_start = ( int(p1[0] + .5 * dx), int(p1[1] + .5 * dy) )
-#            line_end = (line_start[0] + ldx, line_start[1] + ldy)
-
-#// Calculate angle between vector from (x1,y1) to (x2,y2) & +Y axis in degrees.
-#// Essentially gives a compass reading, where N is 0 degrees and E is 90 degrees.
-#
-#double bearing(double x1, double y1, double x2, double y2)
-#{
-#    // x and y args to atan2() swapped to rotate resulting angle 90 degrees
-#    // (Thus angle in respect to +Y axis instead of +X axis)
-#    double angle = Math.toDegrees(atan2(x1 - x2, y2 - y1));
-#
-#    // Ensure result is in interval [0, 360)
-#    // Subtract because positive degree angles go clockwise
-#    return (360 - angle) %  360;
-#}
 
         return None
 
+    @property
     def linked_slots(self):
         """ Return list of slots that are linked to a pin. """
         slots_to_update = []
@@ -338,8 +339,7 @@ class ROI:
 
     linked_objects = None  # aka slots?!
 
-    def __init__(self, shape_list=None, label=None, color=None, obj_list=None,
-                 magnetic_objects = None):
+    def __init__(self, shape_list=None, label=None, color=None, obj_list=None, magnetic_objects=None):
         self.label = label
         if not color:
             self.normal_color = self.get_normal_color()
@@ -374,25 +374,26 @@ class ROI:
                     s.pin_pref = mo[1]
 
     def update_slots(self, chatter):
-        for s in self.slots:
-            if (s.pin_pref is not None) and (s.pin is None):
-                pins = chatter.pins_for_slot(s)
+        for slot in self.slots:
+            if (slot.pin_pref is not None) and (slot.pin is None):
+                pins = chatter.pins_for_slot(slot)
                 for p in pins:
-                    if p.id == s.pin_pref:
-                        s.attach_pin(p)
+                    if p.id == slot.pin_pref:
+                        slot.attach_pin(p)
 
+    @property
     def linked_slots(self):
         """ Return list of slots that are linked to a pin. """
         slots_to_update = []
-        for s in self.slots:
-            if s.pin:
-                slots_to_update.append(s)
+        for slot in self.slots:
+            if slot.pin:
+                slots_to_update.append(slot)
         return slots_to_update
 
-    def move( self, dx, dy ):
+    def move(self, dx, dy):
         """ Moves all shapes, aka the whole ROI, by delta pixels. """
-        for s in self.shapes:
-            s.move(dx, dy)
+        for shape in self.shapes:
+            shape.move(dx, dy)
 
     def add_shape(self, shape_type, points, label):
         """ Adds a new shape. """
@@ -402,36 +403,44 @@ class ROI:
 
     def remove_shape(self, shape):
         """ Removes a shape. """
-        self.shapes.pop(self.shapes.index(shape))
+        try:
+            self.shapes.remove(shape)
+        except ValueError:
+            print "Couldn't find shape for removal"
 
     def refresh_slot_list(self):
         """
         Gather all objects in list. Check done by name.
-        TODO: By label is risky, could lead to collisions
         """
-        if self.oois and len(self.slots) < len(self.oois):
-            for o in self.oois:
-                for s in self.slots:
-                    if s.label == o.label:
-                        break
-                else:
-                    self.link_object(o)
+        # TODO: By label is risky, could lead to collisions
+        #if self.oois and len(self.slots) < len(self.oois):
+        for o in self.oois:
+            for slot in self.slots:
+                if slot.ref is o:
+                    break
+            else:
+                self.link_object(o)
+
+        for slot in self.slots:
+            if not slot.ref in self.oois:
+                self.unlink_object(slot.ref)
 
     def link_object(self, obj):
+        print "Linked Object", obj.label, "to", self
         if obj in self.oois:
-            self.slots.append(Slot(label=obj.label, type_='digital', state=self.test_collision,
-                                   state_idx=self.oois.index(obj), ref=obj))
+            self.slots.append(Slot(label=obj.label, slot_type='digital', state=self.test_collision,
+                                   state_idx=obj, ref=obj))
 
     def unlink_object(self, obj):
-        for s in self.slots:
-            if s.label == obj.label:
-                self.slots.pop(self.slots.find(s))
-                print "removed object ", obj.label, " from slot list of ", self.label
+        for slot in self.slots:
+            if slot.ref is obj:
+                self.slots.remove(slot)
+                print "Removed object", obj.label, "from slot list of", self.label
 
-    def test_collision(self, obj_idx):
-        return self.check_shape_collision(self.oois[obj_idx].position)
+    def test_collision(self, obj):
+        return self.check_shape_collision(obj.position)
 
-    def check_shape_collision(self, point1, point2 = None):
+    def check_shape_collision(self, point1, point2=None):
         """ Test if a line between start and end would somewhere collide with
         any shapes of this ROI. Simple AND values in the collision detection
         array on the line.
@@ -474,8 +483,8 @@ class ROI:
         c1 = random.random()
         c2 = random.uniform(0, 1.0-c1)
         c3 = 1.0-c1-c2
-        vals = random.sample([c1, c2, c3], 3)
-        return vals[0], vals[1], vals[2], self.alpha
+        values = random.sample([c1, c2, c3], 3)
+        return values[0], values[1], values[2], self.alpha
 
     @staticmethod
     def scale_color(color, max_val):

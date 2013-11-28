@@ -5,6 +5,7 @@ Created on Sun Jan 13 14:19:24 2013
 
 
 """
+import logging
 
 from PyQt4 import QtGui, QtCore
 from main_tab_pageUi import Ui_main_tab_page
@@ -13,6 +14,7 @@ from main_tab_pageUi import Ui_main_tab_page
 class MainTabPage(QtGui.QWidget, Ui_main_tab_page):
 
     def __init__(self, label=None, sub_page_class=None, *args, **kwargs):
+        self.log = logging.getLogger(__name__)
         QtGui.QWidget.__init__(self)
         #super(QtGui.QWidget, self).__init__(parent)
 
@@ -24,6 +26,8 @@ class MainTabPage(QtGui.QWidget, Ui_main_tab_page):
 
         self.setupUi(self)
         self.btn_new_page.setText("New " + self.label)
+
+        self.tabs_sub.tabCloseRequested.connect(self.remove_page)
 
     def add_item(self, ref, focus_new=True, *args, **kwargs):
         """
@@ -44,3 +48,12 @@ class MainTabPage(QtGui.QWidget, Ui_main_tab_page):
 
     def current_page_widget(self):
         return self.tabs_sub.widget(self.tabs_sub.currentIndex())
+
+    def remove_page(self, idx):
+        if idx < self.tabs_sub.count()-1:
+            self.log.debug("Removing page #%d from %s", idx, self.label)
+            rv = self.tabs_sub.widget(idx).close()
+            if rv:
+                self.tabs_sub.removeTab(idx)
+            else:
+                self.log.debug("Couldn't remove the page")

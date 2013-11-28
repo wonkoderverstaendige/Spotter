@@ -55,7 +55,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
 
         self.connect(self.btn_add_shape, QtCore.SIGNAL('toggled(bool)'), self.accept_selection)
         self.connect(self.btn_remove_shape, QtCore.SIGNAL('clicked()'), self.remove_shape)
-        self.connect(self.btn_lock_table, QtCore.SIGNAL('toggled(bool)'), self.lock_slot_table)
+        #self.connect(self.btn_lock_table, QtCore.SIGNAL('toggled(bool)'), self.lock_slot_table)
 
         # coordinate spin box update signals
         self.connect(self.spin_shape_x, QtCore.SIGNAL('valueChanged(int)'), self.update_shape_position)
@@ -82,19 +82,6 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
                 self.spin_shape_x.setValue(tree_item.shape.points[0][0])
             if not self.spin_shape_y.value() == tree_item.shape.points[0][1]:
                 self.spin_shape_y.setValue(tree_item.shape.points[0][1])
-
-    #def update_spin_boxes_norm(self):
-    #    tree_item = self.tree_region_shapes.selectedItems()
-    #    if tree_item:
-    #        tree_item = tree_item[0]
-    #        width = self.parent.gl_frame.width
-    #        height = self.parent.gl_frame.height
-    #        p1 = tree_item.shape.points[0]
-    #        p1_norm = geom.norm_points(p1, (width, height))
-    #        if not self.spin_shape_normx.value() == p1_norm[0]:
-    #            self.spin_shape_normx.setValue(p1_norm[0])
-    #        if not self.spin_shape_normy.value() == p1_norm[1]:
-    #            self.spin_shape_normy.setValue(p1_norm[1])
 
     def accept_selection(self, state):
         """ Called by the 'Add' button toggle to accept input for new shapes """
@@ -212,31 +199,6 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
             self.spin_shape = self.tree_region_shapes.currentItem().shape
             return
 
-    #def update_shape_normposition(self):
-    #    """
-    #    Update position of the shape if the values in the spin boxes with
-    #    normalized values, representing the top right corner of the shape,
-    #    is changed. Requires checking if the spin box update is caused by just
-    #    switching to a different shape in the shape tree list!
-    #    """
-    #    if not self.tree_region_shapes.currentItem():
-    #        return
-    #
-    #    if self.tree_region_shapes.currentItem().shape == self.spin_shape:
-    #        # find the shape in the shape list of the ROI
-    #        idx = self.region.shapes.index(self.tree_region_shapes.currentItem().shape)
-    #        width = self.parent.gl_frame.width
-    #        height = self.parent.gl_frame.height
-    #        p1_norm = (self.spin_shape_normx.value(),self.spin_shape_normy.value())
-    #        p1 = geom.scale_points(p1_norm, (width, height))
-    #        dx = p1[0] - self.region.shapes[idx].points[0][0]
-    #        dy = p1[1] - self.region.shapes[idx].points[0][1]
-    #        self.move_shape(dx, dy)
-    #        self.update_spin_boxes()
-    #    else:
-    #        self.spin_shape = self.tree_region_shapes.currentItem().shape
-    #        return
-
     def move_shape(self, dx, dy):
         """
         Update position of geometric shape by offsetting all points of shape
@@ -301,7 +263,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
 
             # remove the additional rows:
             for rs in remove:
-                self.slots_remove_row(self.slots_items.find(rs))
+                self.slots_remove_row(self.slots_items.index(rs))
 
             # add the missing rows
             for ms in missing:
@@ -438,3 +400,6 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
             else:
                 enable.append(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
         return pins, enable
+
+    def closeEvent(self, QCloseEvent):
+        self.spotter.tracker.remove_roi(self.region)

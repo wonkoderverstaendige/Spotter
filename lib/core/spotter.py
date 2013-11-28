@@ -129,7 +129,7 @@ class Spotter:
             for o in self.tracker.oois:
                 o.update_slots(self.chatter)
                 o.update_state()
-                slots.extend(o.linked_slots())
+                slots.extend(o.linked_slots)
                 messages.append('\t'.join([self.newest_frame.time_text, str(o.label), str(o.position)]))
 
             for l in self.tracker.leds:
@@ -139,7 +139,7 @@ class Spotter:
             for r in self.tracker.rois:
                 r.update_slots(self.chatter)
                 r.update_state()
-                slots.extend(r.linked_slots())
+                slots.extend(r.linked_slots)
 
             self.chatter.update_pins(slots)
 
@@ -162,14 +162,6 @@ class Spotter:
     def check_writer(self):
         """ True if alive """
         return self.writer.is_alive()
-        #check pipe!
-#        if self.return_queue.is_
-#        if not self.writer.is_alive():
-#            print('Writing to disk failed.')
-#            log.error('Writing to disk failed.')
-#            self.exit()
-#        else:
-#            return True
 
     def start_writer(self):
         size = (self.newest_frame.img.shape[1], self.newest_frame.img.shape[0])

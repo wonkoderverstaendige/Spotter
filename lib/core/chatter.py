@@ -134,22 +134,22 @@ class Chatter:
             return
 
         instr = []
-        for s in slots:
-            if s.state_idx is None:
-                instr.append([s.pin.type_id, s.pin.id, s.state()])
+        for slot in slots:
+            if slot.state_idx is None:
+                instr.append([slot.pin.type_id, slot.pin.id, slot.state()])
             else:
-                data = s.state(s.state_idx)
-                if s.type == 'digital':
+                data = slot.state(slot.state_idx)
+                if slot.type == 'digital':
                     if data:
-                        data = 100  # pin HIGH if larger 0
+                        data = 100  # pin HIGH if data > 0
                     else:
                         data = 0
-                elif s.type == 'dac':
+                elif slot.type == 'dac':
                     if data is None:
                         data = 0
                     else:
-                        data = self.scale_point(data)[s.state_idx]
-                instr.append([s.pin.type_id, s.pin.id, data])
+                        data = self.scale_point(data)[slot.state_idx]
+                instr.append([slot.pin.type_id, slot.pin.id, data])
 
         if not self.serial_device.send_instructions(instr):
             self.close()
