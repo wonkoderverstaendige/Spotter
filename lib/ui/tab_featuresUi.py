@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'tab_featuresUi.ui'
 #
-# Created: Tue Nov 26 23:54:45 2013
-#      by: PyQt4 UI code generator 4.10.3
+# Created: Thu Nov 28 04:17:25 2013
+#      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -37,7 +37,7 @@ class Ui_tab_features(object):
         self.toolBox = QtGui.QToolBox(tab_features)
         self.toolBox.setObjectName(_fromUtf8("toolBox"))
         self.page_feature_detection = QtGui.QWidget()
-        self.page_feature_detection.setGeometry(QtCore.QRect(0, 0, 234, 322))
+        self.page_feature_detection.setGeometry(QtCore.QRect(0, 0, 234, 343))
         self.page_feature_detection.setObjectName(_fromUtf8("page_feature_detection"))
         self.gridLayout_6 = QtGui.QGridLayout(self.page_feature_detection)
         self.gridLayout_6.setMargin(0)
@@ -229,14 +229,8 @@ class Ui_tab_features(object):
         self.line.setObjectName(_fromUtf8("line"))
         self.gridLayout_6.addWidget(self.line, 8, 0, 1, 1)
         self.toolBox.addItem(self.page_feature_detection, _fromUtf8(""))
-        self.page_feature_restriction = QtGui.QWidget()
-        self.page_feature_restriction.setGeometry(QtCore.QRect(0, 0, 234, 322))
-        self.page_feature_restriction.setObjectName(_fromUtf8("page_feature_restriction"))
-        self.gridLayout_8 = QtGui.QGridLayout(self.page_feature_restriction)
-        self.gridLayout_8.setObjectName(_fromUtf8("gridLayout_8"))
-        self.toolBox.addItem(self.page_feature_restriction, _fromUtf8(""))
         self.page_feature_IO = QtGui.QWidget()
-        self.page_feature_IO.setGeometry(QtCore.QRect(0, 0, 234, 322))
+        self.page_feature_IO.setGeometry(QtCore.QRect(0, 0, 158, 86))
         self.page_feature_IO.setObjectName(_fromUtf8("page_feature_IO"))
         self.gridLayout_7 = QtGui.QGridLayout(self.page_feature_IO)
         self.gridLayout_7.setMargin(0)
@@ -309,7 +303,6 @@ class Ui_tab_features(object):
         self.ckb_marker.setText(_translate("tab_features", "Show Marker", None))
         self.ckb_fixed_pos.setText(_translate("tab_features", "Fixed Position", None))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_feature_detection), _translate("tab_features", "Detection", None))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page_feature_restriction), _translate("tab_features", "Restrictions", None))
         self.pushButton_12.setText(_translate("tab_features", "Save", None))
         self.pushButton_13.setText(_translate("tab_features", "Delete", None))
         self.pushButton_14.setText(_translate("tab_features", "Clone", None))

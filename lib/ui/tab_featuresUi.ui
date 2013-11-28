@@ -39,7 +39,7 @@
           <x>0</x>
           <y>0</y>
           <width>234</width>
-          <height>322</height>
+          <height>343</height>
          </rect>
         </property>
         <attribute name="label">
@@ -494,27 +494,13 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="page_feature_restriction">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>0</y>
-          <width>234</width>
-          <height>322</height>
-         </rect>
-        </property>
-        <attribute name="label">
-         <string>Restrictions</string>
-        </attribute>
-        <layout class="QGridLayout" name="gridLayout_8"/>
-       </widget>
        <widget class="QWidget" name="page_feature_IO">
         <property name="geometry">
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>234</width>
-          <height>322</height>
+          <width>158</width>
+          <height>86</height>
          </rect>
         </property>
         <attribute name="label">
