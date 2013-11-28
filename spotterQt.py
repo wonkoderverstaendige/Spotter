@@ -97,7 +97,8 @@ class Main(QtGui.QMainWindow):
         #   Configuration
         self.connect(self.ui.actionLoadConfig, QtCore.SIGNAL('triggered()'), self.load_config)
         self.connect(self.ui.actionSaveConfig, QtCore.SIGNAL('triggered()'), self.save_config)
-        self.connect(self.ui.actionResetConfig, QtCore.SIGNAL('triggered()'), self.reset_config)
+        self.connect(self.ui.actionRemoveTemplate, QtCore.SIGNAL('triggered()'),
+                     self.side_bar.remove_all_tabs)
 
         # Toolbar items
         self.connect(self.ui.actionRecord, QtCore.SIGNAL('toggled(bool)'), self.record_video)
@@ -140,8 +141,10 @@ class Main(QtGui.QMainWindow):
         # TODO: Maybe the interval immediately resets the counter and starts it up?
         elapsed = self.stopwatch.restart()
 
+        #self.log.debug("Updating spotter")
         if self.spotter.update() is None:
-            return
+            pass
+            #return
 
         # update the OpenGL frame
         #self.log.debug("Updating GL")
@@ -395,13 +398,6 @@ class Main(QtGui.QMainWindow):
 
         # and finally
         config.write()
-
-    def reset_config(self):
-        """
-        Remove everything from everything to start over!
-        """
-        pass
-        # loop over all tabs, call their close methods and they will take over
 
 
 #############################################################

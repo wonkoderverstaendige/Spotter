@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>647</width>
-    <height>388</height>
+    <width>630</width>
+    <height>386</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -81,7 +81,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>647</width>
+     <width>630</width>
      <height>21</height>
     </rect>
    </property>
@@ -129,12 +129,12 @@
    </widget>
    <widget class="QMenu" name="menuTemplate">
     <property name="title">
-     <string>Configuration</string>
+     <string>Template</string>
     </property>
     <addaction name="actionLoadConfig"/>
     <addaction name="actionSaveConfig"/>
     <addaction name="separator"/>
-    <addaction name="actionResetConfig"/>
+    <addaction name="actionRemoveTemplate"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuTemplate"/>
@@ -255,12 +255,9 @@
     <string>Save current configuration</string>
    </property>
   </action>
-  <action name="actionResetConfig">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
+  <action name="actionRemoveTemplate">
    <property name="text">
-    <string>Reset All</string>
+    <string>Remove all</string>
    </property>
   </action>
  </widget>

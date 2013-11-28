@@ -429,7 +429,7 @@
                   </size>
                  </property>
                  <property name="text">
-                  <string>IMG</string>
+                  <string/>
                  </property>
                  <property name="scaledContents">
                   <bool>true</bool>
@@ -499,8 +499,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>158</width>
-          <height>86</height>
+          <width>234</width>
+          <height>343</height>
          </rect>
         </property>
         <attribute name="label">

@@ -57,3 +57,9 @@ class MainTabPage(QtGui.QWidget, Ui_main_tab_page):
                 self.tabs_sub.removeTab(idx)
             else:
                 self.log.debug("Couldn't remove the page")
+
+    def remove_all_pages(self):
+        """ Remove all pages one by one """
+        for n in range(self.tabs_sub.count()-1):
+            print self.label, n
+            self.remove_page(0)

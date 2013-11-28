@@ -114,6 +114,13 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
         #    for tab in main_tab.tabs_sub:
         #        tab.update()
 
+    def remove_all_tabs(self):
+        print "REMOVING ALL THE THINGAS"
+        self.features_page.remove_all_pages()
+        self.objects_page.remove_all_pages()
+        self.regions_page.remove_all_pages()
+        print "DONE"
+
     ###############################################################################
     ##  FEATURES Tab Updates
     ###############################################################################

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'tab_featuresUi.ui'
 #
-# Created: Thu Nov 28 04:17:25 2013
+# Created: Thu Nov 28 18:44:42 2013
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -200,6 +200,7 @@ class Ui_tab_features(object):
         self.lbl_zoom = QtGui.QLabel(self.page_feature_detection)
         self.lbl_zoom.setMinimumSize(QtCore.QSize(96, 96))
         self.lbl_zoom.setMaximumSize(QtCore.QSize(96, 96))
+        self.lbl_zoom.setText(_fromUtf8(""))
         self.lbl_zoom.setScaledContents(True)
         self.lbl_zoom.setAlignment(QtCore.Qt.AlignCenter)
         self.lbl_zoom.setObjectName(_fromUtf8("lbl_zoom"))
@@ -230,7 +231,7 @@ class Ui_tab_features(object):
         self.gridLayout_6.addWidget(self.line, 8, 0, 1, 1)
         self.toolBox.addItem(self.page_feature_detection, _fromUtf8(""))
         self.page_feature_IO = QtGui.QWidget()
-        self.page_feature_IO.setGeometry(QtCore.QRect(0, 0, 158, 86))
+        self.page_feature_IO.setGeometry(QtCore.QRect(0, 0, 234, 343))
         self.page_feature_IO.setObjectName(_fromUtf8("page_feature_IO"))
         self.gridLayout_7 = QtGui.QGridLayout(self.page_feature_IO)
         self.gridLayout_7.setMargin(0)
@@ -298,7 +299,6 @@ class Ui_tab_features(object):
         self.lbl_x.setText(_translate("tab_features", "---", None))
         self.lbl_y_lbl.setText(_translate("tab_features", "y:", None))
         self.lbl_y.setText(_translate("tab_features", "---", None))
-        self.lbl_zoom.setText(_translate("tab_features", "IMG", None))
         self.ckb_track.setText(_translate("tab_features", "Detection Active", None))
         self.ckb_marker.setText(_translate("tab_features", "Show Marker", None))
         self.ckb_fixed_pos.setText(_translate("tab_features", "Fixed Position", None))

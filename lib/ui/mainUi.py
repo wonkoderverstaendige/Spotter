@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Tue Nov 26 05:32:41 2013
+# Created: Thu Nov 28 18:44:41 2013
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
-        MainWindow.resize(647, 388)
+        MainWindow.resize(630, 386)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -59,7 +59,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addLayout(self.frame_parameters)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 647, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 630, 21))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menu_File = QtGui.QMenu(self.menubar)
         self.menu_File.setObjectName(_fromUtf8("menu_File"))
@@ -120,9 +120,8 @@ class Ui_MainWindow(object):
         self.actionLoadConfig.setObjectName(_fromUtf8("actionLoadConfig"))
         self.actionSaveConfig = QtGui.QAction(MainWindow)
         self.actionSaveConfig.setObjectName(_fromUtf8("actionSaveConfig"))
-        self.actionResetConfig = QtGui.QAction(MainWindow)
-        self.actionResetConfig.setEnabled(False)
-        self.actionResetConfig.setObjectName(_fromUtf8("actionResetConfig"))
+        self.actionRemoveTemplate = QtGui.QAction(MainWindow)
+        self.actionRemoveTemplate.setObjectName(_fromUtf8("actionRemoveTemplate"))
         self.menu_Open.addAction(self.actionFile)
         self.menu_Open.addAction(self.actionCamera)
         self.menu_Save.addAction(self.action_Transcode_Video)
@@ -137,7 +136,7 @@ class Ui_MainWindow(object):
         self.menuTemplate.addAction(self.actionLoadConfig)
         self.menuTemplate.addAction(self.actionSaveConfig)
         self.menuTemplate.addSeparator()
-        self.menuTemplate.addAction(self.actionResetConfig)
+        self.menuTemplate.addAction(self.actionRemoveTemplate)
         self.menubar.addAction(self.menu_File.menuAction())
         self.menubar.addAction(self.menuTemplate.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
@@ -153,7 +152,7 @@ class Ui_MainWindow(object):
         self.menu_Save.setTitle(_translate("MainWindow", "&Save", None))
         self.menuLoad.setTitle(_translate("MainWindow", "Load", None))
         self.menuHelp.setTitle(_translate("MainWindow", "&Help", None))
-        self.menuTemplate.setTitle(_translate("MainWindow", "Configuration", None))
+        self.menuTemplate.setTitle(_translate("MainWindow", "Template", None))
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar", None))
         self.actionE_xit.setText(_translate("MainWindow", "E&xit", None))
         self.actionCamera.setText(_translate("MainWindow", "&Camera", None))
@@ -170,6 +169,6 @@ class Ui_MainWindow(object):
         self.actionLoadConfig.setText(_translate("MainWindow", "Load", None))
         self.actionSaveConfig.setText(_translate("MainWindow", "Save", None))
         self.actionSaveConfig.setToolTip(_translate("MainWindow", "Save current configuration", None))
-        self.actionResetConfig.setText(_translate("MainWindow", "Reset All", None))
+        self.actionRemoveTemplate.setText(_translate("MainWindow", "Remove all", None))
 
 import icons_rc
