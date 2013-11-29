@@ -135,7 +135,7 @@ class Writer:
         """Writes frames from the queue. If alive flag set to
         false, deletes capture object to allow proper exit
         """
-        # FIXME: The interface initializiation can take longer than the timeout on the writer!
+        # FIXME: The interface initialization can take longer than the timeout on the writer!
         while 42 and self.alive:
             # Process should terminate if not being talked to for a while
             #self.log.debug("Alive signal timeout: %s", str(time.clock() - self.ts_last))
@@ -147,7 +147,7 @@ class Writer:
             try:
                 new_pipe_msg = self.pipe.poll()
             except Exception, error:
-                self.log.errpr(error)
+                self.log.error(error)
                 new_pipe_msg = False
 
             if new_pipe_msg:
