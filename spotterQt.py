@@ -287,7 +287,7 @@ class Main(QtGui.QMainWindow):
             validator = validate.Validator()
             results = template.validate(validator)
             if not results is True:
-                print "Template error in file ", path
+                self.log.error("Template error in file %s", path)
                 for (section_list, key, _) in configobj.flatten_errors(template, results):
                     if key is not None:
                         self.log.error('The "%s" key in the section "%s" failed validation', key, ', '.join(section_list))
@@ -337,6 +337,8 @@ class Main(QtGui.QMainWindow):
         config['TEMPLATE']['name'] = filename
         config['TEMPLATE']['date'] = '_'.join(map(str, time.localtime())[0:3])
         config['TEMPLATE']['description'] = 'new template'
+        config['TEMPLATE']['absolute_positions'] = True
+        config['TEMPLATE']['resolution'] = self.spotter.grabber.size
 
         # Features
         config['FEATURES'] = {}
@@ -389,7 +391,7 @@ class Main(QtGui.QMainWindow):
                        'digital_out': True,
                        'digital_collision': [o[0].label for o in mo],
                        'pin_pref': [o[1] for o in mo],
-                       'color': r.active_color}
+                       'color': r.active_color[0:3]}
             config['REGIONS'][str(r.label)] = section
 
         config['SERIAL'] = {}
