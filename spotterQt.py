@@ -29,13 +29,12 @@ To do:
     --source 0 --outfile test.avi --size=320x200 --fps=30
 
 """
-# ../Spotter_Tests/LisaCheeseMaze.avi
-# media/vid/r52r2f107.avi
 
 __version__ = 0.4
 
 NO_EXIT_CONFIRMATION = True
-DIR_TEMPLATES = './config'
+DIR_CONFIG = './config'
+DIR_TEMPLATES = './templates'
 DIR_SPECIFICATION = './config/template_specification.ini'
 DEFAULT_TEMPLATE = 'defaults.ini'
 
@@ -115,7 +114,7 @@ class Main(QtGui.QMainWindow):
         self.gl_frame.sig_event.connect(self.mouse_event_to_tab)
 
         # Loading template list in folder
-        default_path = os.path.join(os.path.abspath(DIR_TEMPLATES), DEFAULT_TEMPLATE)
+        default_path = os.path.join(os.path.abspath(DIR_CONFIG), DEFAULT_TEMPLATE)
         self.template_default = self.parse_config(default_path, True)
         #list_of_files = [f for f in os.listdir(DIR_TEMPLATES) if f.lower().endswith('ini')]
 
