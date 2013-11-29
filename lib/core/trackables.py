@@ -105,9 +105,6 @@ class LED(Feature):
         self.range_val = range_val
         self.range_area = range_area
 
-        # mean color of range for labels/markers etc.
-        self.mean_hue = utils.mean_hue(self.range_hue)
-        self.lblcolor = utils.HSVpix2RGB((self.mean_hue, 255, 255))
         self.pos_hist = []
 
         # Restrict tracking to a search window?
@@ -126,6 +123,15 @@ class LED(Feature):
 
     def updateHistory(self, coords):
         pass
+
+    @property
+    def mean_hue(self):
+        return utils.mean_hue(self.range_hue)
+
+    @property
+    def lblcolor(self):
+        # mean color of range for labels/markers etc.
+        return utils.HSVpix2RGB((self.mean_hue, 255, 255))
 
     @property
     def position(self):
