@@ -25,6 +25,7 @@ import logging
 import time
 import os
 import sys
+import struct
 from collections import deque
 from lib.docopt import docopt
 
@@ -107,6 +108,7 @@ class Grabber:
                 self.capture = cv2.VideoCapture(source)
             except Exception as error:
                 self.log.exception(error)
+                self.capture = None
             finally:
                 self.log.debug('Capture %s returned', str(self.capture))
 
@@ -177,6 +179,20 @@ class Grabber:
 
         self.capture = None
 
+    def get_capture_properties(self):
+        #base_string = 'CV_CAP_PROP_'
+        properties = ['POS_MSEC', 'POS_FRAMES', 'POS_AVI_RATIO', 'FRAME_WIDTH', 'FRAME_HEIGHT',
+                      'FPS', 'FOURCC', 'FRAME_COUNT', 'FORMAT', 'MODE', 'BRIGHTNESS', 'CONTRAST',
+                      'SATURATION', 'HUE', 'GAIN', 'EXPOSURE', 'CONVERT_RGB', 'WHITE_BALANCE']
+        if self.capture is not None:
+            self.log.info("++++++++++++++++++++++")
+            for idx, prop in enumerate(properties):
+                self.log.info(prop+": %s", str(self.capture.get(idx)))
+            self.log.info("++++++++++++++++++++++")
+            print struct.unpack('4c', struct.pack('f', self.capture.get(6)))
+
+    def set_capture_properties(self):
+        pass
 
 ##########################
 if __name__ == "__main__":

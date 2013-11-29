@@ -158,6 +158,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionRecord"/>
+   <addaction name="actionSourceProperties"/>
   </widget>
   <action name="actionE_xit">
    <property name="text">
@@ -258,6 +259,11 @@
   <action name="actionRemoveTemplate">
    <property name="text">
     <string>Remove all</string>
+   </property>
+  </action>
+  <action name="actionSourceProperties">
+   <property name="text">
+    <string>Source Props</string>
    </property>
   </action>
  </widget>

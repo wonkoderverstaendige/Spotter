@@ -30,7 +30,7 @@ To do:
 
 """
 
-__version__ = 0.4
+__version__ = 0.45
 
 NO_EXIT_CONFIRMATION = True
 DIR_CONFIG = './config'
@@ -101,6 +101,8 @@ class Main(QtGui.QMainWindow):
 
         # Toolbar items
         self.connect(self.ui.actionRecord, QtCore.SIGNAL('toggled(bool)'), self.record_video)
+        self.connect(self.ui.actionSourceProperties, QtCore.SIGNAL('triggered()'),
+                     self.spotter.grabber.get_capture_properties)
         # Serial/Arduino Connection status indicator
         self.arduino_indicator = SerialIndicator(self.spotter.chatter)
         self.ui.toolBar.addWidget(self.arduino_indicator)

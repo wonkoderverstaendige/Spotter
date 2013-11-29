@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Thu Nov 28 18:44:41 2013
-#      by: PyQt4 UI code generator 4.9.6
+# Created: Fri Nov 29 20:57:57 2013
+#      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -122,6 +122,8 @@ class Ui_MainWindow(object):
         self.actionSaveConfig.setObjectName(_fromUtf8("actionSaveConfig"))
         self.actionRemoveTemplate = QtGui.QAction(MainWindow)
         self.actionRemoveTemplate.setObjectName(_fromUtf8("actionRemoveTemplate"))
+        self.actionSourceProperties = QtGui.QAction(MainWindow)
+        self.actionSourceProperties.setObjectName(_fromUtf8("actionSourceProperties"))
         self.menu_Open.addAction(self.actionFile)
         self.menu_Open.addAction(self.actionCamera)
         self.menu_Save.addAction(self.action_Transcode_Video)
@@ -141,6 +143,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuTemplate.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
         self.toolBar.addAction(self.actionRecord)
+        self.toolBar.addAction(self.actionSourceProperties)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -170,5 +173,6 @@ class Ui_MainWindow(object):
         self.actionSaveConfig.setText(_translate("MainWindow", "Save", None))
         self.actionSaveConfig.setToolTip(_translate("MainWindow", "Save current configuration", None))
         self.actionRemoveTemplate.setText(_translate("MainWindow", "Remove all", None))
+        self.actionSourceProperties.setText(_translate("MainWindow", "Source Props", None))
 
 import icons_rc
