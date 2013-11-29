@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="/">
+    <file>ArduinoDue.png</file>
+    <file>ArduinoMega.png</file>
+    <file>ArduinoUno.png</file>
+  </qresource>
+</RCC>

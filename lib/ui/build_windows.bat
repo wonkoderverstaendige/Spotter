@@ -8,3 +8,4 @@ call pyuic4 tab_serialUi.ui -o tab_serialUi.py
 call pyuic4 statusBarUi.ui -o statusBarUi.py
 call pyuic4 serialIndicatorUi.ui -o serialIndicatorUi.py
 call pyrcc4 icons.qrc -o icons_rc.py
+call pyrcc4 images.qrc -o images_rc.py
