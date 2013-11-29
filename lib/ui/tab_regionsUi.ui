@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>250</width>
-    <height>387</height>
+    <width>251</width>
+    <height>448</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -47,8 +47,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>248</width>
-          <height>343</height>
+          <width>249</width>
+          <height>404</height>
          </rect>
         </property>
         <attribute name="label">
@@ -69,6 +69,19 @@
            <property name="spacing">
             <number>0</number>
            </property>
+           <item row="7" column="1">
+            <widget class="QPushButton" name="btn_remove_shape">
+             <property name="minimumSize">
+              <size>
+               <width>30</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>&amp;Remove</string>
+             </property>
+            </widget>
+           </item>
            <item row="5" column="0" rowspan="2" colspan="2">
             <widget class="QTreeWidget" name="tree_region_shapes">
              <property name="sizePolicy">
@@ -111,98 +124,6 @@
               <bool>true</bool>
              </property>
             </widget>
-           </item>
-           <item row="7" column="1">
-            <widget class="QPushButton" name="btn_remove_shape">
-             <property name="minimumSize">
-              <size>
-               <width>30</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>&amp;Remove</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0" colspan="2">
-            <layout class="QHBoxLayout" name="horizontalLayout">
-             <item>
-              <widget class="QCheckBox" name="ckb_trigger">
-               <property name="text">
-                <string>Trigger</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QLabel" name="lbl_y">
-               <property name="text">
-                <string>y:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spin_shape_y">
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-               <property name="buttonSymbols">
-                <enum>QAbstractSpinBox::PlusMinus</enum>
-               </property>
-               <property name="accelerated">
-                <bool>true</bool>
-               </property>
-               <property name="minimum">
-                <number>-2048</number>
-               </property>
-               <property name="maximum">
-                <number>2048</number>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="lbl_x">
-               <property name="text">
-                <string>x:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spin_shape_x">
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-               <property name="buttonSymbols">
-                <enum>QAbstractSpinBox::PlusMinus</enum>
-               </property>
-               <property name="accelerated">
-                <bool>true</bool>
-               </property>
-               <property name="minimum">
-                <number>-2048</number>
-               </property>
-               <property name="maximum">
-                <number>2048</number>
-               </property>
-              </widget>
-             </item>
-            </layout>
            </item>
            <item row="8" column="0" colspan="2">
             <layout class="QGridLayout" name="gridLayout_10">
@@ -254,6 +175,118 @@
              </item>
             </layout>
            </item>
+           <item row="0" column="0" colspan="2">
+            <layout class="QGridLayout" name="gridLayout_3">
+             <property name="leftMargin">
+              <number>3</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="horizontalSpacing">
+              <number>1</number>
+             </property>
+             <item row="0" column="5">
+              <widget class="QSpinBox" name="spin_shape_x">
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::PlusMinus</enum>
+               </property>
+               <property name="accelerated">
+                <bool>true</bool>
+               </property>
+               <property name="minimum">
+                <number>-2048</number>
+               </property>
+               <property name="maximum">
+                <number>2048</number>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="2">
+              <widget class="QLabel" name="lbl_y">
+               <property name="text">
+                <string>y:</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+               <property name="margin">
+                <number>2</number>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="4">
+              <widget class="QLabel" name="lbl_x">
+               <property name="text">
+                <string>x:</string>
+               </property>
+               <property name="margin">
+                <number>2</number>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QCheckBox" name="ckb_trigger">
+               <property name="text">
+                <string>Trigger</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QLabel" name="lbl_color">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="toolTip">
+                <string>Click me to change...</string>
+               </property>
+               <property name="statusTip">
+                <string>Click me to change...</string>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(255, 255, 255);</string>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::Box</enum>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="margin">
+                <number>0</number>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="3">
+              <widget class="QSpinBox" name="spin_shape_y">
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::PlusMinus</enum>
+               </property>
+               <property name="accelerated">
+                <bool>true</bool>
+               </property>
+               <property name="minimum">
+                <number>-2048</number>
+               </property>
+               <property name="maximum">
+                <number>2048</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
           </layout>
          </item>
         </layout>
@@ -263,8 +296,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>248</width>
-          <height>343</height>
+          <width>249</width>
+          <height>404</height>
          </rect>
         </property>
         <attribute name="label">

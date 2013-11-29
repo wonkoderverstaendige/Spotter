@@ -22,8 +22,9 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
 
     # mouse event handling
     start_coords = None
-    coords_start = None
-    coords_end = None
+    coord_start = None
+    coord_end = None
+    coord_last = None
     button_start = None
 
     def __init__(self, region_ref, label=None, *args, **kwargs):
@@ -46,7 +47,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         for s in self.region.shapes:
             shape_item = QtGui.QTreeWidgetItem([s.label])
             shape_item.shape = s
-            shape_item.setCheckState(0,QtCore.Qt.Checked)
+            shape_item.setCheckState(0, QtCore.Qt.Checked)
             shape_item.setFlags(shape_item.flags() | QtCore.Qt.ItemIsEditable)
             self.tree_region_shapes.addTopLevelItem(shape_item)
 
@@ -63,8 +64,14 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
 
         # if a checkbox or spinbox on a shape in the list is changed
         self.spin_shape = None
-        self.connect(self.tree_region_shapes, QtCore.SIGNAL('itemChanged(QTreeWidgetItem *, int)'), self.shape_item_changed)
+        self.connect(self.tree_region_shapes, QtCore.SIGNAL('itemChanged(QTreeWidgetItem *, int)'),
+                     self.shape_item_changed)
         self.connect(self.tree_region_shapes, QtCore.SIGNAL('itemSelectionChanged()'), self.update_spin_boxes)
+
+        if self.region.active_color is not None:
+            ss_string = "background-color: rgba({0[0]}, {0[1]}, {0[2]})".format(self.region.active_color)
+            self.lbl_color.setStyleSheet(ss_string)
+        self.lbl_color.mouseReleaseEvent = self.change_color
 
         self.update()
 
@@ -93,13 +100,13 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
 
         if event_type == "mousePress":
             self.button_start = int(event.buttons())
-            self.coords_start = [event.x(), event.y()]
-            self.coords_last = self.coords_start
+            self.coord_start = [event.x(), event.y()]
+            self.coord_last = self.coord_start
         elif event_type == "mouseDrag":
             if int(event.buttons()) == QtCore.Qt.MiddleButton:
-                dx = event.x() - self.coords_last[0]
-                dy = event.y() - self.coords_last[1]
-                self.coords_last = [event.x(), event.y()]
+                dx = event.x() - self.coord_last[0]
+                dy = event.y() - self.coord_last[1]
+                self.coord_last = [event.x(), event.y()]
                 if modifiers == QtCore.Qt.ShiftModifier:
                     self.move_region(dx, dy)
                 else:
@@ -114,14 +121,14 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
             if not button == self.button_start:
                 # user clicked different button than initially, to cancel
                 # selection I presume
-                self.coords_end = None
-                self.coords_start = None
+                self.coord_end = None
+                self.coord_start = None
                 self.button_start = None
                 return
 
             if button == QtCore.Qt.LeftButton and self.event_add_selection:
                 # Finalize region selection
-                self.coords_end = [event.x(), event.y()]
+                self.coord_end = [event.x(), event.y()]
 
                 shape_type = None
                 if modifiers == QtCore.Qt.NoModifier:
@@ -131,7 +138,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
                 elif modifiers == QtCore.Qt.ControlModifier:
                     shape_type = 'line'
 
-                shape_points = [self.coords_start, self.coords_end]
+                shape_points = [self.coord_start, self.coord_end]
                 if shape_type and shape_points:
                     self.add_shape(shape_type, shape_points)
         else:
@@ -190,7 +197,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
             return
 
         if self.tree_region_shapes.currentItem().shape == self.spin_shape:
-            # find the shape in the shape list of the ROI
+            # find the shape in the shape list of the RegionOfInterest
             idx = self.region.shapes.index(self.tree_region_shapes.currentItem().shape)
             dx = self.spin_shape_x.value() - self.region.shapes[idx].points[0][0]
             dy = self.spin_shape_y.value() - self.region.shapes[idx].points[0][1]
@@ -209,7 +216,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
             return
 
         if self.tree_region_shapes.currentItem().shape == self.spin_shape:
-            # find the shape in the shape list of the ROI
+            # find the shape in the shape list of the RegionOfInterest
             idx = self.region.shapes.index(self.tree_region_shapes.currentItem().shape)
             self.region.shapes[idx].move(dx, dy)
         else:
@@ -241,7 +248,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
 
         # if there are no slots, the table and its list should be empty
         if not self.region.slots and self.slots_items:
-            print 'removing all rows'
+            self.log.debug("Removing all rows")
             while self.table_slots.rowCount():
                 self.slots_remove_row(0)
             return
@@ -400,6 +407,13 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
             else:
                 enable.append(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
         return pins, enable
+
+    def change_color(self, *args):
+        """ Allow control over the color of the associated shapes in the video """
+        color = QtGui.QColorDialog.getColor()
+        if color.isValid():
+            self.lbl_color.setStyleSheet("background-color: %s" % color.name())
+            self.region.update_color(color.getRgb())
 
     def closeEvent(self, QCloseEvent):
         self.spotter.tracker.remove_roi(self.region)

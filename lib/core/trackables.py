@@ -334,15 +334,17 @@ class RegionOfInterest:
 
     linked_objects = None  # aka slots?!
 
+    normal_color = None
+    active_color = None
+    passive_color = None
+
     def __init__(self, shape_list=None, label=None, color=None, obj_list=None, magnetic_objects=None):
         self.label = label
-        if not color:
-            self.normal_color = self.get_normal_color()
-        else:
-            self.normal_color = self.normalize_color(color)
-        self.passive_color = self.scale_color(self.normal_color, 200)
-        self.active_color = self.scale_color(self.normal_color, 255)
+
+        # Aesthetics
+        self.update_color(color)
         self.set_passive_color()
+
         # slots linked to pins for physical output
         self.slots = []
         # reference to all objects spotter holds
@@ -352,6 +354,7 @@ class RegionOfInterest:
             self.magnetic_objects = []
         else:
             self.magnetic_objects = magnetic_objects
+
         # if initialized with starting set of shapes
         self.shapes = []
         if shape_list:
@@ -375,6 +378,18 @@ class RegionOfInterest:
                 for p in pins:
                     if p.id == slot.pin_pref:
                         slot.attach_pin(p)
+
+    def update_color(self, color=None):
+        """ Set color for region, used by all associated shapes. If no color
+        give, will generate a random (most often ugly) on.
+        """
+        if not color:
+            # Generating color
+            self.normal_color = self.get_normal_color()
+        else:
+            self.normal_color = self.normalize_color(color)
+        self.passive_color = self.scale_color(self.normal_color, 150)
+        self.active_color = self.scale_color(self.normal_color, 255)
 
     @property
     def linked_slots(self):
