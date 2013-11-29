@@ -131,7 +131,7 @@ class GLFrame(QtOpenGL.QGLWidget):
         GL.glLoadIdentity()
 
         # Draw the numpy array onto the GL frame
-        if not None in [self.frame, self.frame.img]:
+        if self.frame is not None and self.frame.img is not None:
             shape = self.frame.img.shape
             # TODO: Flags for horizontal/vertical flipping
             GL.glDrawPixels(shape[1], shape[0], GL.GL_RGB, GL.GL_UNSIGNED_BYTE,
@@ -146,7 +146,7 @@ class GLFrame(QtOpenGL.QGLWidget):
             if modifiers == QtCore.Qt.ShiftModifier:
                 radius = geom.distance(p1, p2)
                 p2_c = (int(p1[0]), p1[1]+radius)
-                self.drawCircle((p1, p2_c), color=color, filled=False, num_segments=16)
+                self.drawCircle((p1, p2_c), color=color, filled=True, num_segments=24)
             elif modifiers == QtCore.Qt.ControlModifier:
                 self.drawLine((p1, p2), color=color)
             else:
