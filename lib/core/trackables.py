@@ -29,33 +29,28 @@ class Shape:
         self.shape = shape.lower()
         self.label = label
 
+        self.points = points
         if shape == 'circle':
-            # calculate the radius as distance of the points
-            self.radius_update(points)
             # normalize the point positions based on radius,
             # second point is always to the right of the center
             self.points = [points[0], (int(points[0][0]), points[0][1]+self.radius)]
             self.collision_check = self.collision_check_circle
         elif shape == 'rectangle':
-            self.points = points
             self.collision_check = self.collision_check_rectangle
 
     def move(self, dx, dy):
         """ Move the shape relative to current position. """
         for i, p in enumerate(self.points):
             self.points[i] = (p[0] + dx, p[1] + dy)
-        if self.shape == 'circle':
-            self.radius_update()
 
     def move_to(self, points):
         """ Move the shape to a new absolute position. """
         self.points = points
 
-    def radius_update(self, points=None):
-        """ (Re-)calculate the radius of the circle. """
-        if points is None:
-            points = self.points
-        self.radius = geom.distance(points[0], points[1])
+    @property
+    def radius(self):
+        """ Calculate the radius of the circle. """
+        return geom.distance(self.points[0], self.points[1])
 
     def collision_check_circle(self, point):
         """ Circle points: center point, one point on the circle. Test for
@@ -176,7 +171,7 @@ class Slot:
         print "Removing slot", self
 
 
-class OOI:
+class ObjectOfInterest:
     """
     Object Of Interest. Collection of features to be tracked together and
     report state and behavior, or trigger events upon conditions.
@@ -311,7 +306,7 @@ class OOI:
             y2 = feature_coords[1][1]*1.0
 
             angle = math.degrees(math.atan2(x1 - x2, y2 - y1))
-            return int(angle+179)
+            return int(angle)
 
         return None
 
@@ -325,7 +320,7 @@ class OOI:
         return slots_to_update
 
 
-class ROI:
+class RegionOfInterest:
     """ Region in image registered objects are tested against.
     If trackables are occupying or intersecting, trigger their specific
     callbacks.

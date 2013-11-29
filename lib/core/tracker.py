@@ -69,7 +69,7 @@ class Tracker:
             self.log.error("Feature to be removed not found")
 
     def add_ooi(self, led_list, label, traced=False, tracked=True, magnetic_signals=None):
-        ooi = trkbl.OOI(led_list, label, traced, tracked, magnetic_signals)
+        ooi = trkbl.ObjectOfInterest(led_list, label, traced, tracked, magnetic_signals)
         self.oois.append(ooi)
         self.log.debug("Added object %s", ooi)
         return ooi
@@ -83,7 +83,7 @@ class Tracker:
             self.log.error("Object to be removed not found")
 
     def add_roi(self, shape_list, label, color=None, magnetic_objects=None):
-        roi = trkbl.ROI(shape_list, label, color, self.oois, magnetic_objects)
+        roi = trkbl.RegionOfInterest(shape_list, label, color, self.oois, magnetic_objects)
         self.rois.append(roi)
         self.log.debug("Added region %s", roi)
         return roi

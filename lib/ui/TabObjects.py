@@ -72,11 +72,12 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
             self.lbl_x.setText('---')
             self.lbl_y.setText('---')
 
-#        if self.object.speed() is not None:
-#            self.lbl_speed.setText(str(self.object.speed()))
-#
+        if self.object.speed() is not None:
+            self.lbl_speed.setText(str(self.object.speed()))
+        else:
+            self.lbl_speed.setText('---')
+
         if self.object.angle is not None:
-            self.lbl_speed.setText(str(self.object.angle))
             self.dial_direction.setValue(self.object.angle)
 
     def update_object(self):

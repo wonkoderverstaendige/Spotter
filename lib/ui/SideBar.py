@@ -108,18 +108,16 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
         event or introduce some selectivity, i.e. only update affected tabs as
         far as one can tell.
         """
-        self.log.debug('Updating all tabs')
+        self.log.debug('NOT updating all tabs')
         return
         #for main_tab in [self.features_page, self.objects_page, self.regions_page]:
         #    for tab in main_tab.tabs_sub:
         #        tab.update()
 
     def remove_all_tabs(self):
-        print "REMOVING ALL THE THINGAS"
         self.features_page.remove_all_pages()
         self.objects_page.remove_all_pages()
         self.regions_page.remove_all_pages()
-        print "DONE"
 
     ###############################################################################
     ##  FEATURES Tab Updates
