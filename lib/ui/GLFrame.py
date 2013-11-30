@@ -324,7 +324,7 @@ class GLFrame(QtOpenGL.QGLWidget):
         if filled:
             # TODO: Is that magic number 180 depending on the frame size?
             # If so, r < 0.25
-            if r_vbo < 180:
+            if False:  #r_vbo < 180
                 vbo = glvbo.VBO(np.array([[cx1, cy1]], dtype=np.float32))
                 vbo.bind()
                 GL.glColor4f(*color)
