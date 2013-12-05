@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Fri Nov 29 20:57:57 2013
-#      by: PyQt4 UI code generator 4.10.3
+# Created: Thu Dec 05 22:25:37 2013
+#      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -75,6 +75,8 @@ class Ui_MainWindow(object):
         self.menuHelp.setObjectName(_fromUtf8("menuHelp"))
         self.menuTemplate = QtGui.QMenu(self.menubar)
         self.menuTemplate.setObjectName(_fromUtf8("menuTemplate"))
+        self.menuView = QtGui.QMenu(self.menubar)
+        self.menuView.setObjectName(_fromUtf8("menuView"))
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
@@ -124,6 +126,9 @@ class Ui_MainWindow(object):
         self.actionRemoveTemplate.setObjectName(_fromUtf8("actionRemoveTemplate"))
         self.actionSourceProperties = QtGui.QAction(MainWindow)
         self.actionSourceProperties.setObjectName(_fromUtf8("actionSourceProperties"))
+        self.actionOnTop = QtGui.QAction(MainWindow)
+        self.actionOnTop.setCheckable(True)
+        self.actionOnTop.setObjectName(_fromUtf8("actionOnTop"))
         self.menu_Open.addAction(self.actionFile)
         self.menu_Open.addAction(self.actionCamera)
         self.menu_Save.addAction(self.action_Transcode_Video)
@@ -139,7 +144,9 @@ class Ui_MainWindow(object):
         self.menuTemplate.addAction(self.actionSaveConfig)
         self.menuTemplate.addSeparator()
         self.menuTemplate.addAction(self.actionRemoveTemplate)
+        self.menuView.addAction(self.actionOnTop)
         self.menubar.addAction(self.menu_File.menuAction())
+        self.menubar.addAction(self.menuView.menuAction())
         self.menubar.addAction(self.menuTemplate.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
         self.toolBar.addAction(self.actionRecord)
@@ -156,6 +163,7 @@ class Ui_MainWindow(object):
         self.menuLoad.setTitle(_translate("MainWindow", "Load", None))
         self.menuHelp.setTitle(_translate("MainWindow", "&Help", None))
         self.menuTemplate.setTitle(_translate("MainWindow", "Template", None))
+        self.menuView.setTitle(_translate("MainWindow", "View", None))
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar", None))
         self.actionE_xit.setText(_translate("MainWindow", "E&xit", None))
         self.actionCamera.setText(_translate("MainWindow", "&Camera", None))
@@ -174,5 +182,6 @@ class Ui_MainWindow(object):
         self.actionSaveConfig.setToolTip(_translate("MainWindow", "Save current configuration", None))
         self.actionRemoveTemplate.setText(_translate("MainWindow", "Remove all", None))
         self.actionSourceProperties.setText(_translate("MainWindow", "Source Props", None))
+        self.actionOnTop.setText(_translate("MainWindow", "Always on Top", None))
 
 import icons_rc

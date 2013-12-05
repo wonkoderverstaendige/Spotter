@@ -121,6 +121,8 @@ class Main(QtGui.QMainWindow):
         #list_of_files = [f for f in os.listdir(DIR_TEMPLATES) if f.lower().endswith('ini')]
 
         self.center_window()
+        self.toggle_window_on_top(True)
+        self.connect(self.ui.actionOnTop, QtCore.SIGNAL('toggled(bool)'), self.toggle_window_on_top)
 
         # Starts main frame grabber loop
         self.timer = QtCore.QTimer(self)
@@ -239,6 +241,20 @@ class Main(QtGui.QMainWindow):
         screen = QtGui.QDesktopWidget().screenGeometry()
         window_size = self.geometry()
         self.move((screen.width() - window_size.width()) / 2, (screen.height() - window_size.height()) / 2)
+
+    def toggle_window_on_top(self, state):
+        """ Have main window stay on top. According to the setWindowFlags
+        documentation, the window will hide after changing flags, requiring
+        either a .show() or a .raise(). These may have different behaviors on
+        different platforms!"""
+        # TODO: Test on Linux, OSX, Win8
+        print state
+        if state:
+            self.setWindowFlags(self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
+            self.show()
+        else:
+            self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowStaysOnTopHint)
+            self.show()
 
     def file_open_video(self):
         """
