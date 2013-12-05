@@ -426,9 +426,9 @@ if __name__ == "__main__":                                  #
         print(arg_dict)
 
     # Frame size parameter string 'WIDTHxHEIGHT' to size tuple (WIDTH, HEIGHT)
-    size = None if not arg_dict['--dims'] else tuple(arg_dict['--dims'].split('x'))
+    size = (640, 360) if not arg_dict['--dims'] else tuple(arg_dict['--dims'].split('x'))
 
-    main(source=arg_dict['--source'], size=(640, 360))
+    main(source=arg_dict['--source'], size=size)
 
     # Qt main window which instantiates spotter class with all parameters
     #main(source=arg_dict['--source'],

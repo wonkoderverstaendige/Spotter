@@ -115,6 +115,7 @@ class Spotter:
                                                    fy=self.scale_resize, interpolation=cv2.INTER_LINEAR)
 
             #with timerclass.Timer(False, self.timings) as t:
+
             # Find and update position of tracked object
             self.tracker.track_feature(self.newest_frame, method='hsv_thresh',
                                        scale=self.scale_tracking*self.scale_resize)

@@ -3,7 +3,7 @@
 Created on Tue Dec 04 21:41:19 2012
 @author: <Ronny Eichler> ronny.eichler@gmail.com
 
-Trackable object class.
+Classes related to tracking.
 """
 
 import math
@@ -18,8 +18,8 @@ class Shape:
     Not sure about the color parameter, I think it better if all shapes in a
     ROI have the same color, to keep them together as one ROI.
     points: list of points defining the shape. Two for rectangle and circle,
-    TODO: n-poly
     """
+    # TODO: n-polygon and collision detection
     def __init__(self, shape, points=None, label=None):
         self.active = True
         self.selected = False
@@ -73,10 +73,7 @@ class Shape:
 
         y_in_interval = (point[1] > min(self.points[0][1], self.points[1][1])) and\
                         (point[1] < max(self.points[0][1], self.points[1][1]))
-        if self.active and x_in_interval and y_in_interval:
-            return True
-        else:
-            return False
+        return self.active and x_in_interval and y_in_interval
 
 
 class Feature:
@@ -90,8 +87,6 @@ class Feature:
 
 class LED(Feature):
     """ Each instance is a spot defined by ranges in a color space. """
-
-    hue_hist = None
 
     def __init__(self, label, range_hue, range_sat, range_val, range_area, fixed_pos, linked_to, roi=None):
         Feature.__init__(self)
@@ -115,15 +110,6 @@ class LED(Feature):
         # List of linked features, can be used for further constraints
         self.linked_to = linked_to
 
-    def updateHistogram(self, led_hist):
-        pass
-
-    def gethistory(self):
-        pass
-
-    def updateHistory(self, coords):
-        pass
-
     @property
     def mean_hue(self):
         return utils.mean_hue(self.range_hue)
@@ -135,10 +121,7 @@ class LED(Feature):
 
     @property
     def position(self):
-        if len(self.pos_hist):
-            return self.pos_hist[-1]
-        else:
-            return None
+        return self.pos_hist[-1] if len(self.pos_hist) else None
 
 
 class Slot:
@@ -284,6 +267,10 @@ class ObjectOfInterest:
     def speed(self, *args):
         """Return movement speed in pixel/s."""
         # TODO: Allow for a calibration of the field of view of cameras
+        if len(self.pos_hist) < 2:
+            return None
+        if self.pos_hist[-1] is not None and self.pos_hist[-2] is not None:
+            return self.pos_hist[-2]-self.pos_hist[-1]
         return None
 
     def direction(self):
@@ -291,9 +278,11 @@ class ObjectOfInterest:
         Calculate direction of the object.
 
         If one feature, direction is not None if speed > v_threshold in px/s
-        If multiple features, calculate peak movement direction relative to
-        normal of features. This assumes the alignment of features is constant.
+        If two features, calculate heading relative to normal of features.
+
+        This assumes the alignment of features is constant.
         """
+        # TODO: Direction based on movement if only one feature
         if not self.tracked:
             return None
 
