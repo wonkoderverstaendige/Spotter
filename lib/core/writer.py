@@ -109,6 +109,12 @@ class Writer:
 
     def stop(self):
         self.destination = None
+        for handle in self.video_logger.handlers:
+            self.log.debug("Flushing video logger file handle of %s", str(handle))
+            handle.flush()
+            if isinstance(handle, logging.FileHandler):
+                self.log.debug("Closing video logger file handle of %s", str(handle))
+                handle.close()
         self.video_logger = None
 
         if self.recording:
