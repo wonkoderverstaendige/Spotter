@@ -264,13 +264,12 @@ class ObjectOfInterest:
         """
         return self.position
 
+    @property
     def speed(self, *args):
         """Return movement speed in pixel/s."""
         # TODO: Allow for a calibration of the field of view of cameras
-        if len(self.pos_hist) < 2:
-            return None
-        if self.pos_hist[-1] is not None and self.pos_hist[-2] is not None:
-            return self.pos_hist[-2]-self.pos_hist[-1]
+        if len(self.pos_hist) >= 2:
+            return geom.distance(self.pos_hist[-2], self.pos_hist[-1])
         return None
 
     def direction(self):
@@ -302,7 +301,6 @@ class ObjectOfInterest:
 
             angle = math.degrees(math.atan2(x1 - x2, y2 - y1))
             return int(angle)
-
         return None
 
     @property

@@ -72,8 +72,8 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
             self.lbl_x.setText('---')
             self.lbl_y.setText('---')
 
-        if self.object.speed() is not None:
-            self.lbl_speed.setText(str(self.object.speed()))
+        if self.object.speed:
+            self.lbl_speed.setText("%.1f" % (self.object.speed*30))
         else:
             self.lbl_speed.setText('---')
 
