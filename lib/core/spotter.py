@@ -160,9 +160,9 @@ class Spotter:
         """ True if alive """
         return self.writer.is_alive()
 
-    def start_writer(self):
+    def start_writer(self, filename=None):
         size = (self.newest_frame.img.shape[1], self.newest_frame.img.shape[0])
-        self.writer_pipe.send(['start', size])
+        self.writer_pipe.send(['start', size, filename])
         self.recording = True
 
     def stop_writer(self):

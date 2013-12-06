@@ -72,16 +72,21 @@ class Writer:
         self.log.info('Starting loop with size %s', str(size))
         self.loop()
 
-    def start(self, dst=None, size=None):
-        if size is None:
-            self.log.error('Video size not specified, writer would fail.')
-            return
-
+    def start(self, parameters):  # dst=None, size=None
+        if len(parameters) >= 1:
+            size = parameters[1]
+            if size is None:
+                self.log.error('Video size not specified, writer would fail.')
+                return
         self.size = size
+
+        if len(parameters) >= 2:
+            dst = parameters[2]
 
         # check if output file exists
         if dst is None:
             dst = 'recordings/' + utils.time_string() + '.avi'
+
         destination = utils.dst_file_name(dst)
         if os.path.isfile(destination) and not OVERWRITE:
             self.log.error('Destination file %s exists.', destination)
@@ -161,7 +166,7 @@ class Writer:
                 full_message = self.pipe.recv()
                 cmd = full_message[0]
                 if len(full_message) > 1:
-                    msg = full_message[1]
+                    msg = full_message[:]
                 else:
                     msg = None
                 self.ts_last = time.clock()
@@ -173,8 +178,8 @@ class Writer:
                     self.log.debug('Writer received stop signal')
                     self.stop()
                 elif cmd == 'start':
-                    self.log.debug('Writer received start signal with size: %s', str(msg))
-                    self.start(size=msg)
+                    self.log.debug('Writer received start signal with parameters: %s', str(msg))
+                    self.start(msg)
                 elif cmd == 'alive':
                     pass
 

@@ -205,7 +205,10 @@ class Main(QtGui.QMainWindow):
         # TODO: Select output video file name.
         self.log.debug("Toggling writer recording state")
         if state:
-            self.spotter.start_writer()
+            if filename is None:
+                filename = QtGui.QFileDialog.getSaveFileName(self, 'Open Video', './recordings/')
+                if len(filename):
+                    self.spotter.start_writer(str(filename)+'.avi')
         else:
             self.spotter.stop_writer()
 
