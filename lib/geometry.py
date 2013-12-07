@@ -9,26 +9,25 @@ Geometry functions.
 import numpy as np
 import math
 
+
 class Point:
-    def __init__(self,x,y):
+    def __init__(self, x, y):
         self.x = x
         self.y = y
 
+
 def middle_point(coord_list):
-    """ Find center point of a list of not None coordinates. E.g. find center
-        of group of LEDs to track. Returns None if no valid LEDs found,
-        and position of single LED if only one valid, etc.
+    """Find center point of a list coordinates. E.g. find center of group of LEDs to track.
+    Returns None if no valid LEDs found, and position of single LED if only one valid, etc.
     """
     # TODO: Proper type checking, corner cases, None etc.
-    if len(coord_list) > 0:
-        x = y = 0
-        n = len(coord_list)
-        for c in coord_list:
-            x += c[0]
-            y += c[1]
-        return [x/n, y/n]
-    else:
+    coord_list = [c for c in coord_list if c is not None]
+    n = 1.0*len(coord_list)
+    if n < 1:
         return None
+    x = sum([c[0]/n for c in coord_list])
+    y = sum([c[1]/n for c in coord_list])
+    return [x, y]
 
 
 def scale_points(pts, rng):

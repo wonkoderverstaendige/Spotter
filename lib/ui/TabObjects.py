@@ -65,20 +65,13 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         if not self.ckb_analog_pos.isChecked() == self.object.analog_pos:
             self.ckb_analog_pos.setChecked(self.object.analog_pos)
 
-        if self.object.position:
-            self.lbl_x.setText(str(int(self.object.position[0])))
-            self.lbl_y.setText(str(int(self.object.position[1])))
-        else:
-            self.lbl_x.setText('---')
-            self.lbl_y.setText('---')
+        self.lbl_x.setText('---' if self.object.position is None else "%.0f" % self.object.position[0])
+        self.lbl_y.setText('---' if self.object.position is None else "%.0f" % self.object.position[1])
 
-        if self.object.speed:
-            self.lbl_speed.setText("%.1f" % (self.object.speed*30))
-        else:
-            self.lbl_speed.setText('---')
+        self.lbl_speed.setText('---' if self.object.speed() is None else "%.1f" % self.object.speed())
 
-        if self.object.angle is not None:
-            self.dial_direction.setValue(self.object.angle)
+        self.dial_direction.setValue(self.dial_direction.value() if self.object.direction() is None
+                                     else self.object.direction())
 
     def update_object(self):
         if self.label is None:

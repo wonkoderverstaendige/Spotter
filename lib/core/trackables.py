@@ -172,9 +172,6 @@ class ObjectOfInterest:
     tracked = True
     traced = False
 
-    position = None
-    angle = None
-
     analog_pos = False
     analog_dir = False
     analog_spd = False
@@ -195,33 +192,29 @@ class ObjectOfInterest:
             self.magnetic_signals = magnetic_signals
 
         # listed order important. First come, first serve
-        self.slots = [Slot('x position', 'dac', self.last_pos, 0),
-                      Slot('y position', 'dac', self.last_pos, 1),
+        self.slots = [Slot('x position', 'dac', self.position_x),
+                      Slot('y position', 'dac', self.position_y),
                       Slot('direction', 'dac', self.direction),
                       Slot('speed', 'dac', self.speed)]
 
     def update_state(self):
-        """
-        Calculate position, direction and speed of object.
+        """Update feature search windows!"""
+        self.append_position()
 
-        Update feature search windows!
-        """
-        self.position = self._position()
-        self.angle = self.direction()
-
+        # go back max. n frames to find last position
         min_step = 25
-        # go back max. n frames to find last position, else search full frame
         for p in range(0, min(len(self.pos_hist), 10)):
             if self.pos_hist[-p-1] is not None:
                 uidx = (p+1) * min_step
                 pos = map(int, self.pos_hist[-p-1])
                 roi = [(pos[0]-uidx, pos[1]-uidx), (pos[0]+uidx, pos[1]+uidx)]
                 break
-        else:
+        else:  # search full frame
             roi = [(0, 0), (2000, 2000)]
 
         for l in self.linked_leds:
             if l.fixed_pos:
+                # TODO: Movable feature ROIs
                 l.search_roi.move_to([(0, 259), (100, 359)])
             else:
                 l.search_roi.move_to(roi)
@@ -241,36 +234,38 @@ class ObjectOfInterest:
                     if pin.id == slot.pin_pref:
                         slot.attach_pin(pin)
 
-    def _position(self):
-        """
-        Calculate position from detected features linked to object.
-        """
-        # TODO: Now that I know about @property decorators...
-        if self.tracked:
-            feature_coords = []
-            for feature in self.linked_leds:
-                if feature.pos_hist[-1] is not None:
-                    feature_coords.append(feature.pos_hist[-1])
-            # find !mean! coordinates
-            self.pos_hist.append(geom.middle_point(feature_coords))
-            return geom.guessedPosition(self.pos_hist)
-        else:
-            return None
-
-    def last_pos(self, *args):
-        """
-        Return last position. Helper to pass reference, rather than value,
-        to slot_state.
-        """
-        return self.position
+    def append_position(self):
+        """Calculate position from detected features linked to object."""
+        if not self.tracked:
+            return
+        feature_positions = [f.pos_hist[-1] for f in self.linked_leds if len(f.pos_hist)]
+        self.pos_hist.append(geom.middle_point(feature_positions))
 
     @property
+    def position(self):
+        """Return last position."""
+        return self.pos_hist[-1] if len(self.pos_hist) else None
+
+    @property
+    def position_guessed(self):
+        """Get position based on history. Could allow for fancy filtering etc."""
+        return geom.guessedPosition(self.pos_hist)
+
+    def position_x(self):
+        """ Helper method to provide chatter with function reference for slot updates"""
+        return None if self.position is None else self.position[0]
+
+    def position_y(self):
+        """ Helper method to provide chatter with function reference for slot updates"""
+        return None if self.position is None else self.position[1]
+
     def speed(self, *args):
         """Return movement speed in pixel/s."""
         # TODO: Allow for a calibration of the field of view of cameras
-        if len(self.pos_hist) >= 2:
-            return geom.distance(self.pos_hist[-2], self.pos_hist[-1])
-        return None
+        try:
+            return geom.distance(self.pos_hist[-2], self.pos_hist[-1])*30.0 if len(self.pos_hist) >= 2 else None
+        except TypeError:
+            return None
 
     def direction(self):
         """
@@ -282,10 +277,8 @@ class ObjectOfInterest:
         This assumes the alignment of features is constant.
         """
         # TODO: Direction based on movement if only one feature
-        if not self.tracked:
-            return None
-
-        if self.linked_leds is None or len(self.linked_leds) < 2:
+        # TODO: Calculate angle when having multiple features
+        if not self.tracked or self.linked_leds is None or len(self.linked_leds) < 2:
             return None
 
         feature_coords = []
@@ -298,19 +291,19 @@ class ObjectOfInterest:
             y1 = feature_coords[0][1]*1.0
             x2 = feature_coords[1][0]*1.0
             y2 = feature_coords[1][1]*1.0
-
-            angle = math.degrees(math.atan2(x1 - x2, y2 - y1))
-            return int(angle)
-        return None
+            return int(math.degrees(math.atan2(x1 - x2, y2 - y1)))
+        else:
+            return None
 
     @property
     def linked_slots(self):
         """ Return list of slots that are linked to a pin. """
-        slots_to_update = []
-        for s in self.slots:
-            if s.pin:
-                slots_to_update.append(s)
-        return slots_to_update
+        #slots_to_update = []
+        #for s in self.slots:
+        #    if s.pin:
+        #        slots_to_update.append(s)
+        #return slots_to_update
+        return [slot for slot in self.slots if slot.pin]
 
 
 class RegionOfInterest:
