@@ -26,8 +26,10 @@ import time
 import os
 import sys
 import struct
+import numpy as np
 from collections import deque
 from lib.docopt import docopt
+import zmq
 
 DEBUG = True
 
@@ -68,7 +70,8 @@ class Grabber:
     ts_last_frame = None    # Timestamp of most recent frame
     ts_first = None         # Timestamp of first frame, BUGGY!
     source_type = None      # File, stream, device; changes behavior of GUI
-#    framebuffer = deque( maxlen=256 )
+    capture_type = None
+#    framebuffer = deque(maxlen=256)
 
     def __init__(self, *args, **kwargs):
         """
@@ -78,7 +81,6 @@ class Grabber:
         :param fps: Float, frames per second of replay/capture
         :param size: list of floats (width, height)
         """
-
         self.log = logging.getLogger(__name__)
         self.log.info('Open CV %s', cv2.__version__)
 
@@ -91,17 +93,37 @@ class Grabber:
         if self.capture:
             self.close()
 
-        if source is not None:
-            try:
-                source = int(source)
-                self.source_type = 'device'
-            except ValueError:
-                if os.path.isfile(source):
-                    self.source_type = 'file'
-                else:
-                    self.log.info('Source file %s does not exist.', source)
+        if source is None:
+            return
+
+        # Try opening a frame source based on given source parameter
+        try:
+            source = int(source)
+            self.source_type = 'device'
+            self.capture_type = 'opencv'
+        except ValueError:
+            if os.path.isfile(source):
+                self.source_type = 'file'
+                self.capture_type = 'opencv'
+            else:
+                self.log.info('Source file %s does not exist.', source)
+                # try zmq
+                # Socket to talk to server
+                try:
+                    import zmq
+                    context = zmq.Context()
+                    print zmq.zmq_version()
+                    print "Connecting to frame server..."
+                    self.capture = context.socket(zmq.REQ)
+                    self.capture.connect("tcp://localhost:5555")
+                    self.source_type = 'socket'
+                    self.capture_type = 'zmq'
+                    self.log.debug('Opened ZMQ socket')
+                except ImportError:
+                    self.log.warning('No ZMQ')
                     return
 
+        if self.capture_type == "opencv":
             # Creating capture handle object
             self.log.debug('Attempting to open %s "%s" as capture... ', self.source_type, source)
             try:
@@ -134,13 +156,7 @@ class Grabber:
                     self.capture.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, float(self.size_init[0]))
                     self.capture.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, float(self.size_init[1]))
 
-    def grab(self):
-        """Grabs a new frame from the source. Returns Frame instance with
-        image and meta data."""
-        if self.capture is None:
-            return
-        #self.log.debug("Grabbing frame")
-
+    def grab_opencv(self):
         # Only really loops for first frame
         n_tries = 10 if self.frame_count < 1 else 1
         for trial in xrange(2, n_tries+2):
@@ -165,6 +181,44 @@ class Grabber:
         #self.log.debug('returning frame')
         return Frame(self.frame_count, img, self.source_type)
 
+    def grab_zmq(self):
+        try:
+            # Send request for new frame (any message will do here)
+            self.capture.send(__name__, zmq.NOBLOCK)
+
+            # Receive frame
+            img = np.fromstring(self.capture.recv(), np.uint8)
+            shape = (600, 800, 3)  # (960, 1280, 3)
+            img = np.reshape(img, shape)
+            self.frame_count += 1
+        except zmq.ZMQError:
+            return None
+        except ValueError:
+            return None
+
+        # First frame?
+        if self.frame_count == 1:
+            self.size = img.shape
+            self.fps = 60.0
+            self.fourcc = None
+            self.log.info('First frame: %s fps, %dx%d, %s', str(self.fps), self.size[0], self.size[1], str(self.fourcc))
+
+        #self.log.debug('returning frame')
+        return Frame(self.frame_count, img, self.source_type)
+
+    def grab(self):
+        """Grabs a new frame from the source. Returns Frame instance with
+        image and meta data."""
+        if self.capture is None:
+            return
+
+        #self.log.debug("Grabbing frame")
+        if self.capture_type == "opencv":
+            return self.grab_opencv()
+
+        if self.capture_type == "zmq":
+            return self.grab_zmq()
+
     def close(self):
         """Close and release frame source."""
         self.log.debug('Resetting grabber')
@@ -180,6 +234,8 @@ class Grabber:
         self.capture = None
 
     def get_capture_properties(self):
+        if not self.capture_type == "opencv":
+            return
         #base_string = 'CV_CAP_PROP_'
         properties = ['POS_MSEC', 'POS_FRAMES', 'POS_AVI_RATIO', 'FRAME_WIDTH', 'FRAME_HEIGHT',
                       'FPS', 'FOURCC', 'FRAME_COUNT', 'FORMAT', 'MODE', 'BRIGHTNESS', 'CONTRAST',

@@ -174,18 +174,11 @@ class Main(QtGui.QMainWindow):
         """
         self.gui_refresh_offset = self.status_bar.sb_offset.value()
 
-        if forced:
+        if forced is not None:
             self.timer.setInterval(forced)
             return
 
-        if self.spotter.source_type is not 'file':
-            if self.status_bar.sb_offset.isEnabled():
-                self.status_bar.sb_offset.setEnabled(False)
-                self.status_bar.sb_offset.setValue(0)
-            if self.timer.interval() != GUI_REFRESH_INTERVAL:
-                self.timer.setInterval(GUI_REFRESH_INTERVAL)
-                self.log.debug("Changed main loop update rate to be fast. New: %d", self.timer.interval())
-        else:
+        if self.spotter.source_type == 'file':
             if not self.status_bar.sb_offset.isEnabled():
                 self.status_bar.sb_offset.setEnabled(True)
             try:
@@ -199,6 +192,13 @@ class Main(QtGui.QMainWindow):
             if self.spotter.grabber.fps != 0 and self.timer.interval() != interval:
                 self.timer.setInterval(interval)
                 self.log.debug("Changed main loop update rate to match file. New: %d", self.timer.interval())
+        else:
+            if self.status_bar.sb_offset.isEnabled():
+                self.status_bar.sb_offset.setEnabled(False)
+                #self.status_bar.sb_offset.setValue(0)
+            if self.timer.interval() != GUI_REFRESH_INTERVAL:
+                self.timer.setInterval(GUI_REFRESH_INTERVAL)
+                self.log.debug("Changed main loop update rate to be fast. New: %d", self.timer.interval())
 
     def record_video(self, state, filename=None):
         """ Control recording of grabbed video. """
