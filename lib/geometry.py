@@ -9,26 +9,25 @@ Geometry functions.
 import numpy as np
 import math
 
+
 class Point:
-    def __init__(self,x,y):
+    def __init__(self, x, y):
         self.x = x
         self.y = y
 
+
 def middle_point(coord_list):
-    """ Find center point of a list of not None coordinates. E.g. find center
-        of group of LEDs to track. Returns None if no valid LEDs found,
-        and position of single LED if only one valid, etc.
+    """Find center point of a list coordinates. E.g. find center of group of LEDs to track.
+    Returns None if no valid LEDs found, and position of single LED if only one valid, etc.
     """
     # TODO: Proper type checking, corner cases, None etc.
-    if len( coord_list ) > 0:
-        x = y = 0
-        n = len( coord_list )
-        for c in coord_list:
-            x += c[0]
-            y += c[1]
-        return [x/n, y/n]
-    else:
+    coord_list = [c for c in coord_list if c is not None]
+    n = 1.0*len(coord_list)
+    if n < 1:
         return None
+    x = sum([c[0]/n for c in coord_list])
+    y = sum([c[1]/n for c in coord_list])
+    return [x, y]
 
 
 def scale_points(pts, rng):
@@ -91,70 +90,73 @@ def scale(val, range1, range2):
     return ((float(val) - range1[0]) / (range1[1] - range1[0])) * (range2[1] - range2[0]) + range2[0]
 
 
-def extrapolateLinear( p1, p2 ):
+def extrapolateLinear(p1, p2):
     """
     Linear extrapolation of missing point
     """
     dx = p2[0] - p1[0]
     dy = p2[1] - p2[1]
 
-    return( tuple([p2[0]+dx, p2[1]+dy]) )
+    return tuple([p2[0]+dx, p2[1]+dy])
 
 
-def guessedPosition( pos_hist ):
+def guessedPosition(pos_hist):
     if len(pos_hist) >= 3:
         if not (pos_hist[-1] is None):
             return pos_hist[-1]
-        elif not ( (pos_hist[-2] is None) or (pos_hist[-3] is None) ):
-                return extrapolateLinear( pos_hist[-3], pos_hist[-2] )
+        elif not ((pos_hist[-2] is None) or (pos_hist[-3] is None)):
+                return extrapolateLinear(pos_hist[-3], pos_hist[-2])
         else:
             return None
     else:
         return None
 
+
 def distance(p1, p2):
-    return math.sqrt((p2[0]-p1[0])**2 + (p2[1]-p1[1])**2)
+    """ Euclidean distance between two points. """
+    if p1 is not None and p2 is not None:
+        return math.sqrt((p2[0]-p1[0])**2 + (p2[1]-p1[1])**2)
+    else:
+        return None
 
 
-
-# line segment intersection using vectors
-# modified and taken from:
-#    http://www.cs.mun.ca/~rod/2500/notes/numpy-arrays/numpy-arrays.html
-def perp( a ) :
+def perp(a):
+    """Line segment intersection using vectors. Modified and taken from:
+    http://www.cs.mun.ca/~rod/2500/notes/numpy-arrays/numpy-arrays.html
+    """
     b = np.empty_like(a)
     b[0] = -a[1]
     b[1] = a[0]
     return b
 
-def seg_intersect(a1,a2, b1,b2) :
+def seg_intersect(a1, a2, b1, b2):
     da = a2-a1
     db = b2-b1
     dp = a1-b1
     dap = perp(da)
     denom = np.dot( dap, db)
-    num = np.dot( dap, dp )
+    num = np.dot(dap, dp)
     if denom == 0.0:
         return None
     else:
         return (num / denom)*db + b1
 
 
-# Improved point in polygon test which includes edge
-# and vertex points
-#http://geospatialpython.com/2011/08/point-in-polygon-2-on-line.html
 def point_in_poly(point, poly):
+    """Improved point in polygon test which includes edge and vertex points
+    From: http://geospatialpython.com/2011/08/point-in-polygon-2-on-line.html
+    """
     x = point[0]
     y = point[1]
     n = len(poly)
 
     # check if point is a vertex
-    if (x,y) in poly: return True
+    if (x, y) in poly:
+        return True
 
     # check if point is on a boundary
     for i in range(n):
-        p1 = None
-        p2 = None
-        if i==0:
+        if i == 0:
             p1 = poly[0]
             p2 = poly[1]
         else:
@@ -166,42 +168,43 @@ def point_in_poly(point, poly):
     # check the actual polygon space
     inside = False
 
-    p1x,p1y = poly[0]
+    p1x, p1y = poly[0]
     for i in range(n+1):
-        p2x,p2y = poly[i % n]
-        if y > min(p1y,p2y):
-            if y <= max(p1y,p2y):
-                if x <= max(p1x,p2x):
+        p2x, p2y = poly[i % n]
+        if y > min(p1y, p2y):
+            if y <= max(p1y, p2y):
+                if x <= max(p1x, p2x):
                     if p1y != p2y:
                         xints = (y-p1y)*(p2x-p1x)/(p2y-p1y)+p1x
                     if p1x == p2x or x <= xints:
                         inside = not inside
-        p1x,p1y = p2x,p2y
+        p1x, p1y = p2x, p2y
 
     return inside
 
 
 if __name__ == "__main__":
-    a = np.array( [0.0, 0.0] )
-    b = np.array( [0.0, 1.0] )
-    c = np.array( [1.0, 1.0] )
-    d = np.array( [1.0, 0.0] )
-    print seg_intersect( a,d, b,c)
-
-    p1 = np.array( [2.0, 2.0] )
-    p2 = np.array( [4.0, 3.0] )
-    p3 = np.array( [6.0, 0.0] )
-    p4 = np.array( [6.0, 3.0] )
-    print seg_intersect( p1,p2, p3,p4)
-
-    # Test a vertex for inclusion
-    poly = [(-33.416032,-70.593016), (-33.415370,-70.589604),
-    (-33.417340,-70.589046), (-33.417949,-70.592351),
-    (-33.416032,-70.593016)]
-    point = (-33.416032,-70.593016)
-    print point_in_poly(point, poly)
-
-    # test a boundary point for inclusion
-    poly = [(1,1), (5,1), (5,5), (1,5), (1,1)]
-    point = (3, 1)
-    print point_in_poly(point, poly)
+    pass
+    #a = np.array( [0.0, 0.0] )
+    #b = np.array( [0.0, 1.0] )
+    #c = np.array( [1.0, 1.0] )
+    #d = np.array( [1.0, 0.0] )
+    #print seg_intersect( a,d, b,c)
+    #
+    #p1 = np.array( [2.0, 2.0] )
+    #p2 = np.array( [4.0, 3.0] )
+    #p3 = np.array( [6.0, 0.0] )
+    #p4 = np.array( [6.0, 3.0] )
+    #print seg_intersect( p1,p2, p3,p4)
+    #
+    ## Test a vertex for inclusion
+    #poly = [(-33.416032,-70.593016), (-33.415370,-70.589604),
+    #(-33.417340,-70.589046), (-33.417949,-70.592351),
+    #(-33.416032,-70.593016)]
+    #point = (-33.416032,-70.593016)
+    #print point_in_poly(point, poly)
+    #
+    ## test a boundary point for inclusion
+    #poly = [(1,1), (5,1), (5,5), (1,5), (1,1)]
+    #point = (3, 1)
+    #print point_in_poly(point, poly)

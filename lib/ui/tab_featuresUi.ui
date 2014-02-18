@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>241</width>
-    <height>324</height>
+    <width>236</width>
+    <height>387</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,8 +38,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>239</width>
-          <height>259</height>
+          <width>234</width>
+          <height>343</height>
          </rect>
         </property>
         <attribute name="label">
@@ -47,15 +47,15 @@
         </attribute>
         <layout class="QGridLayout" name="gridLayout_6">
          <property name="margin">
-          <number>2</number>
+          <number>0</number>
          </property>
          <property name="spacing">
-          <number>2</number>
+          <number>0</number>
          </property>
          <item row="10" column="0">
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <property name="spacing">
-            <number>1</number>
+            <number>0</number>
            </property>
            <item>
             <widget class="QLabel" name="lbl_colorspace">
@@ -68,14 +68,20 @@
              <property name="maximumSize">
               <size>
                <width>16777215</width>
-               <height>30</height>
+               <height>32</height>
               </size>
              </property>
              <property name="styleSheet">
-              <string notr="true">background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(255, 0, 0, 255), stop:0.166 rgba(255, 255, 0, 255), stop:0.333 rgba(0, 255, 0, 255), stop:0.5 rgba(0, 255, 255, 255), stop:0.666 rgba(0, 0, 255, 255), stop:0.833 rgba(255, 0, 255, 255), stop:1 rgba(255, 0, 0, 255));</string>
+              <string notr="true">background-color:qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0,stop:0 hsva(0, 255, 255, 255),stop:0.49 hsva(60, 255, 255, 255),stop:0.5 hsva(60, 255, 255, 255),stop:1 hsva(180, 255, 255, 255));</string>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
              </property>
              <property name="text">
               <string/>
+             </property>
+             <property name="indent">
+              <number>0</number>
              </property>
             </widget>
            </item>
@@ -87,7 +93,7 @@
              <property name="sizeHint" stdset="0">
               <size>
                <width>20</width>
-               <height>40</height>
+               <height>0</height>
               </size>
              </property>
             </spacer>
@@ -96,16 +102,19 @@
          </item>
          <item row="9" column="0">
           <layout class="QGridLayout" name="layout_feature_parameters">
-           <property name="horizontalSpacing">
-            <number>2</number>
-           </property>
-           <property name="verticalSpacing">
+           <property name="spacing">
             <number>0</number>
            </property>
-           <item row="3" column="0">
-            <widget class="QLabel" name="lbl_val">
+           <item row="0" column="3">
+            <widget class="QLabel" name="lbl_max">
+             <property name="layoutDirection">
+              <enum>Qt::LeftToRight</enum>
+             </property>
              <property name="text">
-              <string>Val</string>
+              <string>Max</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
              </property>
             </widget>
            </item>
@@ -128,19 +137,9 @@
              </property>
             </widget>
            </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="lbl_sat">
-             <property name="text">
-              <string>Sat</string>
-             </property>
-            </widget>
-           </item>
            <item row="1" column="2">
             <widget class="QSpinBox" name="spin_hue_min">
              <property name="wrapping">
-              <bool>true</bool>
-             </property>
-             <property name="frame">
               <bool>true</bool>
              </property>
              <property name="buttonSymbols">
@@ -173,6 +172,25 @@
              </property>
             </widget>
            </item>
+           <item row="2" column="3">
+            <widget class="QSpinBox" name="spin_sat_max">
+             <property name="wrapping">
+              <bool>true</bool>
+             </property>
+             <property name="frame">
+              <bool>true</bool>
+             </property>
+             <property name="buttonSymbols">
+              <enum>QAbstractSpinBox::PlusMinus</enum>
+             </property>
+             <property name="accelerated">
+              <bool>true</bool>
+             </property>
+             <property name="maximum">
+              <number>255</number>
+             </property>
+            </widget>
+           </item>
            <item row="0" column="2">
             <widget class="QLabel" name="lbl_min">
              <property name="layoutDirection">
@@ -180,19 +198,6 @@
              </property>
              <property name="text">
               <string>Min</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="3">
-            <widget class="QLabel" name="lbl_max">
-             <property name="layoutDirection">
-              <enum>Qt::LeftToRight</enum>
-             </property>
-             <property name="text">
-              <string>Max</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -218,36 +223,10 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="4" rowspan="7">
-            <widget class="Line" name="line_2">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="lbl_hue">
-             <property name="text">
-              <string>Hue</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="3">
-            <widget class="QSpinBox" name="spin_sat_max">
-             <property name="wrapping">
-              <bool>true</bool>
-             </property>
-             <property name="frame">
-              <bool>true</bool>
-             </property>
-             <property name="buttonSymbols">
-              <enum>QAbstractSpinBox::PlusMinus</enum>
-             </property>
-             <property name="accelerated">
-              <bool>true</bool>
-             </property>
+           <item row="4" column="3">
+            <widget class="QSpinBox" name="spin_area_max">
              <property name="maximum">
-              <number>255</number>
+              <number>99999</number>
              </property>
             </widget>
            </item>
@@ -270,14 +249,61 @@
              </property>
             </widget>
            </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="lbl_min_area">
-             <property name="text">
-              <string>area</string>
+           <item row="4" column="2">
+            <widget class="QSpinBox" name="spin_area_min">
+             <property name="maximum">
+              <number>99999</number>
              </property>
             </widget>
            </item>
-           <item row="5" column="2" colspan="2">
+           <item row="0" column="4" rowspan="7">
+            <widget class="Line" name="line_2">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QLabel" name="lbl_min_area">
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;px&lt;span style=&quot; vertical-align:super;&quot;&gt;2&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="margin">
+              <number>2</number>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLabel" name="lbl_hue">
+             <property name="text">
+              <string>Hue</string>
+             </property>
+             <property name="margin">
+              <number>2</number>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLabel" name="lbl_sat">
+             <property name="text">
+              <string>Sat</string>
+             </property>
+             <property name="margin">
+              <number>2</number>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLabel" name="lbl_val">
+             <property name="text">
+              <string>Val</string>
+             </property>
+             <property name="margin">
+              <number>2</number>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="1" colspan="3">
             <widget class="QPushButton" name="btn_pick_color">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
@@ -302,92 +328,9 @@
              </property>
             </widget>
            </item>
-           <item row="4" column="2">
-            <widget class="QSpinBox" name="spin_area_min">
-             <property name="maximum">
-              <number>99999</number>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="3">
-            <widget class="QSpinBox" name="spin_area_max">
-             <property name="maximum">
-              <number>99999</number>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="5">
-            <spacer name="horizontalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </item>
-         <item row="3" column="0">
-          <layout class="QGridLayout" name="gridLayout_3">
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="spacing">
-            <number>0</number>
-           </property>
-           <item row="1" column="3">
-            <spacer name="horizontalSpacer">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="1" column="0">
-            <layout class="QVBoxLayout" name="verticalLayout">
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <item>
-              <widget class="QCheckBox" name="ckb_marker">
-               <property name="text">
-                <string>Show Marker</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item row="1" column="4">
-            <layout class="QGridLayout" name="gridLayout_4" columnminimumwidth="20,20">
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="horizontalSpacing">
-              <number>6</number>
-             </property>
+           <item row="0" column="5" rowspan="6">
+            <layout class="QGridLayout" name="gridLayout_5">
              <item row="1" column="0">
-              <widget class="QLabel" name="lbl_y_lbl">
-               <property name="text">
-                <string>y:</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="0">
               <widget class="QLabel" name="lbl_xlbl">
                <property name="text">
                 <string>x:</string>
@@ -397,7 +340,7 @@
                </property>
               </widget>
              </item>
-             <item row="0" column="1">
+             <item row="1" column="1">
               <widget class="QLabel" name="lbl_x">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -421,11 +364,24 @@
                 <string>---</string>
                </property>
                <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+               </property>
+               <property name="margin">
+                <number>1</number>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="2">
+              <widget class="QLabel" name="lbl_y_lbl">
+               <property name="text">
+                <string>y:</string>
+               </property>
+               <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
               </widget>
              </item>
-             <item row="1" column="1">
+             <item row="1" column="3">
               <widget class="QLabel" name="lbl_y">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -449,11 +405,83 @@
                 <string>---</string>
                </property>
                <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+               </property>
+               <property name="margin">
+                <number>1</number>
                </property>
               </widget>
              </item>
+             <item row="2" column="0" colspan="4">
+              <layout class="QGridLayout" name="gridLayout_4">
+               <item row="0" column="0">
+                <widget class="QLabel" name="lbl_zoom">
+                 <property name="minimumSize">
+                  <size>
+                   <width>96</width>
+                   <height>96</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>96</width>
+                   <height>96</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>true</bool>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
             </layout>
+           </item>
+          </layout>
+         </item>
+         <item row="7" column="0">
+          <layout class="QGridLayout" name="gridLayout_3" columnminimumwidth="0,0">
+           <property name="leftMargin">
+            <number>2</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QCheckBox" name="ckb_track">
+             <property name="text">
+              <string>Detection Active</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QCheckBox" name="ckb_marker">
+             <property name="text">
+              <string>Show Marker</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QCheckBox" name="ckb_fixed_pos">
+             <property name="text">
+              <string>Fixed Position</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
@@ -466,45 +494,13 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="page_feature_restriction">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>0</y>
-          <width>239</width>
-          <height>259</height>
-         </rect>
-        </property>
-        <attribute name="label">
-         <string>Restrictions</string>
-        </attribute>
-        <layout class="QGridLayout" name="gridLayout_8">
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="ckb_track">
-           <property name="text">
-            <string>Detection Active</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QCheckBox" name="ckb_fixed_pos">
-           <property name="text">
-            <string>Fixed Position</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
        <widget class="QWidget" name="page_feature_IO">
         <property name="geometry">
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>239</width>
-          <height>259</height>
+          <width>234</width>
+          <height>343</height>
          </rect>
         </property>
         <attribute name="label">
@@ -518,6 +514,9 @@
           <layout class="QGridLayout" name="gridLayout_9">
            <item row="1" column="1">
             <widget class="QPushButton" name="pushButton_12">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Save</string>
              </property>
@@ -525,6 +524,9 @@
            </item>
            <item row="2" column="1">
             <widget class="QPushButton" name="pushButton_13">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Delete</string>
              </property>
@@ -532,6 +534,9 @@
            </item>
            <item row="2" column="0">
             <widget class="QPushButton" name="pushButton_14">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Clone</string>
              </property>
@@ -539,6 +544,9 @@
            </item>
            <item row="1" column="0">
             <widget class="QPushButton" name="pushButton_15">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Open</string>
              </property>
@@ -546,6 +554,9 @@
            </item>
            <item row="0" column="0" colspan="2">
             <widget class="QComboBox" name="combo_label">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="editable">
               <bool>true</bool>
              </property>
@@ -584,9 +595,6 @@
   <tabstop>spin_area_min</tabstop>
   <tabstop>spin_area_max</tabstop>
   <tabstop>btn_pick_color</tabstop>
-  <tabstop>ckb_marker</tabstop>
-  <tabstop>ckb_track</tabstop>
-  <tabstop>ckb_fixed_pos</tabstop>
   <tabstop>pushButton_12</tabstop>
   <tabstop>pushButton_13</tabstop>
   <tabstop>pushButton_14</tabstop>

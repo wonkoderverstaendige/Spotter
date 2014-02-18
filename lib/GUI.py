@@ -115,7 +115,7 @@ class GUI:
 
         # <ESCAPE> to EXIT
         if ( key % 0x100 == 27 ):
-            self.parent.exitMain()
+            self.parent.exit()
 
 
     def updateHist( self ):

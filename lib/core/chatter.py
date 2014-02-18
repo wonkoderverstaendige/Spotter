@@ -29,6 +29,7 @@ To do:
 
 import sys
 import time
+import logging
 from random import randint
 
 import lib.utilities as utils
@@ -54,6 +55,9 @@ class Chatter:
     connected = False
 
     def __init__(self, port, frame_size=(639, 359), max_dac=4095, auto=False):
+
+        self.log = logging.getLogger(__name__)
+
         self.range_xy = frame_size
 
         self.factor_dac = (max_dac - 256.0) / max(frame_size)
@@ -91,14 +95,14 @@ class Chatter:
                     self.connected = True
                     return self.connected
             except Exception, e:
-                print str(e)
-                print 'This port was broken!'
+                self.log.error(str(e))
+                self.log.error('Port is broken or handshake invalid')
         self.connected = False
         return self.connected
 
     def open_serial(self, port):
         self.close()
-        print "Opening port " + port
+        self.log.info("Opening port %s", port)
         self.serial_device = arduino.Arduino(port)
         if self.serial_device.is_open():
             self.serial_port = port
@@ -130,22 +134,22 @@ class Chatter:
             return
 
         instr = []
-        for s in slots:
-            if s.state_idx is None:
-                instr.append([s.pin.type_id, s.pin.id, s.state()])
+        for slot in slots:
+            if slot.state_idx is None:
+                instr.append([slot.pin.type_id, slot.pin.id, slot.state()])
             else:
-                data = s.state(s.state_idx)
-                if s.type == 'digital':
+                data = slot.state(slot.state_idx)
+                if slot.type == 'digital':
                     if data:
-                        data = 100  # pin HIGH if larger 0
+                        data = 100  # pin HIGH if data > 0
                     else:
                         data = 0
-                elif s.type == 'dac':
+                elif slot.type == 'dac':
                     if data is None:
                         data = 0
                     else:
-                        data = self.scale_point(data)[s.state_idx]
-                instr.append([s.pin.type_id, s.pin.id, data])
+                        data = self.scale_point(data)[slot.state_idx]
+                instr.append([slot.pin.type_id, slot.pin.id, data])
 
         if not self.serial_device.send_instructions(instr):
             self.close()
@@ -202,36 +206,34 @@ class Chatter:
         if self.serial_device:
             try:
                 return self.serial_device.pins[pin_type]
-            except:
+            except BaseException, error:
+                self.log.error(error)
                 return []
         else:
             return []
 
-
-    def test_scan_frame(self, stepsize=4):
+    def test_scan_frame(self, step_size=4):
+        """Scan through all points in frame size and give their coordinates as analog
+        values via DACs, step size to keep it in a reasonable time frame...
         """
-        scan through all points in frame size and give their coordinates
-        as analog values via DACs, Stepsize to keep it in a reasonable
-        time frame...
-        """
-        for y in xrange(0, self.range_xy[1]+1, stepsize):
+        for y in xrange(0, self.range_xy[1]+1, step_size):
             t = time.clock()
-            for x in xrange(0, self.range_xy[0]+1, stepsize):
+            for x in xrange(0, self.range_xy[0]+1, step_size):
                 data = self.scale_point((x, y))
                 self.serial_device.send_instructions([[1, 0, data[0]], [1, 1, data[1]]])
                 self.read_all()
-            print("line: " + str(y) + " t: " + str((time.clock() - t)) + " s")
+            self.log.info("line: " + str(y) + " t: " + str((time.clock() - t)) + " s")
 
         self.serial_device.send_instructions([[1, 0, 0], [1, 1, 0]])
         self.read_all()
         time.sleep(0.5)
 
-        for x in xrange(0, self.range_xy[0]+1, stepsize):
+        for x in xrange(0, self.range_xy[0]+1, step_size):
             t = time.clock()
-            for y in xrange(0, self.range_xy[1]+1, stepsize):
+            for y in xrange(0, self.range_xy[1]+1, step_size):
                 data = self.scale_point((x, y))
                 self.serial_device.send_instructions([[1, 0, data[0]], [1, 1, data[1]]])
-            print("column: " + str(x) + " t: " + str((time.clock() - t)) + " s")
+            self.log.info("column: " + str(x) + " t: " + str((time.clock() - t)) + " s")
 
         self.serial_device.send_instructions([[1, 0, 0], [1, 1, 0]])
         self.read_all()
@@ -242,14 +244,14 @@ class Chatter:
         Close serial port if any device connected. May cause trouble if
         port remains open!
         """
+        self.log.info('Closing chatter')
         self.connected = False
         if self.serial_device:
-            print 'Closing Serial'
             self.serial_device.close()
 
 #############################################################
 if __name__ == '__main__':
 #############################################################
     chatter = Chatter(sys.argv[1])
-    chatter.test_scan_frame(stepsize=2)
+    chatter.test_scan_frame(step_size=2)
     chatter.close()

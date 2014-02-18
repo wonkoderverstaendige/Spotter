@@ -5,10 +5,13 @@ Created on Sun Jan 13 14:19:24 2013
 
 
 """
+import logging
 
+import cv2
 from PyQt4 import QtGui, QtCore
 from tab_featuresUi import Ui_tab_features
 import lib.utilities as utils
+import math
 
 
 class Tab(QtGui.QWidget, Ui_tab_features):
@@ -17,18 +20,22 @@ class Tab(QtGui.QWidget, Ui_tab_features):
     feature = None
     accept_events = False
     tab_type = "feature"
+    current_range_hue = (None, None)
 
-    def __init__(self, parent, feature, label=None):
-        self.feature = feature
+    def __init__(self, feature_ref, label=None, *args, **kwargs):
+        #super(QtGui.QWidget, self).__init__(parent)
+        QtGui.QWidget.__init__(self)
+        self.log = logging.getLogger(__name__)
+        self.setupUi(self)
+        self.feature = feature_ref
+
+        assert 'spotter' in kwargs
+        self.spotter = kwargs['spotter']
+
         if label is None:
             self.label = self.feature.label
         else:
             self.label = label
-
-        super(QtGui.QWidget, self).__init__(parent)
-        self.setupUi(self)
-
-        self.parent = parent
 
         self.combo_label.setEditText(self.label)
 
@@ -80,6 +87,9 @@ class Tab(QtGui.QWidget, Ui_tab_features):
             self.lbl_x.setText('---')
             self.lbl_y.setText('---')
 
+        self.update_color_space()
+        self.update_zoom()
+
     def update_led(self):
         self.feature.range_hue = (self.spin_hue_min.value(), self.spin_hue_max.value())
         self.feature.range_sat = (self.spin_sat_min.value(), self.spin_sat_max.value())
@@ -89,14 +99,99 @@ class Tab(QtGui.QWidget, Ui_tab_features):
         self.feature.fixed_pos = self.ckb_fixed_pos.isChecked()
         self.feature.marker_visible = self.ckb_marker.isChecked()
 
+    def update_color_space(self):
+        """ Update fancy color thingy if range_hue of feature has changed. """
+        if self.current_range_hue == self.feature.range_hue:
+            return
+        self.log.debug("Mowing unicorn meadows.")
+
+        # base CSS string
+        style_sheet = "background-color:qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0"
+
+        self.current_range_hue = self.feature.range_hue
+        min_h = int(self.current_range_hue[0]*2)
+        max_h = int(self.current_range_hue[1]*2)
+
+        sv_inner = 255
+        sv_outer = 80
+
+        if min_h > max_h:
+            min_h, max_h = max_h, min_h
+            sv_outer, sv_inner = sv_inner, sv_outer
+
+        epsilon = 0.0001
+
+        stops_pos = [1.0/6*p for p in xrange(0, 7)]
+        stops_hue = [(60*p) % 360 for p in xrange(0, 7)]
+        stops_sv = [sv_outer]*len(stops_hue)
+
+        stops = zip(stops_pos, stops_hue, stops_sv)
+
+        # TODO: Check that min_h and max_h are not equal
+
+        if min_h in stops_hue:
+            idx = stops_hue.index(min_h)
+            stops.insert(idx+1, (stops_pos[idx]+epsilon, min_h, sv_inner))
+        else:
+            idx = int(min_h/60+1)
+            stops.insert(idx, (min_h/360., min_h, sv_outer))
+            stops.insert(idx, (min_h/360.+epsilon, min_h, sv_inner))
+
+        if max_h in stops_hue:
+            idx = stops_hue.index(max_h)
+            stops.insert(idx+1, (stops_pos[idx]-epsilon, max_h, sv_inner))
+        else:
+            idx = int(max_h/60+1) + (2 if min_h not in stops_hue else 1)
+            stops.insert(idx, (max_h/360.-epsilon, max_h, sv_inner))
+            stops.insert(idx+1, (max_h/360., max_h, sv_outer))
+
+        for idx, stop in enumerate(stops):
+            if min_h < stop[1] < max_h:
+                stops[idx] = (stop[0], stop[1], sv_inner)
+        for stop in stops:
+            style_sheet += ", stop:{0[0]} hsva({0[1]}, {0[2]}, {0[2]}, 255)".format(stop)
+        style_sheet += ");"
+        self.lbl_colorspace.setStyleSheet(style_sheet)
+
     def pick_color(self, state):
         self.accept_events = state
+
+    def update_zoom(self, size=24):
+        size /= 2
+        if not None in [self.spotter.newest_frame, self.feature.position]:
+            x, y = map(int, self.feature.position)
+            (ax, ay), (bx, by) = (x-size, y-size), (x+size, y+size)
+            h, w = self.spotter.newest_frame.img.shape[0:2]
+
+            # check if box is too far left or right:
+            # Esther says to do it the stupid way as I am wasting my time...
+            if ax < 0:
+                ax = 0
+            if bx >= w-1:
+                bx = w-1
+
+            if ay < 0:
+                ay = 0
+            if by >= h-1:
+                by = h-1
+
+            # grab slice/view from numpy image array
+            cutout = self.spotter.newest_frame.img[ay:by, ax:bx, :]
+            cutout = cv2.cvtColor(cutout, cv2.cv.CV_BGR2RGB)
+            cutout = cv2.resize(cutout, (self.lbl_zoom.width(), self.lbl_zoom.height()), interpolation=cv2.INTER_NEAREST)
+            #convert numpy mat to pixmap image
+            if cutout is not None:
+                img = QtGui.QImage(cutout.data, cutout.shape[1], cutout.shape[0], QtGui.QImage.Format_RGB888)
+                self.lbl_zoom.setPixmap(QtGui.QPixmap.fromImage(img))
 
     def process_event(self, event_type, event):
         #print event_type
         if event_type == 'mousePress':
             x = int(event.x())
             y = int(event.y())
-            pixel = self.parent.spotter.newest_frame.img[y, x, :]
+            pixel = self.spotter.newest_frame.img[y, x, :]
             #print pixel
             print "[X,Y][B G R](H, S, V):", [x, y], pixel, utils.BGRpix2HSV(pixel)
+
+    def closeEvent(self, QCloseEvent):
+        self.spotter.tracker.remove_led(self.feature)

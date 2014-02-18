@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'statusBarUi.ui'
 #
-# Created: Sat Nov 23 00:27:48 2013
+# Created: Wed Nov 27 04:47:40 2013
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -39,21 +39,14 @@ class Ui_statusBar(object):
         self.sb_offset.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sb_offset.setFrame(False)
         self.sb_offset.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
+        self.sb_offset.setAccelerated(True)
         self.sb_offset.setMinimum(-99)
+        self.sb_offset.setMaximum(999)
+        self.sb_offset.setProperty("value", -10)
         self.sb_offset.setObjectName(_fromUtf8("sb_offset"))
         self.horizontalLayout_2.addWidget(self.sb_offset)
         spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem)
-        self.progressBar = QtGui.QProgressBar(statusBar)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.progressBar.sizePolicy().hasHeightForWidth())
-        self.progressBar.setSizePolicy(sizePolicy)
-        self.progressBar.setProperty("value", 0)
-        self.progressBar.setTextVisible(False)
-        self.progressBar.setObjectName(_fromUtf8("progressBar"))
-        self.horizontalLayout_2.addWidget(self.progressBar)
 
         self.retranslateUi(statusBar)
         QtCore.QMetaObject.connectSlotsByName(statusBar)
