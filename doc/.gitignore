@@ -29,6 +29,7 @@
 *.mtc1
 *.out
 *.synctex.gz
+*.synctex
 
 
 ############
