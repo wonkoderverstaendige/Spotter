@@ -11,14 +11,14 @@ MaxPos.x=-1
 MaxPos.y=-1
 NormalPos.left=4
 NormalPos.top=23
-NormalPos.right=578
-NormalPos.bottom=686
+NormalPos.right=1643
+NormalPos.bottom=732
 Class=LaTeXView
-Document=Spotter.tex
+Document=SpotterBody.tex
 
 [Frame0_View0,0]
-TopLine=0
-Cursor=1156
+TopLine=299
+Cursor=37484
 
 [Frame1]
 Flags=0
@@ -29,14 +29,14 @@ MaxPos.x=-1
 MaxPos.y=-1
 NormalPos.left=4
 NormalPos.top=23
-NormalPos.right=578
-NormalPos.bottom=686
+NormalPos.right=1643
+NormalPos.bottom=732
 Class=LaTeXView
-Document=SpotterBody.tex
+Document=Spotter.tex
 
 [Frame1_View0,0]
-TopLine=990
-Cursor=50909
+TopLine=0
+Cursor=1156
 
 [SessionInfo]
 FrameCount=2

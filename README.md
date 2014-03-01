@@ -1,7 +1,9 @@
 Spotter : simple video tracking
 ===============================
 
-[Spotter](http://wonkoderverstaendige.github.com/Spotter) can track LEDs in a video stream--either from a webcam or video file--and simultaneously write encoded video to disk. It is based on the [OpenCV](http://opencv.org/) library. It's a very early alpha and hardly working.
+[Spotter](http://wonkoderverstaendige.github.com/Spotter) can track LEDs in a video stream--either from a webcam, video file or ZMQ socket--and simultaneously write encoded video to disk. It is based on the [OpenCV](http://opencv.org/) library and interfaces with Arduino Uno, Mega or Due.
+
+For more detailed documentation, please refer to: [Spotter_0.4.pdf](docs/Spotter.pdf).
 
 Requirements
 ------------
@@ -59,8 +61,8 @@ Installation
 
 Download and extract the zip file from [here](https://github.com/wonkoderverstaendige/Spotter/archive/master.zip).
 
-Example Usage
--------------
+Example CLI Usage
+-----------------
 
     python spotterQt.py --source media\vid\r52r2f117.avi
 
