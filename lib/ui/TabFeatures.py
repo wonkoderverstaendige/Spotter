@@ -16,8 +16,6 @@ import math
 
 class Tab(QtGui.QWidget, Ui_tab_features):
 
-    label = None
-    feature = None
     accept_events = False
     tab_type = "feature"
     current_range_hue = (None, None)
@@ -39,7 +37,7 @@ class Tab(QtGui.QWidget, Ui_tab_features):
 
         self.combo_label.setEditText(self.label)
 
-        # Set spin boxes to the value of the represented feature
+        # Set spin boxes to the starting value of the represented feature
         self.spin_hue_min.setValue(self.feature.range_hue[0])
         self.spin_hue_max.setValue(self.feature.range_hue[1])
         self.spin_sat_min.setValue(self.feature.range_sat[0])
@@ -48,11 +46,6 @@ class Tab(QtGui.QWidget, Ui_tab_features):
         self.spin_val_max.setValue(self.feature.range_val[1])
         self.spin_area_min.setValue(self.feature.range_area[0])
         self.spin_area_max.setValue(self.feature.range_area[1])
-
-        # Connect checkboxes
-        self.ckb_track.setChecked(self.feature.detection_active)
-        self.ckb_fixed_pos.setChecked(self.feature.fixed_pos)
-        self.ckb_marker.setChecked(self.feature.marker_visible)
 
         # Connect spin boxes
         self.connect(self.spin_hue_min, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
@@ -64,8 +57,12 @@ class Tab(QtGui.QWidget, Ui_tab_features):
         self.connect(self.spin_area_min, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
         self.connect(self.spin_area_max, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
 
+        # Connect checkboxes
+        self.ckb_track.setChecked(self.feature.detection_active)
         self.connect(self.ckb_track, QtCore.SIGNAL('stateChanged(int)'), self.update_led)
+        self.ckb_fixed_pos.setChecked(self.feature.fixed_pos)
         self.connect(self.ckb_fixed_pos, QtCore.SIGNAL('stateChanged(int)'), self.update_led)
+        self.ckb_marker.setChecked(self.feature.marker_visible)
         self.connect(self.ckb_marker, QtCore.SIGNAL('stateChanged(int)'), self.update_led)
 
         self.connect(self.btn_pick_color, QtCore.SIGNAL('toggled(bool)'), self.pick_color)
@@ -119,7 +116,7 @@ class Tab(QtGui.QWidget, Ui_tab_features):
             min_h, max_h = max_h, min_h
             sv_outer, sv_inner = sv_inner, sv_outer
 
-        epsilon = 0.0001
+        epsilon = 0.0001  # Uh, sure...
 
         stops_pos = [1.0/6*p for p in xrange(0, 7)]
         stops_hue = [(60*p) % 360 for p in xrange(0, 7)]
@@ -154,9 +151,11 @@ class Tab(QtGui.QWidget, Ui_tab_features):
         self.lbl_colorspace.setStyleSheet(style_sheet)
 
     def pick_color(self, state):
+        """ Enable forwarding of events to process for color picker. """
         self.accept_events = state
 
     def update_zoom(self, size=24):
+        """ 'Zoom' is the little preview window of the detected feature. """
         size /= 2
         if not None in [self.spotter.newest_frame, self.feature.position]:
             x, y = map(int, self.feature.position)
@@ -178,8 +177,10 @@ class Tab(QtGui.QWidget, Ui_tab_features):
             # grab slice/view from numpy image array
             cutout = self.spotter.newest_frame.img[ay:by, ax:bx, :]
             cutout = cv2.cvtColor(cutout, cv2.cv.CV_BGR2RGB)
-            cutout = cv2.resize(cutout, (self.lbl_zoom.width(), self.lbl_zoom.height()), interpolation=cv2.INTER_NEAREST)
-            #convert numpy mat to pixmap image
+            cutout = cv2.resize(cutout, (self.lbl_zoom.width(), self.lbl_zoom.height()),
+                                interpolation=cv2.INTER_NEAREST)
+
+            #convert numpy matrix to QPixmap via QImage, which can be efficiently shown via a label
             if cutout is not None:
                 img = QtGui.QImage(cutout.data, cutout.shape[1], cutout.shape[0], QtGui.QImage.Format_RGB888)
                 self.lbl_zoom.setPixmap(QtGui.QPixmap.fromImage(img))
@@ -193,5 +194,5 @@ class Tab(QtGui.QWidget, Ui_tab_features):
             #print pixel
             print "[X,Y][B G R](H, S, V):", [x, y], pixel, utils.BGRpix2HSV(pixel)
 
-    def closeEvent(self, QCloseEvent):
+    def closeEvent(self, close_event):
         self.spotter.tracker.remove_led(self.feature)

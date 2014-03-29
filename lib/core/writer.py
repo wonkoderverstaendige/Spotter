@@ -76,9 +76,10 @@ class Writer:
         if len(parameters) >= 1:
             size = parameters[1]
             if size is None:
-                self.log.error('Video size not specified, writer would fail.')
+                self.log.error('Video size not specified.')
                 return
-        self.size = size
+            else:
+                self.size = size
 
         if len(parameters) >= 2:
             dst = parameters[2]
