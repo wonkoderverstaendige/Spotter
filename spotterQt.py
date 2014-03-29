@@ -33,6 +33,7 @@ To do:
 __version__ = 0.45
 
 NO_EXIT_CONFIRMATION = True
+DIR_EXAMPLES = './media/vid'
 DIR_CONFIG = './config'
 DIR_TEMPLATES = './templates'
 DIR_SPECIFICATION = './config/template_specification.ini'
@@ -49,19 +50,22 @@ import logging
 from lib.docopt import docopt
 from lib.configobj import configobj, validate
 
-from PyQt4 import QtGui, QtCore
+try:
+    from lib.pyqtgraph import QtGui, QtCore  # ALL HAIL LUKE!
+    import lib.pyqtgraph as pg
+except ImportError:
+    pg = None
+    from PyQt4 import QtGui, QtCore
+
 from lib.core import Spotter
 from lib.ui.mainUi import Ui_MainWindow
-from lib.ui import GLFrame
+from lib.ui import GLFrame, PGFrame
 from lib.ui import SerialIndicator, StatusBar, SideBar
 
 sys.path.append(DIR_TEMPLATES)
-
+gl = None
 
 class Main(QtGui.QMainWindow):
-    gui_refresh_offset = 0
-
-    __spotter_ref = None
 
     def __init__(self, *args, **kwargs):  # , source, destination, fps, size, gui, serial
         self.log = logging.getLogger(__name__)
@@ -91,7 +95,8 @@ class Main(QtGui.QMainWindow):
 
         # Menu Bar items
         #   File
-        self.connect(self.ui.actionFile, QtCore.SIGNAL('triggered()'), self.file_open_video)
+        #self.connect(self.ui.actionFile, QtCore.SIGNAL('triggered()'), self.file_open_video)
+        self.ui.actionFile.triggered.connect(self.file_open_video)
         self.connect(self.ui.actionCamera, QtCore.SIGNAL('triggered()'), self.file_open_device)
         #   Configuration
         self.connect(self.ui.actionLoadConfig, QtCore.SIGNAL('triggered()'), self.load_config)
@@ -108,12 +113,24 @@ class Main(QtGui.QMainWindow):
         self.ui.toolBar.addWidget(self.arduino_indicator)
 
         # OpenGL frame
-        self.gl_frame = GLFrame(AA=True)
-        self.ui.frame_video.addWidget(self.gl_frame)
-        self.gl_frame.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        if gl is not None:
+            self.gl_frame = GLFrame(AA=True)
+            self.ui.frame_video.addWidget(self.gl_frame)
+            self.gl_frame.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+            # handling mouse events by the tabs for selection of regions etc.
+            self.gl_frame.sig_event.connect(self.mouse_event_to_tab)
+        else:
+            self.gl_frame = None
 
-        # handling mouse events by the tabs for selection of regions etc.
-        self.gl_frame.sig_event.connect(self.mouse_event_to_tab)
+        # PyQtGraph frame
+        if pg is not None:
+            self.pg_frame = PGFrame.PGFrame()
+            self.ui.frame_video.addWidget(self.pg_frame)
+            self.pg_frame.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        else:
+            self.pg_frame = None
+
+        self.ui.scrollbar_t.valueChanged.connect(self.slider_changed)
 
         # Loading template list in folder
         default_path = os.path.join(os.path.abspath(DIR_CONFIG), DEFAULT_TEMPLATE)
@@ -125,6 +142,7 @@ class Main(QtGui.QMainWindow):
         self.connect(self.ui.actionOnTop, QtCore.SIGNAL('toggled(bool)'), self.toggle_window_on_top)
 
         # Starts main frame grabber loop
+        self.gui_refresh_offset = 0
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.refresh)
         self.timer.start(GUI_REFRESH_INTERVAL)
@@ -147,13 +165,17 @@ class Main(QtGui.QMainWindow):
         #self.log.debug("Updating spotter")
         if self.spotter.update() is None:
             pass
-            #return
 
-        # update the OpenGL frame
+        # update the video frame display (either PG or GL frame, or both for testing)
         #self.log.debug("Updating GL")
-        if not (self.gl_frame.width and self.gl_frame.height):
-            return
-        self.gl_frame.update_world(self.spotter)
+        if self.gl_frame is not None:
+            if not (self.gl_frame.width and self.gl_frame.height):
+                return
+            self.gl_frame.update_world(self.spotter)
+
+        # update PyQtGraph frame
+        if self.pg_frame is not None:
+            self.pg_frame.update_world(self.spotter)
 
         # Update the currently open tab
         #self.log.debug("Updating side bar")
@@ -212,6 +234,10 @@ class Main(QtGui.QMainWindow):
         else:
             self.spotter.stop_writer()
 
+    def slider_changed(self):
+        pass
+        # should update video position here...
+
     def mouse_event_to_tab(self, event_type, event):
         """
         Hand the mouse event to the active tab. Tabs may handle mouse events
@@ -229,7 +255,7 @@ class Main(QtGui.QMainWindow):
         """ About message box. Credits. Links. Jokes. """
         QtGui.QMessageBox.about(self, "About",
                                 """<b>Spotter</b> v%s
-                   <p>Copyright &#169; 2012-2013 <a href=mailto:ronny.eichler@gmail.com>Ronny Eichler</a>.
+                   <p>Copyright &#169; 2012-2014 <a href=mailto:ronny.eichler@gmail.com>Ronny Eichler</a>.
                    <p>This application is under heavy development. Use at your own risk.
                    <p>Python %s -  PyQt4 version %s - on %s""" % (__version__,
                                                                   platform.python_version(), QtCore.QT_VERSION_STR,
@@ -250,7 +276,7 @@ class Main(QtGui.QMainWindow):
         documentation, the window will hide after changing flags, requiring
         either a .show() or a .raise(). These may have different behaviors on
         different platforms!"""
-        # TODO: Test on Linux, OSX, Win8
+        # TODO: Test on OSX
         if state:
             self.setWindowFlags(self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
             self.show()
@@ -258,18 +284,16 @@ class Main(QtGui.QMainWindow):
             self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowStaysOnTopHint)
             self.show()
 
-    def file_open_video(self):
+    def file_open_video(self, rv, path=DIR_EXAMPLES):
         """
         Open a video file. Should finish current spotter if any by closing
         it to allow all frames/settings to be saved properly. Then instantiate
         a new spotter.
         TODO: Open file dialog in a useful folder. E.g. store the last used one
         """
-        # Windows 7 uses 'HOMEPATH' instead of 'HOME'
-        #path = os.getenv('HOME')
-        #if not path:
-        #    path = os.getenv('HOMEPATH')
-        filename = QtGui.QFileDialog.getOpenFileName(self, 'Open Video', './recordings')  # path
+        path = QtCore.QString(path)
+        filename = QtGui.QFileDialog.getOpenFileName(self, 'Open Video', path,
+                                                     self.tr('Video: *.avi *.mpg *.mp4 ;; All Files: (*.*)'))
         if len(filename):
             self.log.debug('File dialog given %s', str(filename))
             self.spotter.grabber.start(str(filename))
@@ -315,14 +339,16 @@ class Main(QtGui.QMainWindow):
                 return None
         return template
 
-    def load_config(self, filename=None, directory=DIR_TEMPLATES):
+    def load_config(self, filename=None, path=DIR_TEMPLATES):
         """
         Opens file dialog to choose template file and starts parsing it
         """
+        path = QtCore.QString(path)
         if filename is None:
-            filename = str(QtGui.QFileDialog.getOpenFileName(self, 'Open Template', directory))
+            filename = QtGui.QFileDialog.getOpenFileName(self, 'Open Template', path, 'All Files: *.*')
         if not len(filename):
             return None
+        filename = str(filename)
 
         self.log.debug("Opening template %s", filename)
         template = self.parse_config(filename)

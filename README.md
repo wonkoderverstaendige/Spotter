@@ -77,3 +77,10 @@ Example CLI Usage
 or
 
     python spotterQt.py --source 0 -o result.avi --dims 640x360
+
+
+Development
+-----------
+
+get:
+    pyqt4-dev-tools qt4-designer

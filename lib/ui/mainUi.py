@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Thu Dec 05 22:25:37 2013
-#      by: PyQt4 UI code generator 4.9.6
+# Created: Sat Mar 29 22:59:51 2014
+#      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
-        MainWindow.resize(630, 386)
+        MainWindow.resize(1032, 536)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -38,28 +38,47 @@ class Ui_MainWindow(object):
         MainWindow.setWindowIcon(icon)
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
-        self.horizontalLayout_2 = QtGui.QHBoxLayout(self.centralwidget)
-        self.horizontalLayout_2.setSpacing(0)
-        self.horizontalLayout_2.setMargin(0)
-        self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
+        self.gridLayout = QtGui.QGridLayout(self.centralwidget)
+        self.gridLayout.setMargin(0)
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.frame_parameters = QtGui.QHBoxLayout()
+        self.frame_parameters.setSpacing(0)
+        self.frame_parameters.setContentsMargins(0, -1, -1, -1)
+        self.frame_parameters.setObjectName(_fromUtf8("frame_parameters"))
+        self.gridLayout.addLayout(self.frame_parameters, 0, 3, 3, 1)
         self.frame_video = QtGui.QHBoxLayout()
         self.frame_video.setSpacing(0)
         self.frame_video.setObjectName(_fromUtf8("frame_video"))
-        spacerItem = QtGui.QSpacerItem(320, 0, QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Minimum)
-        self.frame_video.addItem(spacerItem)
         self.frame = QtGui.QFrame(self.centralwidget)
         self.frame.setFrameShape(QtGui.QFrame.StyledPanel)
         self.frame.setFrameShadow(QtGui.QFrame.Sunken)
         self.frame.setObjectName(_fromUtf8("frame"))
         self.frame_video.addWidget(self.frame)
-        self.horizontalLayout_2.addLayout(self.frame_video)
-        self.frame_parameters = QtGui.QHBoxLayout()
-        self.frame_parameters.setSpacing(0)
-        self.frame_parameters.setObjectName(_fromUtf8("frame_parameters"))
-        self.horizontalLayout_2.addLayout(self.frame_parameters)
+        self.gridLayout.addLayout(self.frame_video, 0, 2, 1, 1)
+        self.layout_video_pos_control = QtGui.QHBoxLayout()
+        self.layout_video_pos_control.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
+        self.layout_video_pos_control.setContentsMargins(0, -1, -1, -1)
+        self.layout_video_pos_control.setObjectName(_fromUtf8("layout_video_pos_control"))
+        self.lbl_frame_t = QtGui.QLabel(self.centralwidget)
+        self.lbl_frame_t.setObjectName(_fromUtf8("lbl_frame_t"))
+        self.layout_video_pos_control.addWidget(self.lbl_frame_t)
+        self.scrollbar_t = QtGui.QScrollBar(self.centralwidget)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.scrollbar_t.sizePolicy().hasHeightForWidth())
+        self.scrollbar_t.setSizePolicy(sizePolicy)
+        self.scrollbar_t.setOrientation(QtCore.Qt.Horizontal)
+        self.scrollbar_t.setInvertedAppearance(False)
+        self.scrollbar_t.setInvertedControls(True)
+        self.scrollbar_t.setObjectName(_fromUtf8("scrollbar_t"))
+        self.layout_video_pos_control.addWidget(self.scrollbar_t)
+        self.gridLayout.addLayout(self.layout_video_pos_control, 2, 2, 1, 1)
+        spacerItem = QtGui.QSpacerItem(1024, 1, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.gridLayout.addItem(spacerItem, 1, 2, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 630, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1032, 23))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menu_File = QtGui.QMenu(self.menubar)
         self.menu_File.setObjectName(_fromUtf8("menu_File"))
@@ -157,6 +176,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "Spotter", None))
+        self.lbl_frame_t.setText(_translate("MainWindow", "00:00:00.000", None))
         self.menu_File.setTitle(_translate("MainWindow", "&File", None))
         self.menu_Open.setTitle(_translate("MainWindow", "&Open", None))
         self.menu_Save.setTitle(_translate("MainWindow", "&Save", None))
@@ -168,6 +188,8 @@ class Ui_MainWindow(object):
         self.actionE_xit.setText(_translate("MainWindow", "E&xit", None))
         self.actionCamera.setText(_translate("MainWindow", "&Camera", None))
         self.actionFile.setText(_translate("MainWindow", "&File", None))
+        self.actionFile.setToolTip(_translate("MainWindow", "Open video file", None))
+        self.actionFile.setShortcut(_translate("MainWindow", "Ctrl+O", None))
         self.actionSave.setText(_translate("MainWindow", "&Transcode", None))
         self.action_Parameters.setText(_translate("MainWindow", "&Parameters", None))
         self.action_Transcode_Video.setText(_translate("MainWindow", "&Transcode Video", None))

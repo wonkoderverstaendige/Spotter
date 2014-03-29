@@ -3,7 +3,7 @@
 Created on Sat Jan 12 08:28:52 2013
 @author: <Ronny Eichler> ronny.eichler@gmail.com
 
-OpenGL widget to draw video and primites into a GL context
+OpenGL widget to draw video and primitives onto a GL context
 """
 from OpenGL.GL import glColor
 
@@ -27,7 +27,6 @@ class GLFrame(QtOpenGL.QGLWidget):
     pressed = False
     dragging = False
     aspect_ratio = None       # aspect ratio float = width/height
-    jobs = None
 
     sig_event = QtCore.pyqtSignal(str, object)
 

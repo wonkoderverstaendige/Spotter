@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'side_barUi.ui'
 #
-# Created: Mon Nov 25 22:32:41 2013
-#      by: PyQt4 UI code generator 4.10.3
+# Created: Sat Mar 29 22:59:51 2014
+#      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -33,6 +33,12 @@ class Ui_side_bar(object):
         self.horizontalLayout_2.setMargin(0)
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
         self.tabs_main = QtGui.QTabWidget(side_bar)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.tabs_main.sizePolicy().hasHeightForWidth())
+        self.tabs_main.setSizePolicy(sizePolicy)
+        self.tabs_main.setMaximumSize(QtCore.QSize(600, 16777215))
         self.tabs_main.setTabShape(QtGui.QTabWidget.Triangular)
         self.tabs_main.setIconSize(QtCore.QSize(0, 0))
         self.tabs_main.setDocumentMode(True)

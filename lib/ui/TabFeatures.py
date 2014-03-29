@@ -100,7 +100,7 @@ class Tab(QtGui.QWidget, Ui_tab_features):
         """ Update fancy color thingy if range_hue of feature has changed. """
         if self.current_range_hue == self.feature.range_hue:
             return
-        self.log.debug("Mowing unicorn meadows.")
+        #self.log.debug("Mowing unicorn meadows.")
 
         # base CSS string
         style_sheet = "background-color:qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0"

@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'statusBarUi.ui'
 #
-# Created: Wed Nov 27 04:47:40 2013
-#      by: PyQt4 UI code generator 4.9.6
+# Created: Sat Mar 29 22:59:51 2014
+#      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,10 +26,15 @@ except AttributeError:
 class Ui_statusBar(object):
     def setupUi(self, statusBar):
         statusBar.setObjectName(_fromUtf8("statusBar"))
-        statusBar.resize(960, 40)
+        statusBar.resize(1282, 40)
         self.horizontalLayout_2 = QtGui.QHBoxLayout(statusBar)
         self.horizontalLayout_2.setMargin(0)
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
+        self.lbl_frame_num = QtGui.QLabel(statusBar)
+        self.lbl_frame_num.setObjectName(_fromUtf8("lbl_frame_num"))
+        self.horizontalLayout_2.addWidget(self.lbl_frame_num)
+        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem)
         self.lbl_fps = QtGui.QLabel(statusBar)
         self.lbl_fps.setMinimumSize(QtCore.QSize(55, 0))
         self.lbl_fps.setFrameShape(QtGui.QFrame.NoFrame)
@@ -45,14 +50,13 @@ class Ui_statusBar(object):
         self.sb_offset.setProperty("value", -10)
         self.sb_offset.setObjectName(_fromUtf8("sb_offset"))
         self.horizontalLayout_2.addWidget(self.sb_offset)
-        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_2.addItem(spacerItem)
 
         self.retranslateUi(statusBar)
         QtCore.QMetaObject.connectSlotsByName(statusBar)
 
     def retranslateUi(self, statusBar):
         statusBar.setWindowTitle(_translate("statusBar", "Form", None))
+        self.lbl_frame_num.setText(_translate("statusBar", "Frame 0/0", None))
         self.lbl_fps.setToolTip(_translate("statusBar", "Interface refresh rate, NOT the acquisition rate if grabbing from a camera.", None))
         self.lbl_fps.setText(_translate("statusBar", "FPS: 100.0", None))
         self.sb_offset.setToolTip(_translate("statusBar", "Bias GUI refresh interval", None))
