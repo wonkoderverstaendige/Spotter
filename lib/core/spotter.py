@@ -127,10 +127,16 @@ class Spotter:
                 o.update_slots(self.chatter)
                 o.update_state()
                 slots.extend(o.linked_slots)
-                messages.append('\t'.join([self.newest_frame.time_text, str(o.label), str(o.position)]))
+                messages.append('\t'.join([self.newest_frame.time_text,
+                                           #str(self.newest_frame.tickstamp),
+                                           str(o.label),
+                                           str(o.position)]))
 
             for l in self.tracker.leds:
-                messages.append('\t'.join([self.newest_frame.time_text, str(l.label), str(l.position)]))
+                messages.append('\t'.join([self.newest_frame.time_text,
+                                           #str(self.newest_frame.tickstamp),
+                                           str(l.label),
+                                           str(l.position)]))
 
             # Check Object-Region collisions
             for r in self.tracker.rois:
