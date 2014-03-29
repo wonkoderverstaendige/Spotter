@@ -44,6 +44,7 @@ class Frame:
         self.source_type = source_type
         if timestamp is None:
             self.timestamp = time.time()
+            self.tickstamp = int((1000*cv2.getTickCount())/cv2.getTickFrequency())
         time_text = time.strftime("%d-%b-%y %H:%M:%S", time.localtime(self.timestamp))
         ms = "{0:03d}".format(int((self.timestamp-int(self.timestamp))*1000))
         self.time_text = ".".join([time_text, ms])
