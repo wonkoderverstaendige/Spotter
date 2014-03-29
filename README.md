@@ -24,6 +24,9 @@ requirements is to download the [PythonXY](http://code.google.com/p/pythonxy/wik
 distribution and perform a  "full" installation. Alternatively, a custom
 installation is enough if all required packages are selected.
 
+TODO: The opencv package distributed in python XY can not decode most videos. Install without,
+and grab from e.g. grohlke (see below).
+
 _Bare install:_
 Download and install Python 2.7 32bit
 
@@ -47,8 +50,13 @@ Install required packages by downlaoding and innstalling following binaries
 *Stand by.*
 *Install XCode, install MacPorts. Install py27- packages.*
 
-**Linux**
-*Stand by.*
+**LINUX**
+
+    apt-get install the following packages:
+    (among others...)
+    python-numpy
+    python-scipy
+    python-qt4-gl
 
 Installation
 ------------
