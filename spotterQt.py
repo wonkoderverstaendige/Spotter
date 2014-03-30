@@ -312,17 +312,26 @@ class Main(QtGui.QMainWindow):
             self.show()
 
     def file_open_video(self, filename=None, path=DIR_EXAMPLES):
+        """Open a video file.
+
+        Actions calling this function are not providing
+        arguments, so self.sender() has to be checked for the calling action
+        if no arguments were given.
         """
-        Open a video file. Should finish current spotter if any by closing
-        it to allow all frames/settings to be saved properly. Then instantiate
-        a new spotter.
-        TODO: Open file dialog in a useful folder. E.g. store the last used one
-        """
-        print filename
         path = QtCore.QString(path)
+
+        # If no filename given, this is may be supposed to open a recent file
         if filename is None:
+            action = self.sender()
+            if isinstance(action, QtGui.QAction):
+                filename = action.data().toString()
+
+        # If filename is still None, this was called by the Open File action
+        if not len(filename) or filename is None:
             filename = QtGui.QFileDialog.getOpenFileName(self, 'Open Video', path,
                                                          self.tr('Video: *.avi *.mpg *.mp4 ;; All Files: (*.*)'))
+
+        # If the user chose a file, this is finally not None...
         if len(filename):
             self.log.debug('Opening %s', str(filename))
             self.spotter.grabber.start(str(filename))
@@ -330,6 +339,7 @@ class Main(QtGui.QMainWindow):
         self.add_recent_file(filename)
         self.update_file_menu()
         self.setWindowTitle('Spotter - %s' % filename)
+        self.ui.statusbar.showMessage('Opened %s' % filename, 2000)
 
     def file_open_device(self):
         """ Open camera as frame source """
