@@ -55,6 +55,18 @@ class Frame:
                         org=(3, 12), fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=0.8,
                         color=(255, 255, 255), thickness=1, lineType=cv2.CV_AA)
 
+    @property
+    def width(self):
+        return self.img.shape[0]
+
+    @property
+    def height(self):
+        return self.img.shape[1]
+
+    @property
+    def shape(self):
+        return self.width, self.height
+
 
 class Grabber:
     capture = None          # Capture object to frame source

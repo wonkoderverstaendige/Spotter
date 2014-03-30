@@ -277,17 +277,21 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
 
         # extract shapes from shape templates
         shape_list = []
+        points = None
         for s_key in template['shapes']:
             if s_key in shapes:
                 shape_type = shapes[s_key]['type']
                 if abs_pos:
                     points = [shapes[s_key]['p1'], shapes[s_key]['p2']]
                 else:
-                    points = geom.scale_points([shapes[s_key]['p1'],
-                                                shapes[s_key]['p2']],
-                                               (self.parent.gl_frame.width,
-                                                self.parent.gl_frame.height))
-                shape_list.append([shape_type, points, s_key])
+                    if self.parent.spotter.newest_frame is not None:
+                        shape = self.parent.spotter.newest_frame.shape
+                        points = geom.scale_points([shapes[s_key]['p1'],
+                                                    shapes[s_key]['p2']],
+                                                   (shape[0],
+                                                    shape[1]))
+                if points is not None:
+                    shape_list.append([shape_type, points, s_key])
 
         # Magnetic objects from collision list
         obj_names = template['digital_collision']
