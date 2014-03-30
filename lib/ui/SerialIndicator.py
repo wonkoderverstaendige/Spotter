@@ -13,26 +13,35 @@ from serialIndicatorUi import Ui_indicator
 
 
 class SerialIndicator(QtGui.QWidget, Ui_indicator):
+    serial_wrapper = None
 
-    def __init__(self, serial_wrapper, parent=None):
+    def __init__(self, serial_wrapper=None, parent=None):
         super(SerialIndicator, self).__init__(parent)
         self.setupUi(self)
-        self.serial_wrapper = serial_wrapper
-
         self.connected = False
         self.warning = 0
+
         self.icon_connected = QtGui.QPixmap("./lib/ui/arduino_on.png")
         self.icon_disconnected = QtGui.QPixmap("./lib/ui/arduino_off.png")
         #self.icon_warning = QtGui.QPixmap("./lib/ui/arduino_off_warning.png")
         self.lbl_warning.setStyleSheet(' QLabel {color: red}')
 
-        self.check_timer = QtCore.QTimer(self)
-        self.check_timer.timeout.connect(self.refresh)
-        self.refresh()
-        self.check_timer.start(1000)
-
         self.lbl_icon.mouseReleaseEvent = self.disable_warning
         self.lbl_warning.mouseReleaseEvent = self.disable_warning
+
+        self.check_timer = QtCore.QTimer(self)
+        self.check_timer.timeout.connect(self.refresh)
+
+        if serial_wrapper is not None:
+            self.initialize(serial_wrapper)
+
+    def initialize(self, serial_wrapper):
+        """Actually run things once the serial object is initated.
+        """
+        self.serial_wrapper = serial_wrapper
+
+        self.refresh()
+        self.check_timer.start(1000)
 
     def refresh(self):
         state = self.serial_wrapper.is_connected()

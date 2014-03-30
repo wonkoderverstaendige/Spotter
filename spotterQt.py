@@ -39,7 +39,7 @@ DIR_TEMPLATES = './templates'
 DIR_SPECIFICATION = './config/template_specification.ini'
 DEFAULT_TEMPLATE = 'defaults.ini'
 
-GUI_REFRESH_INTERVAL = 10
+GUI_REFRESH_INTERVAL = 16
 
 import sys
 import os
@@ -49,6 +49,7 @@ import logging
 
 from lib.docopt import docopt
 from lib.configobj import configobj, validate
+
 
 try:
     from lib.pyqtgraph import QtGui, QtCore  # ALL HAIL LUKE!
@@ -65,23 +66,24 @@ from lib.ui import SerialIndicator, StatusBar, SideBar
 sys.path.append(DIR_TEMPLATES)
 gl = None
 
+
 class Main(QtGui.QMainWindow):
 
-    def __init__(self, *args, **kwargs):  # , source, destination, fps, size, gui, serial
+    __spotter_ref = None
+
+    def __init__(self, app, *args, **kwargs):  # , source, destination, fps, size, gui, serial
         self.log = logging.getLogger(__name__)
         QtGui.QMainWindow.__init__(self)
+        self.app = app
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-
-        # Spotter main class, handles Grabber, Writer, Tracker, Chatter
-        self.__spotter_ref = Spotter(*args, **kwargs)
 
         # Status Bar
         self.status_bar = StatusBar(self)
         self.statusBar().addWidget(self.status_bar)
 
-        # Side bar widget
+        # Side bar
         self.side_bar = SideBar.SideBar(self)
         self.ui.frame_parameters.addWidget(self.side_bar)
 
@@ -93,23 +95,30 @@ class Main(QtGui.QMainWindow):
         # About window
         self.connect(self.ui.actionAbout, QtCore.SIGNAL('triggered()'), self.about)
 
+        # Persistent application settings
+        # TODO: Needs command line option to reset everything
+        self.settings = QtCore.QSettings()
+
         # Menu Bar items
         #   File
-        #self.connect(self.ui.actionFile, QtCore.SIGNAL('triggered()'), self.file_open_video)
-        self.ui.actionFile.triggered.connect(self.file_open_video)
+        self.connect(self.ui.actionFile, QtCore.SIGNAL('triggered()'), self.file_open_video)
         self.connect(self.ui.actionCamera, QtCore.SIGNAL('triggered()'), self.file_open_device)
+        self.recent_files = self.settings.value("RecentFiles").toStringList()
+        self.update_file_menu()
+
         #   Configuration
         self.connect(self.ui.actionLoadConfig, QtCore.SIGNAL('triggered()'), self.load_config)
         self.connect(self.ui.actionSaveConfig, QtCore.SIGNAL('triggered()'), self.save_config)
         self.connect(self.ui.actionRemoveTemplate, QtCore.SIGNAL('triggered()'),
                      self.side_bar.remove_all_tabs)
+        self.connect(self.ui.action_clearRecentFiles, QtCore.SIGNAL('triggered()'), self.clear_recent_files)
 
         # Toolbar items
         self.connect(self.ui.actionRecord, QtCore.SIGNAL('toggled(bool)'), self.record_video)
-        self.connect(self.ui.actionSourceProperties, QtCore.SIGNAL('triggered()'),
-                     self.spotter.grabber.get_capture_properties)
+        # self.connect(self.ui.actionSourceProperties, QtCore.SIGNAL('triggered()'),
+        #              self.spotter.grabber.get_capture_properties)
         # Serial/Arduino Connection status indicator
-        self.arduino_indicator = SerialIndicator(self.spotter.chatter)
+        self.arduino_indicator = SerialIndicator()
         self.ui.toolBar.addWidget(self.arduino_indicator)
 
         # OpenGL frame
@@ -130,6 +139,7 @@ class Main(QtGui.QMainWindow):
         else:
             self.pg_frame = None
 
+        # Video source timing scroll bar
         self.ui.scrollbar_t.valueChanged.connect(self.slider_changed)
 
         # Loading template list in folder
@@ -138,17 +148,30 @@ class Main(QtGui.QMainWindow):
         #list_of_files = [f for f in os.listdir(DIR_TEMPLATES) if f.lower().endswith('ini')]
 
         # Main Window states
-        self.center_window()
+        self.resize(self.settings.value("MainWindow/Size", QtCore.QVariant(QtCore.QSize(600, 500))).toSize())
+        self.move(self.settings.value("MainWindow/Position", QtCore.QVariant(QtCore.QPoint(0, 0))).toPoint())
+        self.restoreState(self.settings.value("MainWindow/State").toByteArray())
+        #self.center_window()
         self.connect(self.ui.actionOnTop, QtCore.SIGNAL('toggled(bool)'), self.toggle_window_on_top)
 
-        # Starts main frame grabber loop
         self.gui_refresh_offset = 0
-        self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self.refresh)
-        self.timer.start(GUI_REFRESH_INTERVAL)
-
+        self.gui_refresh_interval = GUI_REFRESH_INTERVAL
         self.stopwatch = QtCore.QElapsedTimer()
+        QtCore.QTimer.singleShot(0, self.initialize)  # fires when event loop starts
+
+    ###############################################################################
+    ##  SPOTTER CLASS INIT
+    ###############################################################################
+    def initialize(self, *args, **kwargs):
+        # Spotter main class, handles Grabber, Writer, Tracker, Chatter
+        self.__spotter_ref = Spotter(*args, **kwargs)
+
+        # populate side bar now that spotter is here...
+        self.side_bar.initialize(self.spotter)
+        self.arduino_indicator.initialize(self.spotter.chatter)
+
         self.stopwatch.start()
+        self.refresh()
 
     @property
     def spotter(self):
@@ -158,69 +181,73 @@ class Main(QtGui.QMainWindow):
     ##  FRAME REFRESH
     ###############################################################################
     def refresh(self):
-        # TODO: I ain't got no clue as to why reducing the interval drastically improves the frame rate
-        # TODO: Maybe the interval immediately resets the counter and starts it up?
         elapsed = self.stopwatch.restart()
+        try:
+            # TODO: I ain't got no clue as to why reducing the interval drastically improves the frame rate
+            # TODO: Maybe the interval immediately resets the counter and starts it up?
 
-        #self.log.debug("Updating spotter")
-        if self.spotter.update() is None:
-            pass
+            #self.log.debug("Updating spotter")
+            if self.spotter.update() is None:
+                pass
 
-        # update the video frame display (either PG or GL frame, or both for testing)
-        #self.log.debug("Updating GL")
-        if self.gl_frame is not None:
-            if not (self.gl_frame.width and self.gl_frame.height):
-                return
-            self.gl_frame.update_world(self.spotter)
+            # update the video frame display (either PG or GL frame, or both for testing)
+            #self.log.debug("Updating GL")
+            if self.gl_frame is not None:
+                if not (self.gl_frame.width and self.gl_frame.height):
+                    return
+                self.gl_frame.update_world(self.spotter)
 
-        # update PyQtGraph frame
-        if self.pg_frame is not None:
-            self.pg_frame.update_world(self.spotter)
+            # update PyQtGraph frame
+            if self.pg_frame is not None:
+                self.pg_frame.update_world(self.spotter)
 
-        # Update the currently open tab
-        #self.log.debug("Updating side bar")
-        self.side_bar.update_current_page()
+            # Update the currently open tab
+            #self.log.debug("Updating side bar")
+            self.side_bar.update_current_page()
 
-        # check if the refresh rate needs adjustment
-        #self.log.debug("Updating GUI refresh rate")
-        self.adjust_refresh_rate()
+            # check if the refresh rate needs adjustment
+            #self.log.debug("Updating GUI refresh rate")
+            self.adjust_refresh_rate()
 
-        # based on stopwatch, show GUI refresh rate
-        #self.log.debug("Updating GUI refresh rate display")
-        self.status_bar.update_fps(elapsed)
+            # based on stopwatch, show GUI refresh rate
+            #self.log.debug("Updating GUI refresh rate display")
+        finally:
+            self.status_bar.update_fps(elapsed)
+            QtCore.QTimer.singleShot(self.gui_refresh_interval, self.refresh)
 
     def adjust_refresh_rate(self, forced=None):
         """
         Change GUI refresh rate according to frame rate of video source, or keep at
         1000/GUI_REFRESH_INTERVAL Hz for cameras to not miss too many frames
         """
+        # TODO: Allow adjusting for the video, too.
         self.gui_refresh_offset = self.status_bar.sb_offset.value()
+        frame_dur = int(1000.0/(self.spotter.grabber.fps if self.spotter.grabber.fps else 30))
 
         if forced is not None:
-            self.timer.setInterval(forced)
+            self.gui_refresh_interval = forced
             return
 
         if self.spotter.source_type == 'file':
             if not self.status_bar.sb_offset.isEnabled():
                 self.status_bar.sb_offset.setEnabled(True)
             try:
-                interval = int(1000.0/self.spotter.grabber.fps) + self.gui_refresh_offset
+                interval = frame_dur + self.gui_refresh_offset
             except (ValueError, TypeError):
                 interval = 0
             if interval < 0:
-                interval = 1
-                self.status_bar.sb_offset.setValue(interval - int(1000.0/self.spotter.grabber.fps))
+                interval = 0
+                self.status_bar.sb_offset.setValue(interval - frame_dur)
 
-            if self.spotter.grabber.fps != 0 and self.timer.interval() != interval:
-                self.timer.setInterval(interval)
-                self.log.debug("Changed main loop update rate to match file. New: %d", self.timer.interval())
+            if frame_dur != 0 and self.gui_refresh_interval != interval:
+                self.gui_refresh_interval = interval
+                self.log.debug("Changed main loop update rate to match file. New: %d", self.gui_refresh_interval)
         else:
             if self.status_bar.sb_offset.isEnabled():
                 self.status_bar.sb_offset.setEnabled(False)
-                #self.status_bar.sb_offset.setValue(0)
-            if self.timer.interval() != GUI_REFRESH_INTERVAL:
-                self.timer.setInterval(GUI_REFRESH_INTERVAL)
-                self.log.debug("Changed main loop update rate to be fast. New: %d", self.timer.interval())
+            if self.gui_refresh_interval != GUI_REFRESH_INTERVAL:
+                self.gui_refresh_interval = GUI_REFRESH_INTERVAL
+                self.log.debug("Changed main loop update rate to be fast. New: %d", self.gui_refresh_interval)
 
     def record_video(self, state, filename=None):
         """ Control recording of grabbed video. """
@@ -284,23 +311,99 @@ class Main(QtGui.QMainWindow):
             self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowStaysOnTopHint)
             self.show()
 
-    def file_open_video(self, rv, path=DIR_EXAMPLES):
+    def file_open_video(self, filename=None, path=DIR_EXAMPLES):
         """
         Open a video file. Should finish current spotter if any by closing
         it to allow all frames/settings to be saved properly. Then instantiate
         a new spotter.
         TODO: Open file dialog in a useful folder. E.g. store the last used one
         """
+        print filename
         path = QtCore.QString(path)
-        filename = QtGui.QFileDialog.getOpenFileName(self, 'Open Video', path,
-                                                     self.tr('Video: *.avi *.mpg *.mp4 ;; All Files: (*.*)'))
+        if filename is None:
+            filename = QtGui.QFileDialog.getOpenFileName(self, 'Open Video', path,
+                                                         self.tr('Video: *.avi *.mpg *.mp4 ;; All Files: (*.*)'))
         if len(filename):
-            self.log.debug('File dialog given %s', str(filename))
+            self.log.debug('Opening %s', str(filename))
             self.spotter.grabber.start(str(filename))
+
+        self.add_recent_file(filename)
+        self.update_file_menu()
+        self.setWindowTitle('Spotter - %s' % filename)
 
     def file_open_device(self):
         """ Open camera as frame source """
         self.spotter.grabber.start(source=0, size=(640, 360))
+
+    @staticmethod
+    def add_actions(target, actions):
+        for action in actions:
+            if action is None:
+                target.addSeparator()
+            else:
+                target.addAction(action)
+
+    def update_file_menu(self):
+        """Update list of recently opened files in the File->Open menu.
+        """
+        # throw everything out and start over...
+        self.ui.menu_Open.clear()
+        self.add_actions(self.ui.menu_Open, [self.ui.actionFile, self.ui.actionCamera, None])
+
+        current_file = QtCore.QFileInfo(QtCore.QString(self.spotter.grabber.source)).fileName() \
+            if self.spotter is not None and self.spotter.grabber.source_type == 'file' else None
+
+        # list of files to show in the menu, only append if file still exists!
+        recent_files = []
+        for fname in self.recent_files:
+            if fname != current_file and QtCore.QFile.exists(fname):
+                recent_files.append(fname)
+
+        # Generate actions for each entry in the list and append to menu
+        if recent_files:
+            for i, fname in enumerate(recent_files):
+                # TODO: Icons for the entries
+                action = QtGui.QAction(QtGui.QIcon(":/icon.png"), "&%d %s" % (i+1, QtCore.QFileInfo(fname).fileName()), self)
+                action.setData(QtCore.QVariant(fname))
+                self.connect(action, QtCore.SIGNAL("triggered()"), self.file_open_video)
+                self.ui.menu_Open.addAction(action)
+            # convenience action to remove all entries
+            self.add_actions(self.ui.menu_Open, [None, self.ui.action_clearRecentFiles])
+
+    def add_recent_file(self, fname):
+        """Add file to the list of recently opened files.
+         NB: self.recent_files is a QStringList, not a python list!
+        """
+        if fname is not None:
+            if not self.recent_files.contains(fname):
+                self.recent_files.prepend(QtCore.QString(fname))
+                while self.recent_files.count() > 9:
+                    self.recent_files.take_last()
+
+    def clear_recent_files(self):
+        """Remove all entries from the list of recently opened files.
+        """
+        self.recent_files.clear()
+        self.update_file_menu()
+
+    def store_settings(self):
+        """Store window states and other settings.
+        """
+        settings = QtCore.QSettings()
+
+        # Last opened file
+        filename = QtCore.QVariant(QtCore.QString(self.spotter.grabber.source)) \
+            if self.spotter.grabber.source_type == 'file' else QtCore.QVariant()
+        settings.setValue("LastFile", filename)
+
+        # recently opened files
+        recent_files = QtCore.QVariant(self.recent_files) if self.recent_files else QtCore.QVariant()
+        settings.setValue("RecentFiles", recent_files)
+
+        # Main Window states
+        settings.setValue("MainWindow/Size", QtCore.QVariant(self.size()))
+        settings.setValue("MainWindow/Position", QtCore.QVariant(self.pos()))
+        settings.setValue("MainWindow/State", QtCore.QVariant(self.saveState()))
 
     def closeEvent(self, event):
         """
@@ -314,6 +417,7 @@ class Main(QtGui.QMainWindow):
             reply = QtGui.QMessageBox.question(self, 'Exiting...', 'Are you sure?',
                                                QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
         if reply == QtGui.QMessageBox.Yes:
+            self.store_settings()
             self.spotter.exit()
             event.accept()
         else:
@@ -345,7 +449,7 @@ class Main(QtGui.QMainWindow):
         """
         path = QtCore.QString(path)
         if filename is None:
-            filename = QtGui.QFileDialog.getOpenFileName(self, 'Open Template', path, 'All Files: *.*')
+            filename = QtGui.QFileDialog.getOpenFileName(self, 'Open Template', path, self.tr('All Files: *.*'))
         if not len(filename):
             return None
         filename = str(filename)
@@ -450,7 +554,12 @@ class Main(QtGui.QMainWindow):
 #############################################################
 def main(*args, **kwargs):
     app = QtGui.QApplication([])
-    window = Main(*args, **kwargs)
+    # identifiers for QSettings persistent application settings
+    app.setOrganizationName('spotter_inc')
+    app.setOrganizationDomain('spotter.sp')
+    app.setApplicationName('Spotter')
+
+    window = Main(app, *args, **kwargs)
     window.show()
     window.raise_()  # needed on OSX?
 

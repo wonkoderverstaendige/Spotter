@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'side_barUi.ui'
 #
-# Created: Sat Mar 29 22:59:51 2014
+# Created: Mon Mar 31 00:57:39 2014
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -27,7 +27,7 @@ class Ui_side_bar(object):
     def setupUi(self, side_bar):
         side_bar.setObjectName(_fromUtf8("side_bar"))
         side_bar.resize(312, 377)
-        side_bar.setMinimumSize(QtCore.QSize(260, 0))
+        side_bar.setMinimumSize(QtCore.QSize(300, 0))
         self.horizontalLayout_2 = QtGui.QHBoxLayout(side_bar)
         self.horizontalLayout_2.setSpacing(0)
         self.horizontalLayout_2.setMargin(0)

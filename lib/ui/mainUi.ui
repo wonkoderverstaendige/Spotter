@@ -320,6 +320,14 @@
     <string>Always on Top</string>
    </property>
   </action>
+  <action name="action_clearRecentFiles">
+   <property name="text">
+    <string>Clear recent</string>
+   </property>
+   <property name="toolTip">
+    <string>Clear list of recently opened files</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="icons.qrc"/>

@@ -102,7 +102,7 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
             cross = [[ax-size, ay], [ax+size, ay], [ax, ay], [ax, ay-size], [ax, ay+size]]
         else:
             cross = [[ax-size, ay-size], [ax+size, ay+size], [ax, ay], [ax+size, ay-size], [ax-size, ay+size]]
-        self.markers[ref].setPen((color[2]*255, color[1]*255, color[0]*255))
+        self.markers[ref].setPen((color[0]*255, color[1]*255, color[2]*255))
         self.markers[ref].setData(np.asarray(cross))
 
     def populate_plot_items(self):

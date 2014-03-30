@@ -29,9 +29,9 @@ import struct
 import numpy as np
 from collections import deque
 from lib.docopt import docopt
-import zmq
 
 DEBUG = True
+zmq = None
 
 
 class Frame:
@@ -58,6 +58,7 @@ class Frame:
 
 class Grabber:
     capture = None          # Capture object to frame source
+    source = None
     fourcc = None           # Source frame coding
 
     fps_init = None         # Current source fps, may differ from CLI parameter
@@ -96,6 +97,7 @@ class Grabber:
 
         if source is None:
             return
+        self.source = source
 
         # Try opening a frame source based on given source parameter
         try:
@@ -114,7 +116,7 @@ class Grabber:
                     import zmq
                     context = zmq.Context()
                     print zmq.zmq_version()
-                    print "Connecting to frame server..."
+                    self.log.info("Connecting to frame server...")
                     self.capture = context.socket(zmq.REQ)
                     self.capture.connect("tcp://localhost:5555")
                     self.source_type = 'socket'
@@ -122,6 +124,8 @@ class Grabber:
                     self.log.debug('Opened ZMQ socket')
                 except ImportError:
                     self.log.warning('No ZMQ')
+                    global zmq
+                    zmq = None
                     return
 
         if self.capture_type == "opencv":
@@ -173,9 +177,15 @@ class Grabber:
 
         # First frame?
         if self.frame_count == 1:
-            self.size = tuple([int(self.capture.get(3)), int(self.capture.get(4))])
-            self.fps = self.capture.get(5)
-            self.fourcc = self.capture.get(6)
+            self.size = tuple([int(self.capture.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)),
+                               int(self.capture.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))])
+            self.fps = self.capture.get(cv2.cv.CV_CAP_PROP_FPS)
+            # There seems to be an issue with V4L where above property always returns a NaN
+            try:
+                int(self.fps)
+            except ValueError:
+                self.fps = 30.0
+            self.fourcc = self.capture.get(cv2.cv.CV_CAP_PROP_FOURCC)
             self.log.info('First frame: %.2f fps, %dx%d, %s after %d'+(' tries' if trial-2 else ' try'),
                           self.fps, self.size[0], self.size[1], str(self.fourcc), trial-1)
 

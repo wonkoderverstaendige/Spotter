@@ -30,10 +30,22 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
         #super(QtGui.QWidget, self).__init__(parent)
 
         self.setupUi(self)
+        self.features_page = None
+        self.objects_page = None
+        self.regions_page = None
+        self.source_page = None
+        self.record_page = None
+        self.serial_page = None
+        self.serial_tabs = []
 
         self.parent = parent
-        self.spotter = self.parent.spotter
+        self.spotter = None
 
+    def initialize(self, spotter, *args, **kwargs):
+        """Start up tab contents now that the spotter instance is up and running in
+         the main window.
+        """
+        self.spotter = spotter
         self.log.debug('Opening features main tab')
         self.features_page = MainTabPage("Features", TabFeatures.Tab, spotter=self.spotter, *args, **kwargs)
         self.tabs_main.insertTab(-1, self.features_page, self.features_page.label)
@@ -68,7 +80,6 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
         self.log.debug('Opening serial main tab')
         self.serial_page = MainTabPage("Serial", TabSerial.Tab, spotter=self.spotter, *args, **kwargs)
         self.tabs_main.insertTab(-1, self.serial_page, self.serial_page.label)
-        self.serial_tabs = []
         self.add_serial(self.spotter.chatter)
 
     def add_tab(self, tab_widget, new_tab_class, tab_equivalent, focus_new=True):

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Sat Mar 29 22:59:51 2014
+# Created: Mon Mar 31 00:57:39 2014
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -148,6 +148,8 @@ class Ui_MainWindow(object):
         self.actionOnTop = QtGui.QAction(MainWindow)
         self.actionOnTop.setCheckable(True)
         self.actionOnTop.setObjectName(_fromUtf8("actionOnTop"))
+        self.action_clearRecentFiles = QtGui.QAction(MainWindow)
+        self.action_clearRecentFiles.setObjectName(_fromUtf8("action_clearRecentFiles"))
         self.menu_Open.addAction(self.actionFile)
         self.menu_Open.addAction(self.actionCamera)
         self.menu_Save.addAction(self.action_Transcode_Video)
@@ -205,5 +207,7 @@ class Ui_MainWindow(object):
         self.actionRemoveTemplate.setText(_translate("MainWindow", "Remove all", None))
         self.actionSourceProperties.setText(_translate("MainWindow", "Source Props", None))
         self.actionOnTop.setText(_translate("MainWindow", "Always on Top", None))
+        self.action_clearRecentFiles.setText(_translate("MainWindow", "Clear recent", None))
+        self.action_clearRecentFiles.setToolTip(_translate("MainWindow", "Clear list of recently opened files", None))
 
 import icons_rc
