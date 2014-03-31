@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Mon Mar 31 03:02:18 2014
+# Created: Mon Mar 31 04:18:23 2014
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -206,6 +206,7 @@ class Ui_MainWindow(object):
         self.actionArduino.setText(_translate("MainWindow", "Arduino", None))
         self.actionArduino.setToolTip(_translate("MainWindow", "Arduino State", None))
         self.actionLoadConfig.setText(_translate("MainWindow", "Load", None))
+        self.actionLoadConfig.setShortcut(_translate("MainWindow", "Ctrl+T", None))
         self.actionSaveConfig.setText(_translate("MainWindow", "Save", None))
         self.actionSaveConfig.setToolTip(_translate("MainWindow", "Save current configuration", None))
         self.actionRemoveTemplate.setText(_translate("MainWindow", "Remove all", None))
