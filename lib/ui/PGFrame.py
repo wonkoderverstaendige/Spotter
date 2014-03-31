@@ -42,6 +42,9 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
         self.rois = dict()
 
     def update_world(self, spotter):
+        """Core refresh procedure for the PyQtGraph based video frame. Draws video and updates
+        all things that have to be drawn, like traces and markers.
+        """
         if spotter is None:
             return
 
@@ -111,8 +114,10 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
         self.markers[ref].setData(np.asarray(cross))
 
     def populate_plot_items(self):
-        # have a plot item for each drawing job
-        # what a pain...
+        """For PyQtGraph each marker or trace needs its own plot item that has to be
+         handled continuously.
+        """
+        # TODO: Remove plot items when ref longer in existence...
         for o in self.spotter.tracker.oois:
             if not o in self.traces:
                 object_trace = pg.PlotDataItem()
@@ -129,6 +134,10 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
                 self.vb.addItem(feature_marker)
 
     def populate_rois(self):
+        """Represent shapes of ROIs as PyQtGraph ROIs. This allows nicer UX and later
+        more sophisticated interactions with the data.
+        """
+        # TODO: Remove ROIs when roi no longer in existence...
         for r in self.spotter.tracker.rois:
             if not r in self.rois:
                 roi_shapes = []
