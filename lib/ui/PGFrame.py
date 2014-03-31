@@ -52,8 +52,10 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
         self.frame = self.spotter.newest_frame
         if self.frame is not None and self.frame.img is not None:
             shape = self.frame.img.shape
-            self.img.setImage(cv2.flip(cv2.transpose(cv2.cvtColor(self.frame.img, code=cv2.COLOR_BGR2RGB)), flipCode=1),
-                                       autoLevels=False)
+            # The viewbox coordinate system and color layering is rather different from OpenCV
+            #self.img.setImage(cv2.flip(cv2.transpose(cv2.cvtColor(self.frame.img, code=cv2.COLOR_BGR2RGB)), flipCode=1),
+            #                  autoLevels=False)
+            self.img.setImage(cv2.cvtColor(self.frame.img, code=cv2.COLOR_BGR2RGB), autoLevels=False)
             #self.img.setImage(cv2.flip(self.frame.img, flipCode=-1), autoLevels=False)
             #self.gv_video.scaleToImage(self.img)
 
@@ -73,6 +75,7 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
 
         self.populate_plot_items()
         self.process_draw_jobs()
+        self.populate_rois()
 
     def process_draw_jobs(self):
         """ This puny piece of code is IMPORTANT! It handles all external
@@ -100,10 +103,10 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
         TODO: When not visible, don't plot!
         """
         ax, ay = ref.pos_hist[-1][0], ref.pos_hist[-1][1]
-        if not angled:
-            cross = [[ax-size, ay], [ax+size, ay], [ax, ay], [ax, ay-size], [ax, ay+size]]
-        else:
+        if angled:
             cross = [[ax-size, ay-size], [ax+size, ay+size], [ax, ay], [ax+size, ay-size], [ax-size, ay+size]]
+        else:
+            cross = [[ax-size, ay], [ax+size, ay], [ax, ay], [ax, ay-size], [ax, ay+size]]
         self.markers[ref].setPen((color[0]*255, color[1]*255, color[2]*255))
         self.markers[ref].setData(np.asarray(cross))
 
@@ -124,3 +127,19 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
                 feature_marker = pg.PlotDataItem()
                 self.markers[f] = feature_marker
                 self.vb.addItem(feature_marker)
+
+    def populate_rois(self):
+        for r in self.spotter.tracker.rois:
+            if not r in self.rois:
+                roi_shapes = []
+                for s in r.shapes:
+                    if s.shape == 'circle':
+                        roi = pg.CircleROI(s.points[0], (s.radius, s.radius), pen=pg.mkPen(r.color))
+                    elif s.shape == 'rectangle':
+                        roi = pg.RectROI(s.points[0], s.points[1], pen=(0, 9))
+                    else:
+                        roi = None
+                    if roi is not None:
+                        roi_shapes.append(roi)
+                        self.vb.addItem(roi)
+                self.rois[r] = roi_shapes
