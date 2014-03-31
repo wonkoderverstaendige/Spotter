@@ -13,6 +13,7 @@ pyuic4 tab_objectsUi.ui -o tab_objectsUi.py
 pyuic4 tab_regionsUi.ui -o tab_regionsUi.py
 pyuic4 tab_featuresUi.ui -o tab_featuresUi.py
 pyuic4 main_tab_pageUi.ui -o main_tab_pageUi.py
+pyuic4 openDeviceDlgUi.ui -o openDeviceDlgUi.py
 
 pyrcc4 icons.qrc -o icons_rc.py
 pyrcc4 images.qrc -o images_rc.py

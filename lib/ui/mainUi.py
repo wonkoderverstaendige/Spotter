@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Mon Mar 31 00:57:39 2014
+# Created: Mon Mar 31 03:02:18 2014
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -108,6 +108,9 @@ class Ui_MainWindow(object):
         self.actionE_xit = QtGui.QAction(MainWindow)
         self.actionE_xit.setObjectName(_fromUtf8("actionE_xit"))
         self.actionCamera = QtGui.QAction(MainWindow)
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(_fromUtf8(":/LiveCam.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionCamera.setIcon(icon1)
         self.actionCamera.setObjectName(_fromUtf8("actionCamera"))
         self.actionFile = QtGui.QAction(MainWindow)
         self.actionFile.setObjectName(_fromUtf8("actionFile"))
@@ -127,15 +130,15 @@ class Ui_MainWindow(object):
         self.actionAbout.setObjectName(_fromUtf8("actionAbout"))
         self.actionRecord = QtGui.QAction(MainWindow)
         self.actionRecord.setCheckable(True)
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(_fromUtf8(":/record_on.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.actionRecord.setIcon(icon1)
+        icon2 = QtGui.QIcon()
+        icon2.addPixmap(QtGui.QPixmap(_fromUtf8(":/record_on.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionRecord.setIcon(icon2)
         self.actionRecord.setObjectName(_fromUtf8("actionRecord"))
         self.actionArduino = QtGui.QAction(MainWindow)
         self.actionArduino.setEnabled(False)
-        icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap(_fromUtf8(":/arduino_off.svg")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.actionArduino.setIcon(icon2)
+        icon3 = QtGui.QIcon()
+        icon3.addPixmap(QtGui.QPixmap(_fromUtf8(":/arduino_off.svg")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionArduino.setIcon(icon3)
         self.actionArduino.setObjectName(_fromUtf8("actionArduino"))
         self.actionLoadConfig = QtGui.QAction(MainWindow)
         self.actionLoadConfig.setObjectName(_fromUtf8("actionLoadConfig"))
@@ -189,6 +192,7 @@ class Ui_MainWindow(object):
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar", None))
         self.actionE_xit.setText(_translate("MainWindow", "E&xit", None))
         self.actionCamera.setText(_translate("MainWindow", "&Camera", None))
+        self.actionCamera.setShortcut(_translate("MainWindow", "Ctrl+D", None))
         self.actionFile.setText(_translate("MainWindow", "&File", None))
         self.actionFile.setToolTip(_translate("MainWindow", "Open video file", None))
         self.actionFile.setShortcut(_translate("MainWindow", "Ctrl+O", None))
@@ -211,3 +215,4 @@ class Ui_MainWindow(object):
         self.action_clearRecentFiles.setToolTip(_translate("MainWindow", "Clear list of recently opened files", None))
 
 import icons_rc
+import images_rc

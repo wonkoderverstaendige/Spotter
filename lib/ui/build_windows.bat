@@ -10,6 +10,7 @@ call pyuic4 tab_objectsUi.ui -o tab_objectsUi.py
 call pyuic4 tab_regionsUi.ui -o tab_regionsUi.py
 call pyuic4 tab_featuresUi.ui -o tab_featuresUi.py
 call pyuic4 main_tab_pageUi.ui -o main_tab_pageUi.py
+call pyuic4 openDeviceDlgUi.ui -o openDeviceDlgUi.py
 
 call pyrcc4 icons.qrc -o icons_rc.py
 call pyrcc4 images.qrc -o images_rc.py

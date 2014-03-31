@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/">
+    <file>LiveCam.png</file>
     <file>ArduinoDue.png</file>
     <file>ArduinoMega.png</file>
     <file>ArduinoUno.png</file>

@@ -52,7 +52,9 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
         self.frame = self.spotter.newest_frame
         if self.frame is not None and self.frame.img is not None:
             shape = self.frame.img.shape
-            self.img.setImage(cv2.transpose(self.frame.img), autoLevels=False)
+            self.img.setImage(cv2.flip(cv2.transpose(cv2.cvtColor(self.frame.img, code=cv2.COLOR_BGR2RGB)), flipCode=1),
+                                       autoLevels=False)
+            #self.img.setImage(cv2.flip(self.frame.img, flipCode=-1), autoLevels=False)
             #self.gv_video.scaleToImage(self.img)
 
         # draw crosses and traces for objects

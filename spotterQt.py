@@ -61,14 +61,13 @@ except ImportError:
 from lib.core import Spotter
 from lib.ui.mainUi import Ui_MainWindow
 from lib.ui import GLFrame, PGFrame
-from lib.ui import SerialIndicator, StatusBar, SideBar
+from lib.ui import SerialIndicator, StatusBar, SideBar, openDeviceDlg
 
 sys.path.append(DIR_TEMPLATES)
 gl = None
 
 
 class Main(QtGui.QMainWindow):
-
     __spotter_ref = None
 
     def __init__(self, app, *args, **kwargs):  # , source, destination, fps, size, gui, serial
@@ -222,7 +221,7 @@ class Main(QtGui.QMainWindow):
         """
         # TODO: Allow adjusting for the video, too.
         self.gui_refresh_offset = self.status_bar.sb_offset.value()
-        frame_dur = int(1000.0/(self.spotter.grabber.fps if self.spotter.grabber.fps else 30))
+        frame_dur = int(1000.0 / (self.spotter.grabber.fps if self.spotter.grabber.fps else 30))
 
         if forced is not None:
             self.gui_refresh_interval = forced
@@ -257,7 +256,7 @@ class Main(QtGui.QMainWindow):
             if filename is None:
                 filename = QtGui.QFileDialog.getSaveFileName(self, 'Open Video', './recordings/')
                 if len(filename):
-                    self.spotter.start_writer(str(filename)+'.avi')
+                    self.spotter.start_writer(str(filename) + '.avi')
         else:
             self.spotter.stop_writer()
 
@@ -342,8 +341,16 @@ class Main(QtGui.QMainWindow):
         self.ui.statusbar.showMessage('Opened %s' % filename, 2000)
 
     def file_open_device(self):
-        """ Open camera as frame source """
-        self.spotter.grabber.start(source=0, size=(640, 360))
+        """Open camera as frame source.
+        """
+        dialog = openDeviceDlg.OpenDeviceDlg()
+        dialog.spin_width.setValue(640)
+        dialog.spin_height.setValue(360)
+        dialog.ledit_device.setText("0")
+        if dialog.exec_():
+            self.spotter.grabber.start(source=dialog.ledit_device.text(),
+                                       size=(dialog.spin_width.value(),
+                                             dialog.spin_height.value()))
 
     @staticmethod
     def add_actions(target, actions):
@@ -373,7 +380,8 @@ class Main(QtGui.QMainWindow):
         if recent_files:
             for i, fname in enumerate(recent_files):
                 # TODO: Icons for the entries
-                action = QtGui.QAction(QtGui.QIcon(":/icon.png"), "&%d %s" % (i+1, QtCore.QFileInfo(fname).fileName()), self)
+                action = QtGui.QAction(QtGui.QIcon(":/icon.png"),
+                                       "&%d %s" % (i + 1, QtCore.QFileInfo(fname).fileName()), self)
                 action.setData(QtCore.QVariant(fname))
                 self.connect(action, QtCore.SIGNAL("triggered()"), self.file_open_video)
                 self.ui.menu_Open.addAction(action)
@@ -447,7 +455,8 @@ class Main(QtGui.QMainWindow):
                 self.log.error("Template error in file %s", path)
                 for (section_list, key, _) in configobj.flatten_errors(template, results):
                     if key is not None:
-                        self.log.error('The "%s" key in the section "%s" failed validation', key, ', '.join(section_list))
+                        self.log.error('The "%s" key in the section "%s" failed validation', key,
+                                       ', '.join(section_list))
                     else:
                         self.log.error('The following section was missing:%s ', ', '.join(section_list))
                 return None
@@ -576,8 +585,8 @@ def main(*args, **kwargs):
     sys.exit(app.exec_())
 
 
-if __name__ == "__main__":                                  #
-#############################################################
+if __name__ == "__main__":  #
+    #############################################################
     # TODO: Recover full command-line functionality
     # TODO: Add config file for general settings
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

@@ -206,8 +206,15 @@
    </property>
   </action>
   <action name="actionCamera">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/LiveCam.png</normaloff>:/LiveCam.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Camera</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+D</string>
    </property>
   </action>
   <action name="actionFile">
@@ -331,6 +338,7 @@
  </widget>
  <resources>
   <include location="icons.qrc"/>
+  <include location="images.qrc"/>
  </resources>
  <connections/>
 </ui>
