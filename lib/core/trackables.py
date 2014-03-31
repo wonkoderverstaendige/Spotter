@@ -52,6 +52,20 @@ class Shape:
         """ Calculate the radius of the circle. """
         return geom.distance(self.points[0], self.points[1])
 
+    @property
+    def width(self):
+        if self.shape == 'circle':
+            return self.radius
+        else:
+            return max(self.points[0][0], self.points[1][0])-min(self.points[0][0], self.points[1][0])
+
+    @property
+    def height(self):
+        if self.shape == 'circle':
+            return self.radius
+        else:
+            return max(self.points[0][1], self.points[1][1])-min(self.points[0][1], self.points[1][1])
+
     def collision_check_circle(self, point):
         """ Circle points: center point, one point on the circle. Test for
         collision by comparing distance between center and point of object with

@@ -136,7 +136,7 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
                     if s.shape == 'circle':
                         roi = pg.CircleROI(s.points[0], (s.radius, s.radius), pen=pg.mkPen(r.color))
                     elif s.shape == 'rectangle':
-                        roi = pg.RectROI(s.points[0], s.points[1], pen=(0, 9))
+                        roi = pg.RectROI(s.points[0], (s.width, s.height), pen=pg.mkPen(r.color))
                     else:
                         roi = None
                     if roi is not None:
