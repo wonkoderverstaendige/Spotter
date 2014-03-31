@@ -116,7 +116,7 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
             self.markers[ref].setPen((color[0]*255, color[1]*255, color[2]*255))
             self.markers[ref].setData(np.asarray(cross))
         else:
-            self.markers[ref].setData((np.nan, np.nan))
+            self.markers[ref].setPen(None)
 
     ### TRACES
     def populate_traces(self):
@@ -209,9 +209,11 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
         roi_shapes = []
         for s in rk.shapes:
             if s.shape == 'circle':
-                pg_roi = pg.CircleROI((s.points[0][1], s.points[0][0]), (s.radius, s.radius), pen=pg.mkPen(rk.color))
+                pg_roi = pg.CircleROI((s.points[0][1], s.points[0][0]), (s.radius, s.radius),
+                                      pen=pg.mkPen(rk.color))
             elif s.shape == 'rectangle':
-                pg_roi = pg.RectROI((s.points[0][1], s.points[0][0]), (s.height, s.width), pen=pg.mkPen(rk.color))
+                pg_roi = pg.RectROI((s.points[0][1], s.points[0][0]), (s.height, s.width),
+                                    pen=pg.mkPen(rk.color))
             else:
                 pg_roi = None
             if pg_roi is not None:
