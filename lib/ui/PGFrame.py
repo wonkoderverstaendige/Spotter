@@ -65,17 +65,15 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
 
         # draw crosses and traces for objects
         for o in self.spotter.tracker.oois:
-            if o.position is not None:
-                self.draw_jobs.append([self.draw_cross, o, 3, (1.0, 1.0, 1.0, 1.0), 7, True])
-                if o.traced:
-                    self.draw_jobs.append([self.draw_trace, o])
+            self.draw_jobs.append([self.draw_cross, o, 3, (1.0, 1.0, 1.0, 1.0), 7, True])
+            if o.traced:
+                self.draw_jobs.append([self.draw_trace, o])
 
         # draw crosses for features
         for l in self.spotter.tracker.leds:
             if len(l.pos_hist):
-                if l.pos_hist[-1] is not None:
-                    if l.marker_visible:
-                        self.draw_jobs.append([self.draw_cross, l, 7, l.lblcolor])
+                if l.marker_visible:
+                    self.draw_jobs.append([self.draw_cross, l, 7, l.lblcolor])
 
         self.populate_markers()
         self.populate_rois()
@@ -102,19 +100,23 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
             if ref.pos_hist[-n - 1] is not None:
                 points.append([ref.pos_hist[-n - 1][0] * 1.0,
                                ref.pos_hist[-n - 1][1] * 1.0])
+
         self.traces[ref].setData(np.asarray(points))
 
     def draw_cross(self, ref, size, color, gap=7, angled=False):
         """Draw marker (cross) of most recent position of referenced feature or object.
-        TODO: When not visible, don't plot!
         """
-        ax, ay = ref.pos_hist[-1][0], ref.pos_hist[-1][1]
-        if angled:
-            cross = [[ax-size, ay-size], [ax+size, ay+size], [ax, ay], [ax+size, ay-size], [ax-size, ay+size]]
+        # TODO: When not visible, don't plot!
+        if ref.pos_hist[-1] is not None:
+            ax, ay = ref.pos_hist[-1][0], ref.pos_hist[-1][1]
+            if angled:
+                cross = [[ax-size, ay-size], [ax+size, ay+size], [ax, ay], [ax+size, ay-size], [ax-size, ay+size]]
+            else:
+                cross = [[ax-size, ay], [ax+size, ay], [ax, ay], [ax, ay-size], [ax, ay+size]]
+            self.markers[ref].setPen((color[0]*255, color[1]*255, color[2]*255))
+            self.markers[ref].setData(np.asarray(cross))
         else:
-            cross = [[ax-size, ay], [ax+size, ay], [ax, ay], [ax, ay-size], [ax, ay+size]]
-        self.markers[ref].setPen((color[0]*255, color[1]*255, color[2]*255))
-        self.markers[ref].setData(np.asarray(cross))
+            self.markers[ref].setData((np.nan, np.nan))
 
     ### TRACES
     def populate_traces(self):
