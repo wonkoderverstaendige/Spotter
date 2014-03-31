@@ -489,6 +489,7 @@ class Main(QtGui.QMainWindow):
                                          shapes=template['SHAPES'],
                                          abs_pos=abs_pos,
                                          focus_new=False)
+        self.ui.statusbar.showMessage('Opened template %s' % filename, 2000)
 
     def save_config(self, filename=None, directory=DIR_TEMPLATES):
         """ Store a full set of configuration to file. """
