@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Mon Mar 31 04:18:23 2014
+# Created: Mon Mar 31 04:53:57 2014
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -49,6 +49,11 @@ class Ui_MainWindow(object):
         self.frame_video = QtGui.QHBoxLayout()
         self.frame_video.setSpacing(0)
         self.frame_video.setObjectName(_fromUtf8("frame_video"))
+        self.label = QtGui.QLabel(self.centralwidget)
+        self.label.setText(_fromUtf8(""))
+        self.label.setPixmap(QtGui.QPixmap(_fromUtf8(":/logo_name.png")))
+        self.label.setObjectName(_fromUtf8("label"))
+        self.frame_video.addWidget(self.label)
         self.frame = QtGui.QFrame(self.centralwidget)
         self.frame.setFrameShape(QtGui.QFrame.StyledPanel)
         self.frame.setFrameShadow(QtGui.QFrame.Sunken)
