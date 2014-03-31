@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Mon Mar 31 04:53:57 2014
+# Created: Mon Mar 31 18:33:38 2014
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
-        MainWindow.resize(1032, 536)
+        MainWindow.resize(1111, 536)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -37,6 +37,7 @@ class Ui_MainWindow(object):
         icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/icon64.svg")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         self.centralwidget = QtGui.QWidget(MainWindow)
+        self.centralwidget.setStyleSheet(_fromUtf8(""))
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.gridLayout = QtGui.QGridLayout(self.centralwidget)
         self.gridLayout.setMargin(0)
@@ -46,18 +47,23 @@ class Ui_MainWindow(object):
         self.frame_parameters.setContentsMargins(0, -1, -1, -1)
         self.frame_parameters.setObjectName(_fromUtf8("frame_parameters"))
         self.gridLayout.addLayout(self.frame_parameters, 0, 3, 3, 1)
+        spacerItem = QtGui.QSpacerItem(1024, 1, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.gridLayout.addItem(spacerItem, 1, 2, 1, 1)
         self.frame_video = QtGui.QHBoxLayout()
         self.frame_video.setSpacing(0)
         self.frame_video.setObjectName(_fromUtf8("frame_video"))
-        self.label = QtGui.QLabel(self.centralwidget)
-        self.label.setText(_fromUtf8(""))
-        self.label.setPixmap(QtGui.QPixmap(_fromUtf8(":/logo_name.png")))
-        self.label.setObjectName(_fromUtf8("label"))
-        self.frame_video.addWidget(self.label)
         self.frame = QtGui.QFrame(self.centralwidget)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.frame.sizePolicy().hasHeightForWidth())
+        self.frame.setSizePolicy(sizePolicy)
+        self.frame.setStyleSheet(_fromUtf8("background-image: url(:/logo_name_translucent.png); background-repeat: no-repeat; background-position: center center;"))
         self.frame.setFrameShape(QtGui.QFrame.StyledPanel)
         self.frame.setFrameShadow(QtGui.QFrame.Sunken)
         self.frame.setObjectName(_fromUtf8("frame"))
+        self.gridLayout_2 = QtGui.QGridLayout(self.frame)
+        self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
         self.frame_video.addWidget(self.frame)
         self.gridLayout.addLayout(self.frame_video, 0, 2, 1, 1)
         self.layout_video_pos_control = QtGui.QHBoxLayout()
@@ -79,11 +85,9 @@ class Ui_MainWindow(object):
         self.scrollbar_t.setObjectName(_fromUtf8("scrollbar_t"))
         self.layout_video_pos_control.addWidget(self.scrollbar_t)
         self.gridLayout.addLayout(self.layout_video_pos_control, 2, 2, 1, 1)
-        spacerItem = QtGui.QSpacerItem(1024, 1, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.gridLayout.addItem(spacerItem, 1, 2, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1032, 23))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1111, 23))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menu_File = QtGui.QMenu(self.menubar)
         self.menu_File.setObjectName(_fromUtf8("menu_File"))
@@ -158,6 +162,18 @@ class Ui_MainWindow(object):
         self.actionOnTop.setObjectName(_fromUtf8("actionOnTop"))
         self.action_clearRecentFiles = QtGui.QAction(MainWindow)
         self.action_clearRecentFiles.setObjectName(_fromUtf8("action_clearRecentFiles"))
+        self.actionPlay = QtGui.QAction(MainWindow)
+        self.actionPlay.setCheckable(True)
+        icon4 = QtGui.QIcon()
+        icon4.addPixmap(QtGui.QPixmap(_fromUtf8(":/play.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionPlay.setIcon(icon4)
+        self.actionPlay.setObjectName(_fromUtf8("actionPlay"))
+        self.actionPause = QtGui.QAction(MainWindow)
+        self.actionPause.setCheckable(True)
+        icon5 = QtGui.QIcon()
+        icon5.addPixmap(QtGui.QPixmap(_fromUtf8(":/pause.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionPause.setIcon(icon5)
+        self.actionPause.setObjectName(_fromUtf8("actionPause"))
         self.menu_Open.addAction(self.actionFile)
         self.menu_Open.addAction(self.actionCamera)
         self.menu_Save.addAction(self.action_Transcode_Video)
@@ -178,6 +194,8 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuView.menuAction())
         self.menubar.addAction(self.menuTemplate.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
+        self.toolBar.addAction(self.actionPlay)
+        self.toolBar.addAction(self.actionPause)
         self.toolBar.addAction(self.actionRecord)
         self.toolBar.addAction(self.actionSourceProperties)
 
@@ -219,6 +237,11 @@ class Ui_MainWindow(object):
         self.actionOnTop.setText(_translate("MainWindow", "Always on Top", None))
         self.action_clearRecentFiles.setText(_translate("MainWindow", "Clear recent", None))
         self.action_clearRecentFiles.setToolTip(_translate("MainWindow", "Clear list of recently opened files", None))
+        self.actionPlay.setText(_translate("MainWindow", "Play", None))
+        self.actionPlay.setToolTip(_translate("MainWindow", "Start playback", None))
+        self.actionPause.setText(_translate("MainWindow", "Pause", None))
+        self.actionPause.setToolTip(_translate("MainWindow", "Pause display", None))
+        self.actionPause.setShortcut(_translate("MainWindow", "Space", None))
 
 import icons_rc
 import images_rc

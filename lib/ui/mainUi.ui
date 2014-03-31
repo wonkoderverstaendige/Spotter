@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1032</width>
+    <width>1111</width>
     <height>536</height>
    </rect>
   </property>
@@ -27,6 +27,9 @@
     <normaloff>:/icon64.svg</normaloff>:/icon64.svg</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
    <layout class="QGridLayout" name="gridLayout">
     <property name="margin">
      <number>0</number>
@@ -41,29 +44,42 @@
       </property>
      </layout>
     </item>
+    <item row="1" column="2">
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>1024</width>
+        <height>1</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
     <item row="0" column="2">
      <layout class="QHBoxLayout" name="frame_video">
       <property name="spacing">
        <number>0</number>
       </property>
       <item>
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string/>
-        </property>
-        <property name="pixmap">
-         <pixmap resource="icons.qrc">:/logo_name.png</pixmap>
-        </property>
-       </widget>
-      </item>
-      <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
        <widget class="QFrame" name="frame">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background-image: url(:/logo_name_translucent.png); background-repeat: no-repeat; background-position: center center;</string>
+        </property>
         <property name="frameShape">
          <enum>QFrame::StyledPanel</enum>
         </property>
         <property name="frameShadow">
          <enum>QFrame::Sunken</enum>
         </property>
+        <layout class="QGridLayout" name="gridLayout_2"/>
        </widget>
       </item>
      </layout>
@@ -104,19 +120,6 @@
       </item>
      </layout>
     </item>
-    <item row="1" column="2">
-     <spacer name="horizontalSpacer">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>1024</width>
-        <height>1</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -124,7 +127,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1032</width>
+     <width>1111</width>
      <height>23</height>
     </rect>
    </property>
@@ -207,6 +210,8 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionPlay"/>
+   <addaction name="actionPause"/>
    <addaction name="actionRecord"/>
    <addaction name="actionSourceProperties"/>
   </widget>
@@ -346,6 +351,39 @@
    </property>
    <property name="toolTip">
     <string>Clear list of recently opened files</string>
+   </property>
+  </action>
+  <action name="actionPlay">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/play.png</normaloff>:/play.png</iconset>
+   </property>
+   <property name="text">
+    <string>Play</string>
+   </property>
+   <property name="toolTip">
+    <string>Start playback</string>
+   </property>
+  </action>
+  <action name="actionPause">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/pause.png</normaloff>:/pause.png</iconset>
+   </property>
+   <property name="text">
+    <string>Pause</string>
+   </property>
+   <property name="toolTip">
+    <string>Pause display</string>
+   </property>
+   <property name="shortcut">
+    <string>Space</string>
    </property>
   </action>
  </widget>

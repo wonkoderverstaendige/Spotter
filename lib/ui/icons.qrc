@@ -1,7 +1,7 @@
 <RCC>
   <qresource prefix="/">
-    <file>logo_name.png</file>
-    <file>logo_name.svg</file>
+    <file>pause.png</file>
+    <file>play.png</file>
     <file>arduino_off.svg</file>
     <file>icon64.svg</file>
     <file>record_on.png</file>

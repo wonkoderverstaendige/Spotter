@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="/">
+    <file>logo_name.png</file>
+    <file>logo_name_translucent.png</file>
     <file>LiveCam.png</file>
     <file>ArduinoDue.png</file>
     <file>ArduinoMega.png</file>

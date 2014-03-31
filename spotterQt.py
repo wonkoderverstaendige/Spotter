@@ -133,8 +133,8 @@ class Main(QtGui.QMainWindow):
         # PyQtGraph frame
         if pg is not None:
             self.pg_frame = PGFrame.PGFrame()
-            self.ui.frame_video.addWidget(self.pg_frame)
-            self.pg_frame.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+            self.ui.gridLayout_2.addWidget(self.pg_frame)
+            #self.pg_frame.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         else:
             self.pg_frame = None
 
