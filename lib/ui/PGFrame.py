@@ -58,8 +58,9 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
             # The viewbox coordinate system and color layering is rather different from OpenCV
             #self.img.setImage(cv2.flip(cv2.transpose(cv2.cvtColor(self.frame.img, code=cv2.COLOR_BGR2RGB)), flipCode=1),
             #                  autoLevels=False)
-            self.img.setImage(cv2.cvtColor(self.frame.img, code=cv2.COLOR_BGR2RGB), autoLevels=False)
+            #self.img.setImage(cv2.cvtColor(self.frame.img, code=cv2.COLOR_BGR2RGB), autoLevels=False)
             #self.img.setImage(cv2.flip(self.frame.img, flipCode=-1), autoLevels=False)
+            self.img.setImage(cv2.transpose(cv2.cvtColor(self.frame.img, code=cv2.COLOR_BGR2RGB)), autoLevels=False)
             #self.gv_video.scaleToImage(self.img)
 
         # draw crosses and traces for objects
@@ -76,9 +77,11 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
                     if l.marker_visible:
                         self.draw_jobs.append([self.draw_cross, l, 7, l.lblcolor])
 
-        self.populate_plot_items()
-        self.process_draw_jobs()
+        self.populate_markers()
         self.populate_rois()
+        self.populate_traces()
+
+        self.process_draw_jobs()
 
     def process_draw_jobs(self):
         """ This puny piece of code is IMPORTANT! It handles all external
@@ -113,42 +116,116 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
         self.markers[ref].setPen((color[0]*255, color[1]*255, color[2]*255))
         self.markers[ref].setData(np.asarray(cross))
 
-    def populate_plot_items(self):
+    ### TRACES
+    def populate_traces(self):
+        self.prune_traces()
+        for o in self.spotter.tracker.oois:
+            if not o in self.traces:
+                self.add_trace(o)
+
+    def prune_traces(self):
+        """Remove orphaned trace plot items.
+        """
+        orphaned = []
+        for tk in self.traces.keys():
+            if tk not in self.spotter.tracker.oois:
+                orphaned.append(tk)
+        for tk in orphaned:
+            self.remove_trace(tk)
+
+    def add_trace(self, tk):
+        """Add trace plot item
+        """
+        self.traces[tk] = pg.PlotDataItem()
+        self.vb.addItem(self.traces[tk])
+
+    def remove_trace(self, tk):
+        """Remove trace plot item
+        """
+        self.vb.removeItem(self.traces[tk])
+        del self.traces[tk]
+
+    ### MARKERS
+    def populate_markers(self):
         """For PyQtGraph each marker or trace needs its own plot item that has to be
          handled continuously.
         """
-        # TODO: Remove plot items when ref longer in existence...
+        self.prune_markers()
         for o in self.spotter.tracker.oois:
-            if not o in self.traces:
-                object_trace = pg.PlotDataItem()
-                self.traces[o] = object_trace
-                self.vb.addItem(object_trace)
-                object_marker = pg.PlotDataItem()
-                self.markers[o] = object_marker
-                self.vb.addItem(object_marker)
+            if not o in self.markers:
+                self.add_marker(o)
 
         for f in self.spotter.tracker.leds:
             if not f in self.markers:
-                feature_marker = pg.PlotDataItem()
-                self.markers[f] = feature_marker
-                self.vb.addItem(feature_marker)
+                self.add_marker(f)
 
+    def prune_markers(self):
+        """Remove orphaned markers from view.
+        """
+        orphaned = []
+        for mk in self.markers.keys():
+            if mk not in self.spotter.tracker.oois and mk not in self.spotter.tracker.leds:
+                orphaned.append(mk)
+        for mk in orphaned:
+            self.remove_marker(mk)
+
+    def add_marker(self, mk):
+        """Add marker plot item to viewbox
+        """
+        self.markers[mk] = pg.PlotDataItem()
+        self.vb.addItem(self.markers[mk])
+
+    def remove_marker(self, mk):
+        """Remove marker from viewbox
+        """
+        self.vb.removeItem(self.markers[mk])
+        del self.markers[mk]
+
+    #### ROIS
     def populate_rois(self):
         """Represent shapes of ROIs as PyQtGraph ROIs. This allows nicer UX and later
         more sophisticated interactions with the data.
         """
-        # TODO: Remove ROIs when roi no longer in existence...
-        for r in self.spotter.tracker.rois:
-            if not r in self.rois:
-                roi_shapes = []
-                for s in r.shapes:
-                    if s.shape == 'circle':
-                        roi = pg.CircleROI(s.points[0], (s.radius, s.radius), pen=pg.mkPen(r.color))
-                    elif s.shape == 'rectangle':
-                        roi = pg.RectROI(s.points[0], (s.width, s.height), pen=pg.mkPen(r.color))
-                    else:
-                        roi = None
-                    if roi is not None:
-                        roi_shapes.append(roi)
-                        self.vb.addItem(roi)
-                self.rois[r] = roi_shapes
+        self.prune_rois()
+        for roi in self.spotter.tracker.rois:
+            if roi not in self.rois:
+                self.add_roi(roi)
+
+    def prune_rois(self):
+        """Brute force check for orphaned ROIs and remove if necessary.
+        """
+        orphaned = []
+        for rk in self.rois.keys():
+            if not rk in self.spotter.tracker.rois:
+                orphaned.append(rk)
+        for roi in orphaned:
+            self.remove_roi(roi)
+
+    def add_roi(self, rk):
+        """Add ROI plot item
+        """
+        roi_shapes = []
+        for s in rk.shapes:
+            if s.shape == 'circle':
+                pg_roi = pg.CircleROI((s.points[0][1], s.points[0][0]), (s.radius, s.radius), pen=pg.mkPen(rk.color))
+            elif s.shape == 'rectangle':
+                pg_roi = pg.RectROI((s.points[0][1], s.points[0][0]), (s.height, s.width), pen=pg.mkPen(rk.color))
+            else:
+                pg_roi = None
+            if pg_roi is not None:
+                roi_shapes.append(pg_roi)
+                self.vb.addItem(pg_roi)
+        self.rois[rk] = roi_shapes
+
+    def remove_roi(self, roi):
+        """Remove ROI (and all its shapes) from the roi dictionary and the plot.
+        """
+        if roi in self.rois:
+            for shape in self.rois[roi]:
+                self.remove_shape(shape)
+            del self.rois[roi]
+
+    def remove_shape(self, shape):
+        """Remove a single shape from the plot.
+        """
+        self.vb.removeItem(shape)
