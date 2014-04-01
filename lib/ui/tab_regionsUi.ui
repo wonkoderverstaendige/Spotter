@@ -48,7 +48,7 @@
           <x>0</x>
           <y>0</y>
           <width>249</width>
-          <height>404</height>
+          <height>396</height>
          </rect>
         </property>
         <attribute name="label">
@@ -187,7 +187,7 @@
               <number>1</number>
              </property>
              <item row="0" column="5">
-              <widget class="QSpinBox" name="spin_shape_x">
+              <widget class="QSpinBox" name="spin_shape_y">
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
@@ -205,7 +205,17 @@
                </property>
               </widget>
              </item>
-             <item row="0" column="2">
+             <item row="0" column="0">
+              <widget class="QCheckBox" name="ckb_trigger">
+               <property name="text">
+                <string>Trigger</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="4">
               <widget class="QLabel" name="lbl_y">
                <property name="text">
                 <string>y:</string>
@@ -215,26 +225,6 @@
                </property>
                <property name="margin">
                 <number>2</number>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="4">
-              <widget class="QLabel" name="lbl_x">
-               <property name="text">
-                <string>x:</string>
-               </property>
-               <property name="margin">
-                <number>2</number>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="0">
-              <widget class="QCheckBox" name="ckb_trigger">
-               <property name="text">
-                <string>Trigger</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -266,8 +256,18 @@
                </property>
               </widget>
              </item>
+             <item row="0" column="2">
+              <widget class="QLabel" name="lbl_x">
+               <property name="text">
+                <string>x:</string>
+               </property>
+               <property name="margin">
+                <number>2</number>
+               </property>
+              </widget>
+             </item>
              <item row="0" column="3">
-              <widget class="QSpinBox" name="spin_shape_y">
+              <widget class="QSpinBox" name="spin_shape_x">
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
@@ -296,8 +296,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>249</width>
-          <height>404</height>
+          <width>178</width>
+          <height>105</height>
          </rect>
         </property>
         <attribute name="label">
