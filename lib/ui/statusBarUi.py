@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'statusBarUi.ui'
 #
-# Created: Mon Mar 31 18:33:38 2014
+# Created: Tue Apr  1 02:59:50 2014
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -30,35 +30,12 @@ class Ui_statusBar(object):
         self.horizontalLayout_2 = QtGui.QHBoxLayout(statusBar)
         self.horizontalLayout_2.setMargin(0)
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
-        self.lbl_frame_num = QtGui.QLabel(statusBar)
-        self.lbl_frame_num.setObjectName(_fromUtf8("lbl_frame_num"))
-        self.horizontalLayout_2.addWidget(self.lbl_frame_num)
         spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem)
-        self.lbl_fps = QtGui.QLabel(statusBar)
-        self.lbl_fps.setMinimumSize(QtCore.QSize(55, 0))
-        self.lbl_fps.setFrameShape(QtGui.QFrame.NoFrame)
-        self.lbl_fps.setObjectName(_fromUtf8("lbl_fps"))
-        self.horizontalLayout_2.addWidget(self.lbl_fps)
-        self.sb_offset = QtGui.QSpinBox(statusBar)
-        self.sb_offset.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.sb_offset.setFrame(False)
-        self.sb_offset.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
-        self.sb_offset.setAccelerated(True)
-        self.sb_offset.setMinimum(-99)
-        self.sb_offset.setMaximum(999)
-        self.sb_offset.setProperty("value", -10)
-        self.sb_offset.setObjectName(_fromUtf8("sb_offset"))
-        self.horizontalLayout_2.addWidget(self.sb_offset)
 
         self.retranslateUi(statusBar)
         QtCore.QMetaObject.connectSlotsByName(statusBar)
 
     def retranslateUi(self, statusBar):
         statusBar.setWindowTitle(_translate("statusBar", "Form", None))
-        self.lbl_frame_num.setText(_translate("statusBar", "Frame 0/0", None))
-        self.lbl_fps.setToolTip(_translate("statusBar", "Interface refresh rate, NOT the acquisition rate if grabbing from a camera.", None))
-        self.lbl_fps.setText(_translate("statusBar", "FPS: 100.0", None))
-        self.sb_offset.setToolTip(_translate("statusBar", "Bias GUI refresh interval", None))
-        self.sb_offset.setSuffix(_translate("statusBar", " ms", None))
 

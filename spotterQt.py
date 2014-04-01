@@ -114,8 +114,14 @@ class Main(QtGui.QMainWindow):
 
         # Toolbar items
         self.connect(self.ui.actionRecord, QtCore.SIGNAL('toggled(bool)'), self.record_video)
-        # self.connect(self.ui.actionSourceProperties, QtCore.SIGNAL('triggered()'),
-        #              self.spotter.grabber.get_capture_properties)
+        self.ui.actionPlay.toggled.connect(self.toggle_play)
+        self.ui.actionPause.toggled.connect(self.toggle_pause)
+        self.ui.actionRepeat.toggled.connect(self.toggle_repeat)
+        # self.ui.actionFastForward.triggered.connect(self.fast_forward)
+        # self.ui.actionRewind.triggered.connect(self.rewind)
+        #self.connect(self.ui.actionSourceProperties, QtCore.SIGNAL('triggered()'),
+        #             self.spotter.grabber.get_capture_properties)
+
         # Serial/Arduino Connection status indicator
         self.arduino_indicator = SerialIndicator()
         self.ui.toolBar.addWidget(self.arduino_indicator)
@@ -153,6 +159,10 @@ class Main(QtGui.QMainWindow):
         #self.center_window()
         self.connect(self.ui.actionOnTop, QtCore.SIGNAL('toggled(bool)'), self.toggle_window_on_top)
 
+        self.playing = False
+        self.paused = False
+        self.repeat = False
+
         self.gui_refresh_offset = 0
         self.gui_refresh_interval = GUI_REFRESH_INTERVAL
         self.stopwatch = QtCore.QElapsedTimer()
@@ -181,38 +191,71 @@ class Main(QtGui.QMainWindow):
     ###############################################################################
     def refresh(self):
         elapsed = self.stopwatch.restart()
+
+        self.update_ui_elements()
         try:
             # TODO: I ain't got no clue as to why reducing the interval drastically improves the frame rate
             # TODO: Maybe the interval immediately resets the counter and starts it up?
 
-            #self.log.debug("Updating spotter")
-            if self.spotter.update() is None:
-                pass
+            # Trigger grabbing and processing of new frame
+            if self.playing:
+                #self.log.debug("Updating spotter")
+                if self.spotter.update() is None:
+                    pass
+            else:
+                if not self.spotter.grabber.index == self.ui.scrollbar_t.value():
+                    self.spotter.grabber.grab(self.ui.scrollbar_t.value())
 
-            # update the video frame display (either PG or GL frame, or both for testing)
-            #self.log.debug("Updating GL")
-            if self.gl_frame is not None:
-                if not (self.gl_frame.width and self.gl_frame.height):
-                    return
-                self.gl_frame.update_world(self.spotter)
-
-            # update PyQtGraph frame
-            if self.pg_frame is not None:
-                self.pg_frame.update_world(self.spotter)
+            # Update the video frame display (either PG or GL frame, or both for testing)
+            if self.playing and not self.paused:
+                # Update GL frame
+                if self.gl_frame is not None:
+                    if not (self.gl_frame.width and self.gl_frame.height):
+                        return
+                    self.gl_frame.update_world(self.spotter)
+                # Update PyQtGraph frame
+                if self.pg_frame is not None:
+                    self.pg_frame.update_world(self.spotter)
 
             # Update the currently open tab
             #self.log.debug("Updating side bar")
             self.side_bar.update_current_page()
 
-            # check if the refresh rate needs adjustment
+            # Check if the refresh rate needs adjustment
             #self.log.debug("Updating GUI refresh rate")
             self.adjust_refresh_rate()
 
-            # based on stopwatch, show GUI refresh rate
-            #self.log.debug("Updating GUI refresh rate display")
         finally:
-            self.status_bar.update_fps(elapsed)
+            # Based on stopwatch, show GUI refresh rate
+            #self.status_bar.update_fps(elapsed)
+            # start timer to next refresh
             QtCore.QTimer.singleShot(self.gui_refresh_interval, self.refresh)
+
+    def update_ui_elements(self):
+        """Awkward helper method to check in some notorious misaligners...
+        """
+        if not self.spotter.grabber.capture:
+            self.ui.scrollbar_t.setMaximum(1)
+            self.ui.scrollbar_t.setEnabled(False)
+            return
+        else:
+            if not self.ui.scrollbar_t.isEnabled():
+                self.ui.scrollbar_t.setEnabled(True)
+
+        num_frames = self.spotter.grabber.num_frames
+        if not self.ui.scrollbar_t.maximum() == num_frames:
+            self.ui.scrollbar_t.setMaximum(num_frames)
+            self.ui.spin_index.setMaximum(num_frames)
+            self.ui.lbl_num_frames.setText('/%s' % str(num_frames))
+        
+        index = self.spotter.grabber.index
+        if not self.ui.scrollbar_t.value() == index or \
+                not self.ui.spin_index.value() == index:
+            self.ui.scrollbar_t.setValue(index)
+            self.ui.spin_index.setValue(index)
+
+        #self.ui.lbl.setText('Frame: %s/%s' % (str(self.spotter.grabber.index),
+         #                                                       str(self.spotter.grabber.num_frames)))
 
     def adjust_refresh_rate(self, forced=None):
         """
@@ -220,7 +263,7 @@ class Main(QtGui.QMainWindow):
         1000/GUI_REFRESH_INTERVAL Hz for cameras to not miss too many frames
         """
         # TODO: Allow adjusting for the video, too.
-        self.gui_refresh_offset = self.status_bar.sb_offset.value()
+        self.gui_refresh_offset = self.ui.spin_offset.value()
         frame_dur = int(1000.0 / (self.spotter.grabber.fps if self.spotter.grabber.fps else 30))
 
         if forced is not None:
@@ -228,25 +271,52 @@ class Main(QtGui.QMainWindow):
             return
 
         if self.spotter.source_type == 'file':
-            if not self.status_bar.sb_offset.isEnabled():
-                self.status_bar.sb_offset.setEnabled(True)
+            if not self.ui.spin_offset.isEnabled():
+                self.ui.spin_offset.setEnabled(True)
             try:
                 interval = frame_dur + self.gui_refresh_offset
             except (ValueError, TypeError):
                 interval = 0
             if interval < 0:
                 interval = 0
-                self.status_bar.sb_offset.setValue(interval - frame_dur)
+                self.ui.spin_offset.setValue(interval - frame_dur)
 
             if frame_dur != 0 and self.gui_refresh_interval != interval:
                 self.gui_refresh_interval = interval
                 self.log.debug("Changed main loop update rate to match file. New: %d", self.gui_refresh_interval)
         else:
-            if self.status_bar.sb_offset.isEnabled():
-                self.status_bar.sb_offset.setEnabled(False)
+            if self.ui.spin_offset.isEnabled():
+                self.ui.spin_offset.setEnabled(False)
             if self.gui_refresh_interval != GUI_REFRESH_INTERVAL:
                 self.gui_refresh_interval = GUI_REFRESH_INTERVAL
                 self.log.debug("Changed main loop update rate to be fast. New: %d", self.gui_refresh_interval)
+
+    def toggle_play(self):
+        """Start playback of video source sequence.
+        """
+        if self.spotter.grabber.capture:
+            self.playing = self.ui.actionPlay.isChecked()
+            if not self.playing:
+                self.ui.actionPause.setChecked(False)
+                self.ui.actionPause.setEnabled(False)
+            else:
+                self.ui.actionPause.setEnabled(True)
+        else:
+            self.ui.actionPlay.setChecked(False)
+            self.ui.actionPause.setChecked(False)
+
+    def toggle_pause(self):
+        """Pause playback at current frame. Right now, there is not really a difference
+        between not playing, and being paused.
+        """
+        self.paused = self.ui.actionPause.isChecked()
+
+    def toggle_repeat(self):
+        """Continuously loop over source sequence.
+        """
+        self.repeat = self.ui.actionRepeat.isChecked()
+        if self.source is not None:
+            self.source.repeat = self.repeat
 
     def record_video(self, state, filename=None):
         """ Control recording of grabbed video. """
