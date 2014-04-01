@@ -40,6 +40,7 @@ DIR_SPECIFICATION = './config/template_specification.ini'
 DEFAULT_TEMPLATE = 'defaults.ini'
 
 GUI_REFRESH_INTERVAL = 16
+AUTOPAUSE_ON_LOAD = False
 
 import sys
 import os
@@ -247,7 +248,7 @@ class Main(QtGui.QMainWindow):
             self.ui.scrollbar_t.setMaximum(num_frames)
             self.ui.spin_index.setMaximum(num_frames)
             self.ui.lbl_num_frames.setText('/%s' % str(num_frames))
-        
+
         index = self.spotter.grabber.index
         if not self.ui.scrollbar_t.value() == index or \
                 not self.ui.spin_index.value() == index:
@@ -291,7 +292,7 @@ class Main(QtGui.QMainWindow):
                 self.gui_refresh_interval = GUI_REFRESH_INTERVAL
                 self.log.debug("Changed main loop update rate to be fast. New: %d", self.gui_refresh_interval)
 
-    def toggle_play(self):
+    def toggle_play(self, state=None):
         """Start playback of video source sequence.
         """
         if self.spotter.grabber.capture:
@@ -405,6 +406,10 @@ class Main(QtGui.QMainWindow):
             self.log.debug('Opening %s', str(filename))
             self.spotter.grabber.start(str(filename))
 
+        self.ui.actionPlay.setChecked(True)
+        # TODO: Force refresh with at least one new frame!
+        self.ui.actionPause.setChecked(AUTOPAUSE_ON_LOAD)
+
         self.add_recent_file(filename)
         self.update_file_menu()
         self.setWindowTitle('Spotter - %s' % filename)
@@ -421,6 +426,8 @@ class Main(QtGui.QMainWindow):
             self.spotter.grabber.start(source=dialog.ledit_device.text(),
                                        size=(dialog.spin_width.value(),
                                              dialog.spin_height.value()))
+        self.ui.actionPlay.setChecked(True)
+        self.ui.actionPause.setChecked(AUTOPAUSE_ON_LOAD)
 
     @staticmethod
     def add_actions(target, actions):
@@ -536,6 +543,11 @@ class Main(QtGui.QMainWindow):
         """
         Opens file dialog to choose template file and starts parsing it
         """
+        # TODO: Shouldn't load a template unless there is a capture?
+        # Or simply disable relative templates?
+        if self.spotter.grabber.capture is None:
+            self.ui.statusbar.showMessage("No video source open! Can't load a template without in this version.", 3000)
+            return
         path = QtCore.QString(path)
         if filename is None:
             filename = QtGui.QFileDialog.getOpenFileName(self, 'Open Template', path, self.tr('All Files: *.*'))

@@ -262,11 +262,10 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
         self.regions_page.tabs_sub.setCurrentIndex(idx_tab)
 
     def add_region(self, template=None, label=None, shapes=None, abs_pos=True, focus_new=True):
+        """Create a new region of interest that will be linked to Objects with
+        conditions to trigger events.
         """
-        Create a new region of interest that will be that will be linked
-        to Objects with conditions to trigger events.
-        TODO: New regions created empty!
-        """
+        # TODO: New regions created empty!
         # Defaults if nothing else given
         if not template:
             key = self.parent.template_default['REGIONS'].iterkeys().next()

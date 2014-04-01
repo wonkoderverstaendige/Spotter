@@ -59,25 +59,31 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
             #self.img.setImage(cv2.flip(cv2.transpose(cv2.cvtColor(self.frame.img, code=cv2.COLOR_BGR2RGB)), flipCode=1),
             #                  autoLevels=False)
             #self.img.setImage(cv2.cvtColor(self.frame.img, code=cv2.COLOR_BGR2RGB), autoLevels=False)
+            self.img.setImage(np.rot90(cv2.cvtColor(self.frame.img, code=cv2.COLOR_BGR2RGB), 3), autoLevels=False)
             #self.img.setImage(cv2.flip(self.frame.img, flipCode=-1), autoLevels=False)
-            self.img.setImage(cv2.transpose(cv2.cvtColor(self.frame.img, code=cv2.COLOR_BGR2RGB)), autoLevels=False)
+            #self.img.setImage(cv2.transpose(cv2.cvtColor(self.frame.img, code=cv2.COLOR_BGR2RGB)), autoLevels=False)
             #self.gv_video.scaleToImage(self.img)
-
-        # draw crosses and traces for objects
-        for o in self.spotter.tracker.oois:
-            self.draw_jobs.append([self.draw_cross, o, 3, (1.0, 1.0, 1.0, 1.0), 7, True])
-            if o.traced:
-                self.draw_jobs.append([self.draw_trace, o])
-
-        # draw crosses for features
-        for l in self.spotter.tracker.leds:
-            if len(l.pos_hist):
-                if l.marker_visible:
-                    self.draw_jobs.append([self.draw_cross, l, 7, l.lblcolor])
 
         self.populate_markers()
         self.populate_rois()
         self.populate_traces()
+
+        # draw crosses and traces for objects
+        for ooi in self.spotter.tracker.oois:
+            self.draw_jobs.append([self.draw_cross, ooi, 3, (1.0, 1.0, 1.0, 1.0), 7, True])
+            if ooi.traced:
+                self.draw_jobs.append([self.draw_trace, ooi])
+
+        # draw crosses for features
+        for led in self.spotter.tracker.leds:
+            if len(led.pos_hist):
+                if led.marker_visible:
+                    self.draw_jobs.append([self.draw_cross, led, 7, led.lblcolor])
+
+        # TODO: Paint ROIs (in this case, just update their color + position?)
+        for roi in self.spotter.tracker.rois:
+            for shape in self.rois[roi]:
+                shape.setPen(pg.mkPen(roi.color))
 
         self.process_draw_jobs()
 
@@ -95,11 +101,15 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
         """ Draw trace of position of the object given as reference ref.
         TODO: Time vs. number of points into past
         """
+        if self.frame is None:
+            return
+
+        # as we rotate the frame, height becomes width!
         points = []
         for n in xrange(min(len(ref.pos_hist), num_points)):
             if ref.pos_hist[-n - 1] is not None:
                 points.append([ref.pos_hist[-n - 1][0] * 1.0,
-                               ref.pos_hist[-n - 1][1] * 1.0])
+                               self.frame.width-ref.pos_hist[-n - 1][1] * 1.0])
 
         self.traces[ref].setData(np.asarray(points))
 
@@ -107,8 +117,11 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
         """Draw marker (cross) of most recent position of referenced feature or object.
         """
         # TODO: When not visible, don't plot!
+        if self.frame is None:
+            return
         if ref.pos_hist[-1] is not None:
-            ax, ay = ref.pos_hist[-1][0], ref.pos_hist[-1][1]
+            # as we rotate the frame, height becomes width!
+            ax, ay = ref.pos_hist[-1][0], self.frame.width-ref.pos_hist[-1][1]
             if angled:
                 cross = [[ax-size, ay-size], [ax+size, ay+size], [ax, ay], [ax+size, ay-size], [ax-size, ay+size]]
             else:
@@ -204,18 +217,23 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
             self.remove_roi(roi)
 
     def add_roi(self, rk):
-        """Add ROI plot item
+        """Add ROI plot item.
         """
         roi_shapes = []
         for s in rk.shapes:
+            # translate opencv coordinates into pyqtgraph coordinates
+            x_pg = s.points[0][0]
+            y_pg = self.frame.width-s.points[0][1]
+            w = s.width
+            h = s.height
             if s.shape == 'circle':
-                pg_roi = pg.CircleROI((s.points[0][1], s.points[0][0]), (s.radius, s.radius),
-                                      pen=pg.mkPen(rk.color))
+                print self.frame.width, s.points, s.radius, x_pg, y_pg
+                pg_roi = pg.CircleROI((x_pg-s.radius, y_pg-s.radius), (w, h), pen=pg.mkPen(rk.color))
             elif s.shape == 'rectangle':
-                pg_roi = pg.RectROI((s.points[0][1], s.points[0][0]), (s.height, s.width),
-                                    pen=pg.mkPen(rk.color))
+                pg_roi = pg.RectROI((x_pg, y_pg-h), (w, h), pen=pg.mkPen(rk.color))
             else:
                 pg_roi = None
+
             if pg_roi is not None:
                 roi_shapes.append(pg_roi)
                 self.vb.addItem(pg_roi)

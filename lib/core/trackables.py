@@ -55,14 +55,14 @@ class Shape:
     @property
     def width(self):
         if self.shape == 'circle':
-            return self.radius
+            return 2*self.radius
         else:
             return max(self.points[0][0], self.points[1][0])-min(self.points[0][0], self.points[1][0])
 
     @property
     def height(self):
         if self.shape == 'circle':
-            return self.radius
+            return 2*self.radius
         else:
             return max(self.points[0][1], self.points[1][1])-min(self.points[0][1], self.points[1][1])
 
@@ -471,7 +471,8 @@ class RegionOfInterest:
             return None
 
     def toggle_highlight(self):
-        """ Toggle color to active set if region is highlighted by collision. """
+        """Toggle color to active set if region is highlighted by collision.
+        """
         if self.highlighted:
             if self.normal_color != self.active_color:
                 self.set_active_color()
