@@ -120,11 +120,14 @@ class Arduino(object):
         """
         msg = ''
         cmd_values = [0, ord('H'), ord('P')]
-        for i in instruction_list:
-            # instruction and address
-            msg += chr(cmd_values[i[0]] + i[1])
-            data = i[2] if i[2] is not None else 0
-            msg = msg + struct.pack('H', data) + '\n'
+        try:
+            for i in instruction_list:
+                # instruction and address
+                msg += chr(cmd_values[i[0]] + i[1])
+                data = i[2] if i[2] is not None else 0
+                msg = msg + struct.pack('H', data) + '\n'
+        except struct.error as error:
+            self.log.error(error)
 
         # all instructions as one string to reduce the amount of
         # time spent in 4ms delay arduino spends on serial communication

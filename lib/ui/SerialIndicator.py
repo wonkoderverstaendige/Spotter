@@ -23,7 +23,7 @@ class SerialIndicator(QtGui.QWidget, Ui_indicator):
 
         self.icon_connected = QtGui.QPixmap("./lib/ui/arduino_on.png")
         self.icon_disconnected = QtGui.QPixmap("./lib/ui/arduino_off.png")
-        #self.icon_warning = QtGui.QPixmap("./lib/ui/arduino_off_warning.png")
+        self.icon_warning = QtGui.QPixmap("./lib/ui/arduino_off_warning.png")
         self.lbl_warning.setStyleSheet(' QLabel {color: red}')
 
         self.lbl_icon.mouseReleaseEvent = self.disable_warning

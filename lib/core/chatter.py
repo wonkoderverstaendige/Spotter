@@ -69,7 +69,7 @@ class Chatter:
 
         self.auto = auto
 
-        if port or auto:
+        if port and self.auto:
             #CHECK ALL AVAILABLE PORTS FOR CONNECTION?
             # --> ON WINDOWS ALL, ON LINUX ONLY IF CANDIDATE!
             self.auto_connect(port)
@@ -86,6 +86,7 @@ class Chatter:
             else:
                 port_list = [port]
         else:
+            print 'Port list'
             port_list = utils.get_port_list()
 
         for p in port_list:
