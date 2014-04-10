@@ -30,7 +30,7 @@ To do:
 
 """
 
-__version__ = 0.45
+__version__ = 0.50
 
 NO_EXIT_CONFIRMATION = True
 DIR_EXAMPLES = './media/vid'
@@ -181,11 +181,30 @@ class Main(QtGui.QMainWindow):
         self.arduino_indicator.initialize(self.spotter.chatter)
 
         self.stopwatch.start()
+        self.new_source()
         self.refresh()
 
     @property
     def spotter(self):
         return self.__spotter_ref
+
+    def new_source(self):
+        """A new source has been opened, refresh UI elements."""
+        # TODO: Force refresh with at least one new frame!
+        self.log.debug('New source selected, updating UI elements.')
+        if self.spotter.grabber.source:
+            self.ui.actionPlay.setChecked(True)
+            self.ui.actionPause.setChecked(AUTOPAUSE_ON_LOAD)
+
+            self.setWindowTitle('Spotter - %s' % self.spotter.grabber.source)
+            self.ui.statusbar.showMessage('Opened %s' % self.spotter.grabber.source, 2000)
+
+            indexed = True if self.spotter.grabber.source_indexed else False
+            self.ui.scrollbar_t.setEnabled(indexed)
+            num_frames = self.spotter.grabber.source_num_frames if indexed else 0
+            self.ui.scrollbar_t.setMaximum(num_frames)
+            self.ui.spin_index.setMaximum(num_frames)
+            self.ui.lbl_num_frames.setText('/%d' % num_frames)
 
     ###############################################################################
     ##  FRAME REFRESH
@@ -195,16 +214,10 @@ class Main(QtGui.QMainWindow):
 
         self.update_ui_elements()
         try:
-            # TODO: I ain't got no clue as to why reducing the interval drastically improves the frame rate
-            # TODO: Maybe the interval immediately resets the counter and starts it up?
-
             # Trigger grabbing and processing of new frame
-            if self.playing:
-                #self.log.debug("Updating spotter")
-                if self.spotter.update() is None:
-                    pass
-            else:
-                if not self.spotter.grabber.index == self.ui.scrollbar_t.value():
+            new_frame_available = self.spotter.update() if self.playing else False
+            if not self.playing:
+                if not self.spotter.grabber.source_index == self.ui.scrollbar_t.value():
                     self.spotter.grabber.grab(self.ui.scrollbar_t.value())
 
             # Update the video frame display (either PG or GL frame, or both for testing)
@@ -233,30 +246,19 @@ class Main(QtGui.QMainWindow):
             QtCore.QTimer.singleShot(self.gui_refresh_interval, self.refresh)
 
     def update_ui_elements(self):
-        """Awkward helper method to check in some notorious misaligners...
-        """
-        if not self.spotter.grabber.capture:
-            self.ui.scrollbar_t.setMaximum(1)
-            self.ui.scrollbar_t.setEnabled(False)
-            return
+        """Awkward helper method to check on some notorious misfits..."""
+        if self.spotter.grabber.source_indexed:
+            index = self.spotter.grabber.source_index
+            num_frames = self.spotter.grabber.source_num_frames
+            if not self.ui.scrollbar_t.value() == index or \
+                    not self.ui.spin_index.value() == index:
+                self.ui.scrollbar_t.setValue(index)
+                self.ui.spin_index.setValue(index)
+                self.ui.lbl_num_frames.setText('Frame: %s/%s' % (str(index),
+                                                                 str(num_frames)))
         else:
-            if not self.ui.scrollbar_t.isEnabled():
-                self.ui.scrollbar_t.setEnabled(True)
-
-        num_frames = self.spotter.grabber.num_frames
-        if not self.ui.scrollbar_t.maximum() == num_frames:
-            self.ui.scrollbar_t.setMaximum(num_frames)
-            self.ui.spin_index.setMaximum(num_frames)
-            self.ui.lbl_num_frames.setText('/%s' % str(num_frames))
-
-        index = self.spotter.grabber.index
-        if not self.ui.scrollbar_t.value() == index or \
-                not self.ui.spin_index.value() == index:
-            self.ui.scrollbar_t.setValue(index)
-            self.ui.spin_index.setValue(index)
-
-        #self.ui.lbl.setText('Frame: %s/%s' % (str(self.spotter.grabber.index),
-         #                                                       str(self.spotter.grabber.num_frames)))
+            # Everything should be disabled!
+            pass
 
     def adjust_refresh_rate(self, forced=None):
         """
@@ -265,7 +267,12 @@ class Main(QtGui.QMainWindow):
         """
         # TODO: Allow adjusting for the video, too.
         self.gui_refresh_offset = self.ui.spin_offset.value()
-        frame_dur = int(1000.0 / (self.spotter.grabber.fps if self.spotter.grabber.fps else 30))
+
+        # TODO: Adjust to 30 fps for now...
+        try:
+            frame_dur = int(1000.0 / (self.spotter.grabber.source_fps if self.spotter.grabber.source_fps else 30))
+        except ValueError:
+            frame_dur = int(1000.0 / 30.0)
 
         if forced is not None:
             self.gui_refresh_interval = forced
@@ -295,7 +302,7 @@ class Main(QtGui.QMainWindow):
     def toggle_play(self, state=None):
         """Start playback of video source sequence.
         """
-        if self.spotter.grabber.capture:
+        if self.spotter.grabber.source:
             self.playing = self.ui.actionPlay.isChecked()
             if not self.playing:
                 self.ui.actionPause.setChecked(False)
@@ -402,18 +409,12 @@ class Main(QtGui.QMainWindow):
                                                          self.tr('Video: *.avi *.mpg *.mp4 ;; All Files: (*.*)'))
 
         # If the user chose a file, this is finally not None...
-        if len(filename):
-            self.log.debug('Opening %s', str(filename))
-            self.spotter.grabber.start(str(filename))
-
-        self.ui.actionPlay.setChecked(True)
-        # TODO: Force refresh with at least one new frame!
-        self.ui.actionPause.setChecked(AUTOPAUSE_ON_LOAD)
-
-        self.add_recent_file(filename)
-        self.update_file_menu()
-        self.setWindowTitle('Spotter - %s' % filename)
-        self.ui.statusbar.showMessage('Opened %s' % filename, 2000)
+        if len(filename) and self.spotter.grabber.start(source=str(filename), source_type='file'):
+            self.add_recent_file(filename)
+            self.update_file_menu()
+            self.new_source()
+        else:
+            self.ui.statusbar.showMessage('Failed to open %s' % filename, 2000)
 
     def file_open_device(self):
         """Open camera as frame source.
@@ -422,12 +423,10 @@ class Main(QtGui.QMainWindow):
         dialog.spin_width.setValue(640)
         dialog.spin_height.setValue(360)
         dialog.ledit_device.setText("0")
-        if dialog.exec_():
-            self.spotter.grabber.start(source=dialog.ledit_device.text(),
-                                       size=(dialog.spin_width.value(),
-                                             dialog.spin_height.value()))
-        self.ui.actionPlay.setChecked(True)
-        self.ui.actionPause.setChecked(AUTOPAUSE_ON_LOAD)
+        if dialog.exec_() and self.spotter.grabber.start(source=dialog.ledit_device.text(),
+                                                         source_type='camera',
+                                                         size=(dialog.spin_width.value(), dialog.spin_height.value())):
+            self.new_source()
 
     @staticmethod
     def add_actions(target, actions):
@@ -444,8 +443,14 @@ class Main(QtGui.QMainWindow):
         self.ui.menu_Open.clear()
         self.add_actions(self.ui.menu_Open, [self.ui.actionFile, self.ui.actionCamera, None])
 
-        current_file = QtCore.QFileInfo(QtCore.QString(self.spotter.grabber.source)).fileName() \
-            if self.spotter is not None and self.spotter.grabber.source_type == 'file' else None
+        try:
+            source_is_file = self.spotter is not None and self.spotter.grabber.source_type == 'file'
+            if source_is_file:
+                current_file = QtCore.QFileInfo(QtCore.QString(self.spotter.grabber.source.source)).fileName()
+            else:
+                current_file = None
+        except TypeError:
+            current_file = None
 
         # list of files to show in the menu, only append if file still exists!
         recent_files = []
@@ -487,7 +492,7 @@ class Main(QtGui.QMainWindow):
         settings = QtCore.QSettings()
 
         # Last opened file
-        filename = QtCore.QVariant(QtCore.QString(self.spotter.grabber.source)) \
+        filename = QtCore.QVariant(QtCore.QString(self.spotter.grabber.source.source)) \
             if self.spotter.grabber.source_type == 'file' else QtCore.QVariant()
         settings.setValue("LastFile", filename)
 
@@ -543,9 +548,9 @@ class Main(QtGui.QMainWindow):
         """
         Opens file dialog to choose template file and starts parsing it
         """
-        # TODO: Shouldn't load a template unless there is a capture?
+        # TODO: Shouldn't load a template unless there is a source?
         # Or simply disable relative templates?
-        if self.spotter.grabber.capture is None:
+        if self.spotter.grabber.source is None:
             self.ui.statusbar.showMessage("No video source open! Can't load a template without in this version.", 3000)
             return
         path = QtCore.QString(path)

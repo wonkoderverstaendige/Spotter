@@ -92,7 +92,7 @@ class Spotter:
         self.writer_queue = multiprocessing.Queue(16)
         self.writer_pipe, child_pipe = multiprocessing.Pipe()
         self.writer = multiprocessing.Process(target=writer.Writer,
-                                              args=(self.grabber.fps, self.grabber.size,
+                                              args=(self.grabber.source_fps, self.grabber.source_size,
                                                     self.writer_queue, child_pipe,))
         self.log.debug('Starting writer...')
         self.writer.start()
@@ -107,9 +107,10 @@ class Spotter:
 
     def update(self):
         # Get new frame
-        self.newest_frame = self.grabber.grab()
+        self.newest_frame = self.grabber.next()
         if self.newest_frame is not None:
             # resize frame if necessary
+            # TODO: This should be handled by the grabber, which then could return the proper corrected frame dimensions
             if self.scale_resize < 1.0:
                 self.newest_frame.img = cv2.resize(self.newest_frame.img, (0, 0), fx=self.scale_resize,
                                                    fy=self.scale_resize, interpolation=cv2.INTER_LINEAR)
