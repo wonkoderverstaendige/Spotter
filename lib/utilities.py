@@ -49,14 +49,16 @@ def get_port_list():
     Remove unlikely ports like Bluetooth modems etc. and sort in descending
     likelihood of usefulness.
     """
+    ports = []
     if is_nix:
-        ports = [p for p in list_ports.comports()]
+        # Kick out ports where third field is 'n/a', I think this indicated "empty" ports.
+        ports = [p for p in list_ports.comports() if len(p) > 2 and p[2] != 'n/a']
     if is_win:
         ports = [(p, full_port_name(p)) for p in enum_win_ports()]
 
     if is_nix:
         for p in ports:
-            print p
+            pass
     else:
         ports.reverse()
 
