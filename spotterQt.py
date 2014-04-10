@@ -120,6 +120,8 @@ class Main(QtGui.QMainWindow):
         self.ui.actionRepeat.toggled.connect(self.toggle_repeat)
         # self.ui.actionFastForward.triggered.connect(self.fast_forward)
         # self.ui.actionRewind.triggered.connect(self.rewind)
+        self.ui.push_rewind.clicked.connect(self.rewind)
+        self.ui.push_fast_forward.clicked.connect(self.fast_forward)
         #self.connect(self.ui.actionSourceProperties, QtCore.SIGNAL('triggered()'),
         #             self.spotter.grabber.get_capture_properties)
 
@@ -164,6 +166,9 @@ class Main(QtGui.QMainWindow):
         self.paused = False
         self.repeat = False
 
+        self.gui_fps = 30.0
+        self.gui_fps_low = False
+        self.gui_fps_low_now = False
         self.gui_refresh_offset = 0
         self.gui_refresh_interval = GUI_REFRESH_INTERVAL
         self.stopwatch = QtCore.QElapsedTimer()
@@ -244,6 +249,7 @@ class Main(QtGui.QMainWindow):
             # Based on stopwatch, show GUI refresh rate
             #self.status_bar.update_fps(elapsed)
             # start timer to next refresh
+            self.update_fps(elapsed)
             QtCore.QTimer.singleShot(self.gui_refresh_interval, self.refresh)
 
     def update_ui_elements(self):
@@ -258,6 +264,26 @@ class Main(QtGui.QMainWindow):
         else:
             # Everything should be disabled!
             pass
+
+    def update_fps(self, t):
+        """Refresh the UI refresh rate indicator."""
+        # TODO: This needs to be moved into its own widget or back into the status bar (StatusBar.py)
+        if t != 0:
+            self.gui_fps = self.gui_fps*0.9 + 0.1*1000./t
+            if self.gui_fps > 100:
+                self.ui.lbl_fps.setText('FPS: {:.0f}'.format(self.gui_fps))
+            else:
+                self.ui.lbl_fps.setText('FPS: {:.1f}'.format(self.gui_fps))
+
+        self.gui_fps_low_now = self.gui_fps < 30
+
+        if self.gui_fps_low_now != self.gui_fps_low:
+            if self.gui_fps_low_now:
+                self.gui_fps_low = True
+                self.ui.lbl_fps.setStyleSheet(' QLabel {color: red}')
+            else:
+                self.gui_fps_low = False
+                self.ui.lbl_fps.setStyleSheet(' QLabel {color: black}')
 
     def adjust_refresh_rate(self, forced=None):
         """
@@ -338,8 +364,15 @@ class Main(QtGui.QMainWindow):
             self.spotter.stop_writer()
 
     def slider_changed(self):
+        #print 'slider changed!', self.ui.scrollbar_t.value()
         pass
         # should update video position here...
+
+    def rewind(self):
+        self.spotter.grabber.rewind()
+
+    def fast_forward(self):
+        self.spotter.grabber.fast_forward()
 
     def mouse_event_to_tab(self, event_type, event):
         """
