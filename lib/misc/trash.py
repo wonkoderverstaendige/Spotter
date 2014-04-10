@@ -331,3 +331,221 @@ Created on Fri Nov 02 21:23:19 2012
         pass
 #        """ Remove a pin from the list of available digital out pins """
 #        self.tree_link_spi_dac.takeTopLevelItem(index)
+
+###############################################################################
+## GRABBER - from grabber.py
+###############################################################################
+    def grab_opencv(self, index=None):
+        """Grab a frame from an opencv-source, either video file or a camera."""
+        # Only really loops for first frame
+        n_tries = 10 if self.frame_count < 1 else 1
+        for trial in xrange(2, n_tries + 2):
+            # GET A NEW FRAME!
+            rv, img = self.capture.read()
+            if rv:
+                frame = Frame(self.index, img, self.source_type)
+                #self.frame_count += 1
+                break
+            time.sleep(0.01)
+        else:
+            self.log.error("Frame retrieval failed after %d" + (' tries' if n_tries - 1 else ' try'), n_tries)
+            self.close()
+            return None
+
+        # First frame?
+        if self.frame_count == 0:
+            self.first_frame(trial)
+
+        self.frame_count += 1
+        return frame
+
+    def grab_zmq(self, index=None):
+        """Grab a frame from a ZMQ socket.
+
+        If index is given, request a specific frame, rather than any new one.
+        """
+        try:
+            # Send request for new frame (any message will do here)
+            if index is None:
+                self.capture.send(__name__, zmq.NOBLOCK)
+            else:
+                self.capture.send(index, zmq.NOBLOCK)  # request specific frame number
+
+            # Receive frame
+            img = np.fromstring(self.capture.recv(), np.uint8)
+            shape = (600, 800, 3)  # (960, 1280, 3)
+            img = np.reshape(img, shape)
+            self.frame_count += 1
+            if index is not None:
+                self._frame_ptr = index
+        except zmq.ZMQError:
+            return None
+        except ValueError:
+            return None
+
+        # First frame?
+        if self.frame_count == 1:
+            self.size = img.shape
+            self.fps = 60.0
+            self.fourcc = None
+            self.log.info('First ZMQ frame: %s fps, %dx%d, %s',
+                          str(self.fps), self.size[0], self.size[1], str(self.fourcc))
+
+        # TODO: Should use self.index, not self.frame_count
+        return Frame(self.frame_count, img, self.source_type)
+
+    def open_file(self, source, *args, **kwargs):
+        self.log.debug('Attempting to open file "%s" as capture... ', source)
+        return self.open_opencv(source, 'file', *args, **kwargs)
+
+
+    def open_socket(self, source='tcp://localhost:5555', *args, **kwargs):
+        context = zmq.Context()
+        self.log.info('Connecting to frame server %s', source)
+        self.capture = context.socket(zmq.REQ)
+        self.capture.connect()
+        self.capture_type = 'zmq'
+        self.log.debug('Opened ZMQ socket')
+
+        # TODO: Get properties from whoever we are talking to right now!
+        self.source_type = 'socket'
+
+        # TODO: Needs proper connection state handling! Hence, purposefully failing here.
+        return False
+
+    def grab(self, index=None):
+        """Grabs a new frame from the source. Returns Frame instance with
+        image and meta data."""
+        if self.capture is None:
+            return
+
+        #self.log.debug("Grabbing frame")
+        if self.capture_type == "opencv":
+            return self.grab_opencv(index)
+
+        if self.capture_type == "zmq":
+            return self.grab_zmq(index)
+
+    def first_frame(self, trial):
+        """Some housekeeping of properties when grabbing the first frame of a source."""
+        self.log.debug('Updating size for first frame')
+        self.size = tuple([int(self.capture_width), int(self.capture_height)])
+        # There seems to be an issue with V4L where property always returns a NaN
+        self.fps = self.capture.get(cv2.cv.CV_CAP_PROP_FPS)
+        try:
+            int(self.fps)
+        except ValueError:
+            self.fps = 30.0
+        self.fourcc = self.capture.get(cv2.cv.CV_CAP_PROP_FOURCC)
+        self.log.info('First frame: %.2f fps, %dx%d, %s after %d' + (' tries' if trial - 2 else ' try'),
+                      self.fps, self.size[0], self.size[1], str(self.fourcc), trial - 1)
+
+    @property
+    def num_frames(self):
+        """Total number of frames in video. Only works for indexed sources.
+
+        Returns None for non-indexed sources.
+        """
+        if self.capture is not None:
+            return int(self.capture.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT)) if self.source_indexed else None
+
+    @property
+    def index(self):
+        """Position in video in absolute number of frames.
+
+        Returns None for non-indexed sources.
+        """
+        if self.capture is not None:
+            return int(self.capture.get(cv2.cv.CV_CAP_PROP_POS_FRAMES)) if self.source_indexed else self.frame_count
+
+    @index.setter
+    def index(self, idx):
+        """Move position pointer in video to position in absolute number of frames.
+
+        Only works for indexed sources.
+        """
+        if self.capture is None or not self.source_indexed:
+            return
+
+        idx = int(idx)
+        if idx < 0:
+            idx = 0
+        if idx >= self.num_frames:
+            # TODO: Remove repeat. Feature creep.
+            if self.repeat:
+                idx = 0
+            else:
+                idx = self.num_frames - 1
+
+        # if the current pointer is not the same as requested, update and seek in video file
+        # (not sure about performance of the seeking, I'll avoid doing it all the time)
+        # NB! Potential death trap thanks to float<>int conversions!??
+        if self.index != idx:
+            self.capture.set(cv2.cv.CV_CAP_PROP_POS_FRAMES, float(idx))
+
+    @property
+    def pos_time(self):
+        """Position in video in milliseconds. Unreliable if frame rate set during encoding not the
+        same as frame rate of acquisition. Requires external synchronization markers.
+        """
+        if self.capture is not None:
+            return self.capture.get(cv2.cv.CV_CAP_PROP_POS_MSEC)
+
+    @property
+    def capture_width(self):
+        """ Width of the _source_ frames. As frames may be rescaled, this can differ from the
+        properties of the frames emitted by the grabber.
+        """
+        if self.capture is not None:
+            return self.capture.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)
+
+    @capture_width.setter
+    def capture_width(self, width):
+        """Set capture property 'width' of capture object, if available.
+
+        :param width:float
+        """
+        if self.capture is None:
+            return
+
+        if self.capture_type == 'opencv':
+            self.log.debug('Setting requested frame width to: %f' % width)
+            self.capture.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, width)
+        elif self.capture_type == 'zmq':
+            # TODO: Send command to frame server
+            pass
+
+    @property
+    def capture_height(self):
+        """ Height of the _source_ frames. As frames may be rescaled, this can differ from the
+        properties of the frames emitted by the grabber.
+        """
+        if self.capture is not None:
+            return self.capture.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)
+
+    @capture_height.setter
+    def capture_height(self, height):
+        """Set capture property 'height' of capture object, if available.
+
+        :param height:float
+        """
+        if self.capture is None:
+            return
+        if self.capture_type == 'opencv':
+            self.log.debug('Setting requested frame height to: %f' % height)
+            self.capture.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, height)
+        elif self.capture_type == 'zmq':
+            # TODO: Send command to frame server
+            pass
+
+    def capture_properties(self):
+        #base_string = 'CV_CAP_PROP_'
+        properties = ['POS_MSEC', 'POS_FRAMES', 'POS_AVI_RATIO', 'FRAME_WIDTH', 'FRAME_HEIGHT',
+                      'FPS', 'FOURCC', 'FRAME_COUNT', 'FORMAT', 'MODE', 'BRIGHTNESS', 'CONTRAST',
+                      'SATURATION', 'HUE', 'GAIN', 'EXPOSURE', 'CONVERT_RGB', 'WHITE_BALANCE']
+        if self.capture is not None:
+            self.log.info("++++++++++++++++++++++")
+            for idx, prop in enumerate(properties):
+                self.log.info(prop + ": %s", str(self.capture.get(idx)))
+            self.log.info("++++++++++++++++++++++")
+            print struct.unpack('4c', struct.pack('f', self.capture.get(6)))
