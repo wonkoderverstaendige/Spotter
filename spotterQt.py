@@ -196,15 +196,16 @@ class Main(QtGui.QMainWindow):
             self.ui.actionPlay.setChecked(True)
             self.ui.actionPause.setChecked(AUTOPAUSE_ON_LOAD)
 
-            self.setWindowTitle('Spotter - %s' % self.spotter.grabber.source)
-            self.ui.statusbar.showMessage('Opened %s' % self.spotter.grabber.source, 2000)
+            title = ': '.join([self.spotter.grabber.source_type, str(self.spotter.grabber.source.source)])
+            self.setWindowTitle('Spotter - %s' % title[0].upper()+title[1:])
+            self.ui.statusbar.showMessage('Opened %s' %  title[0].upper()+title[1:], 2000)
 
             indexed = True if self.spotter.grabber.source_indexed else False
             self.ui.scrollbar_t.setEnabled(indexed)
             num_frames = self.spotter.grabber.source_num_frames if indexed else 0
             self.ui.scrollbar_t.setMaximum(num_frames)
             self.ui.spin_index.setMaximum(num_frames)
-            self.ui.lbl_num_frames.setText('/%d' % num_frames)
+            self.ui.spin_index.setSuffix('/%d' % num_frames)
 
     ###############################################################################
     ##  FRAME REFRESH
@@ -254,8 +255,6 @@ class Main(QtGui.QMainWindow):
                     not self.ui.spin_index.value() == index:
                 self.ui.scrollbar_t.setValue(index)
                 self.ui.spin_index.setValue(index)
-                self.ui.lbl_num_frames.setText('Frame: %s/%s' % (str(index),
-                                                                 str(num_frames)))
         else:
             # Everything should be disabled!
             pass
