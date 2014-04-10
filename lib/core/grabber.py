@@ -21,8 +21,6 @@ Options:
 """
 
 import logging
-import os
-import cv2
 from framesources import CameraCapture, FileCapture, SocketCapture
 
 
@@ -57,9 +55,6 @@ class Grabber:
         :param args:
         :param kwargs:
         """
-        # TODO: Handling of frame size|self.size_init and fps|self.fps_init is very awkward.
-        # TODO: Specify source type as argument, less type checking
-
         # If source object already exists, close it
         if self.source:
             self.close()
@@ -140,9 +135,15 @@ class Grabber:
         source_types = dict()
 
         # OpenCV there?
-        self.log.info('Open CV: %s', cv2.__version__)
-        source_types['camera'] = CameraCapture
-        source_types['file'] = FileCapture
+        try:
+            import cv2
+        except ImportError:
+            cv2 = None
+            self.log.info('OpenCV not imported.')
+        else:
+            self.log.info('Open CV: %s', cv2.__version__)
+            source_types['camera'] = CameraCapture
+            source_types['file'] = FileCapture
 
         # ZMQ there?
         try:

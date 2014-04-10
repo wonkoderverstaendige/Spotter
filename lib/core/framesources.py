@@ -10,6 +10,11 @@ Collection of frame sources.
 import logging
 import time
 import cv2
+import numpy as np
+try:
+    import zmq
+except ImportError:
+    zmq = None
 from collections import deque
 
 
@@ -17,20 +22,28 @@ class Frame(object):
     """Container class for frames. Holds additional metadata aside from the
     actual image information."""
 
-    def __init__(self, index, img, source_type, timestamp=None, tickstamp=None):
+    def __init__(self, index, img, source_type,
+                 timestamp=None, add_timestamp=False,
+                 tickstamp=None, add_tickstamp=False):
         self.index = index
         self.img = img
         self.source_type = source_type
-        if timestamp is None:
-            self.timestamp = time.time()
-            self.tickstamp = int((1000 * cv2.getTickCount()) / cv2.getTickFrequency())
+        self.timestamp = timestamp if timestamp is not None else time.time()
+        self.tickstamp = tickstamp if tickstamp is not None else \
+            int((1000 * cv2.getTickCount()) / cv2.getTickFrequency())
         time_text = time.strftime("%d-%b-%y %H:%M:%S", time.localtime(self.timestamp))
         ms = "{0:03d}".format(int((self.timestamp - int(self.timestamp)) * 1000))
         self.time_text = ".".join([time_text, ms])
 
         # Add timestamp to image if from a live source
-        if self.source_type == 'device':
-            cv2.putText(img=self.img, text=self.time_text,
+        if add_timestamp or add_tickstamp:
+            txt_elements = []
+            if add_timestamp:
+                txt_elements.append(self.time_text)
+            if add_tickstamp:
+                txt_elements.append(str(self.tickstamp))
+
+            cv2.putText(img=self.img, text=' - '.join(txt_elements),
                         org=(3, 12), fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=0.8,
                         color=(255, 255, 255), thickness=1, lineType=cv2.CV_AA)
 
@@ -133,6 +146,7 @@ class FrameSource(object):
     def capture_properties(self):
         pass
 
+
 ###############################################################################
 #                                   CAMERA                                    #
 ###############################################################################
@@ -185,7 +199,7 @@ class CameraCapture(FrameSource):
         if not rv:
             return None
 
-        frame = Frame(self.index, img, str(self))
+        frame = Frame(self.index, img, str(self), add_timestamp=True, add_tickstamp=True)
         self.frame_count += 1
         return frame
 
@@ -353,7 +367,7 @@ class FileCapture(FrameSource):
         if not rv:
             return None
 
-        frame = Frame(self.index, img, str(self))
+        frame = Frame(self.index, img, str(self), add_timestamp=False, add_tickstamp=False)
         self.frame_count += 1
         return frame
 
@@ -490,6 +504,175 @@ class FileCapture(FrameSource):
 #                                  SOCKET                                     #
 ###############################################################################
 class SocketCapture(FrameSource):
-    def __init__(self, source, *args, **kwargs):
+    def __init__(self, socket_name, *args, **kwargs):
         super(SocketCapture, self).__init__()
+        self.log = logging.getLogger(__name__)
+        self.log.debug('Attempting to open socket "%s"... ', socket_name)
+        assert zmq is not None
 
+        context = zmq.Context()
+        self.log.info('Connecting to frame server %s', socket_name)
+        self.capture = context.socket(zmq.REQ)
+        self.capture.connect()
+        self.source = socket_name
+        self.log.debug('Opened ZMQ socket')
+
+        # TODO: Get properties from whoever we are talking to right now!
+        self.indexed = False
+        self.buffered = False
+
+    def grab(self, index=None):
+        """Grabs a frame from a frame server via ZMQ."""
+        # TODO: Protocol undefined!!! All this is placeholder stuff!
+
+        if index is not None:
+            self.index = index
+
+        try:
+            # First frame?
+            if self.frame_count < 1:
+                rv, img = self.first_frame()
+            else:
+                # TODO: Should also return tickstamp and timestamp and some other stuff?
+                # Receive frame
+                img = self._transceive(['get', 'frame'])
+                shape = self._transceive(['get', 'shape'])  # shape = (600, 800, 3)  # (960, 1280, 3)
+                img = np.reshape(np.fromstring(img, np.uint8), shape)
+                self.frame_count += 1
+        except zmq.ZMQError:
+            return False, None
+        except ValueError:
+            return False, None
+
+        frame = Frame(self.index, img, str(self), add_timestamp=False, add_tickstamp=False)
+        self.frame_count += 1
+        return frame
+
+    def first_frame(self):
+        """Some housekeeping of properties when grabbing the first frame from the server."""
+        img = self._transceive(['get', 'frame'])
+        if img is None:
+            return False, None
+        shape = self._transceive(['get', 'shape'])  # shape = (600, 800, 3)  # (960, 1280, 3)
+        img = np.reshape(np.fromstring(img, np.uint8), shape)
+
+        self._size = img.shape[0:1]
+        self._fps = 60.0
+        self._fourcc = None
+        self.log.info('First ZMQ frame: %s fps, %dx%d, %s',
+                      str(self.fps), self.width, self.height, str(self.fourcc))
+        return True, img
+
+    def next(self):
+        """Return next frame from the server."""
+        return self.grab()
+
+    def _transceive(self, command=None, block=zmq.NOBLOCK):
+        command = command if command is not None else __name__
+        self.capture.send(command, block)
+        return self.capture.recv()
+
+    @property
+    def fps(self):
+        return self._transceive(['get', 'fps'])
+
+    @property
+    def size(self):
+        return tuple([int(self.width), int(self.height)])
+
+    @property
+    def width(self):
+        """ Width of the _source_ frames. As frames may be rescaled, this can differ from the
+        properties of the frames emitted by the grabber.
+        :rtype : float
+        """
+        return self._transceive(['get', 'width'])
+
+    @width.setter
+    def width(self, width):
+        """Tell server to set frame source width."""
+        self._transceive(['set', 'width', width])
+
+    @property
+    def height(self):
+        """ Height of the _source_ frames. As frames may be rescaled, this can differ from the
+        properties of the frames emitted by the grabber.
+        :rtype : float
+        """
+        return self._transceive(['get', 'height'])
+
+    @height.setter
+    def height(self, height):
+        """Tell server to set frame source height."""
+        self._transceive(['set', 'height', height])
+
+    def rewind(self):
+        """Tell server to move pointer to first frame in its frame source, if possible."""
+        self.log.debug('Rewinding to first frame of video source')
+        self.index = 0
+
+    def fast_forward(self):
+        """Tell server to move pointer to last frame in its frame source, if possible."""
+        self.log.debug("Jumping to last frame")
+        self.index = self.num_frames - 1
+
+    @property
+    def num_frames(self):
+        """Ask frame server how many frames it has available in total. Requires indexed
+        frame source with intact frame index.
+        """
+        return self._transceive(['get', 'num_frames'])
+
+    @property
+    def fourcc(self):
+        """Ask frame server for FOURCC of frame source."""
+        return self._transceive(['get', 'fourcc'])
+
+    @property
+    def index(self):
+        """Ask frame server for current frame index.
+
+        Should return warning flag if not available.
+        """
+        # request specific frame number
+        return self._transceive(['get', 'index']) if self.indexed else self.frame_count
+
+    @index.setter
+    def index(self, idx):
+        """Tell frame server to move frame index to specified position.
+
+        Should return warning flag if not available.
+        """
+        if self.capture is None or not self.indexed or idx is None:
+            return
+
+        idx = int(idx)
+        if idx < 0:
+            idx = 0
+
+        # if the current pointer is not the same as requested, update and seek in video file
+        # (not sure about performance of the seeking, I'll avoid doing it all the time)
+        # NB! Potential death trap thanks to float<>int conversions!??
+        self._transceive(['set', 'index', idx])
+
+    @property
+    def pos_time(self):
+        """Ask frame server for current position in frame source in milliseconds.
+        """
+        return self._transceive(['get', 'pos_time'])
+
+    @pos_time.setter
+    def pos_time(self, milliseconds):
+        """Tell frame server to move frame source pointer to specified point in time, in milliseconds.
+        """
+        self._transceive(['set', 'pos_time', milliseconds])
+
+    def close(self):
+        self.log.debug('Closing %s', str(self))
+        if self.capture:
+            try:
+                self.capture.close()
+                self.log.DEBUG("Socket %s released", str(self.capture))
+            except (BaseException, zmq.ZMQBaseError), error:
+                self.log.error("Capture %s release exception: [%s]", self.capture, error)
+                self.capture = None
