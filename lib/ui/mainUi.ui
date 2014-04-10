@@ -106,6 +106,13 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="icon">
+         <iconset resource="icons.qrc">
+          <normaloff>:/go_back.svg</normaloff>:/go_back.svg</iconset>
+        </property>
        </widget>
       </item>
       <item row="1" column="8">
@@ -134,6 +141,13 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="icon">
+         <iconset resource="icons.qrc">
+          <normaloff>:/fast_forward.svg</normaloff>:/fast_forward.svg</iconset>
         </property>
        </widget>
       </item>
@@ -168,6 +182,19 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="icon">
+         <iconset resource="icons.qrc">
+          <normaloff>:/rewind.svg</normaloff>:/rewind.svg</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
        </widget>
       </item>
       <item row="1" column="5">
@@ -177,6 +204,13 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="icon">
+         <iconset resource="icons.qrc">
+          <normaloff>:/go_forward.svg</normaloff>:/go_forward.svg</iconset>
         </property>
        </widget>
       </item>
@@ -449,6 +483,9 @@
    <property name="text">
     <string>Load</string>
    </property>
+   <property name="toolTip">
+    <string>Load (Ctrl+T)</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+T</string>
    </property>
@@ -499,7 +536,10 @@
     <string>Play</string>
    </property>
    <property name="toolTip">
-    <string>Start playback</string>
+    <string>Start playback (Shift+Space)</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+Space</string>
    </property>
   </action>
   <action name="actionPause">
@@ -517,7 +557,7 @@
     <string>Pause</string>
    </property>
    <property name="toolTip">
-    <string>Pause display</string>
+    <string>Pause display (Space)</string>
    </property>
    <property name="shortcut">
     <string>Space</string>
@@ -535,6 +575,10 @@
    </property>
   </action>
   <action name="actionRewind">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/rewind.svg</normaloff>:/rewind.svg</iconset>
+   </property>
    <property name="text">
     <string>Rewind</string>
    </property>
@@ -543,6 +587,10 @@
    </property>
   </action>
   <action name="actionFastForward">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/fast_forward.svg</normaloff>:/fast_forward.svg</iconset>
+   </property>
    <property name="text">
     <string>FastForward</string>
    </property>
