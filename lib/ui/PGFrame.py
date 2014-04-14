@@ -83,7 +83,9 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
         # TODO: Paint ROIs (in this case, just update their color + position?)
         for roi in self.spotter.tracker.rois:
             for shape in self.rois[roi]:
-                shape.setPen(pg.mkPen(roi.color))
+                if roi.highlighted and roi.color != (80, 80, 80):
+                    print roi, roi.color, roi.highlighted
+                shape.setPen(pg.mkPen(pg.mkColor(roi.color)))
 
         self.process_draw_jobs()
 
@@ -235,6 +237,7 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
                 pg_roi = None
 
             if pg_roi is not None:
+                pg_roi.sigRegionChanged.connect(self.move_roi_shape)
                 roi_shapes.append(pg_roi)
                 self.vb.addItem(pg_roi)
         self.rois[rk] = roi_shapes
@@ -251,3 +254,6 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
         """Remove a single shape from the plot.
         """
         self.vb.removeItem(shape)
+
+    def move_roi_shape(self, roi):
+        pass
