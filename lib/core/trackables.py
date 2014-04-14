@@ -20,7 +20,7 @@ class Shape:
     points: list of points defining the shape. Two for rectangle and circle,
     """
     # TODO: n-polygon and collision detection
-    def __init__(self, shape, points=None, label=None):
+    def __init__(self, shape, points=None, label=None, parent=None, representation=None):
         self.active = True
         self.selected = False
 
@@ -38,10 +38,15 @@ class Shape:
         elif shape == 'rectangle':
             self.collision_check = self.collision_check_rectangle
 
+        self.representation = representation
+        self.parent = parent
+
     def move(self, dx, dy):
         """ Move the shape relative to current position. """
         for i, p in enumerate(self.points):
             self.points[i] = (p[0] + dx, p[1] + dy)
+        if self.representation is not None:
+            self.representation.update()
 
     def move_to(self, points):
         """ Move the shape to a new absolute position. """
@@ -360,6 +365,8 @@ class RegionOfInterest:
         if shape_list:
             for shape in shape_list:
                 self.add_shape(*shape)
+
+        self.representation = None
 
     def update_state(self):
         self.highlighted = False
