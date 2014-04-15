@@ -72,7 +72,7 @@ class Writer:
         self.log.info('Starting loop with size %s', str(size))
         self.loop()
 
-    def start(self, parameters):  # dst=None, size=None
+    def start(self, parameters, dst=None):  # dst=None, size=None
         if len(parameters) >= 1:
             size = parameters[1]
             if size is None:

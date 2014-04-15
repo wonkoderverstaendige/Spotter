@@ -175,7 +175,7 @@ class Main(QtGui.QMainWindow):
         QtCore.QTimer.singleShot(0, self.initialize)  # fires when event loop starts
 
     ###############################################################################
-    ##  SPOTTER CLASS INIT
+    ##                           SPOTTER CLASS INIT                               #
     ###############################################################################
     def initialize(self, *args, **kwargs):
         # Spotter main class, handles Grabber, Writer, Tracker, Chatter
@@ -197,14 +197,18 @@ class Main(QtGui.QMainWindow):
         """A new source has been opened, refresh UI elements."""
         # TODO: Force refresh with at least one new frame!
         self.log.debug('New source selected, updating UI elements.')
+
+        # opening a new source will pause playback if AUTOPAUSE_ON_LOAD is set true
         if self.spotter.grabber.source:
             self.ui.actionPlay.setChecked(True)
             self.ui.actionPause.setChecked(AUTOPAUSE_ON_LOAD)
 
+            # Add file/source name to main window title and show status bar message
             title = ': '.join([self.spotter.grabber.source_type, str(self.spotter.grabber.source.source)])
             self.setWindowTitle('Spotter - %s' % title[0].upper()+title[1:])
             self.ui.statusbar.showMessage('Opened %s' %  title[0].upper()+title[1:], 2000)
 
+            # Play control UI elements (spin boxes, slider, frame num lables etc.)
             indexed = True if self.spotter.grabber.source_indexed else False
             self.ui.scrollbar_t.setEnabled(indexed)
             num_frames = self.spotter.grabber.source_num_frames if indexed else 0
@@ -213,7 +217,7 @@ class Main(QtGui.QMainWindow):
             self.ui.spin_index.setSuffix('/%d' % num_frames)
 
     ###############################################################################
-    ##  FRAME REFRESH
+    ##                             FRAME REFRESH                                  #
     ###############################################################################
     def refresh(self):
         elapsed = self.stopwatch.restart()
@@ -286,8 +290,7 @@ class Main(QtGui.QMainWindow):
                 self.ui.lbl_fps.setStyleSheet(' QLabel {color: black}')
 
     def adjust_refresh_rate(self, forced=None):
-        """
-        Change GUI refresh rate according to frame rate of video source, or keep at
+        """Change GUI refresh rate according to frame rate of video source, or keep at
         1000/GUI_REFRESH_INTERVAL Hz for cameras to not miss too many frames
         """
         # TODO: Allow adjusting for the video, too.
@@ -352,7 +355,7 @@ class Main(QtGui.QMainWindow):
             self.source.repeat = self.repeat
 
     def record_video(self, state, filename=None):
-        """ Control recording of grabbed video. """
+        """Control recording of grabbed video."""
         # TODO: Select output video file name.
         self.log.debug("Toggling writer recording state")
         if state:
@@ -375,8 +378,7 @@ class Main(QtGui.QMainWindow):
         self.spotter.grabber.fast_forward()
 
     def mouse_event_to_tab(self, event_type, event):
-        """
-        Hand the mouse event to the active tab. Tabs may handle mouse events
+        """Hand the mouse event to the active tab. Tabs may handle mouse events
         differently, and depending on internal states (e.g. selections)
         """
         current_tab = self.side_bar.get_child_page()
@@ -388,7 +390,7 @@ class Main(QtGui.QMainWindow):
                 pass
 
     def about(self):
-        """ About message box. Credits. Links. Jokes. """
+        """About message box. Credits. Links. Jokes."""
         QtGui.QMessageBox.about(self, "About",
                                 """<b>Spotter</b> v%s
                    <p>Copyright &#169; 2012-2014 <a href=mailto:ronny.eichler@gmail.com>Ronny Eichler</a>.
@@ -398,17 +400,16 @@ class Main(QtGui.QMainWindow):
                                                                   platform.system()))
 
     def center_window(self):
-        """
-        Centers main window on screen.
-        Doesn't quite work on multi-monitor setups, as the whole screen-area is taken.
-        But as long as the window ends up in a predictable position...
+        """Centers main window on screen. Doesn't quite work on multi-monitor setups,
+        as the whole screen-area is taken. But as long as the window ends up in a
+        predictable position...
         """
         screen = QtGui.QDesktopWidget().screenGeometry()
         window_size = self.geometry()
         self.move((screen.width() - window_size.width()) / 2, (screen.height() - window_size.height()) / 2)
 
     def toggle_window_on_top(self, state):
-        """ Have main window stay on top. According to the setWindowFlags
+        """Have main window stay on top. According to the setWindowFlags
         documentation, the window will hide after changing flags, requiring
         either a .show() or a .raise(). These may have different behaviors on
         different platforms!"""
@@ -538,8 +539,7 @@ class Main(QtGui.QMainWindow):
         settings.setValue("MainWindow/State", QtCore.QVariant(self.saveState()))
 
     def closeEvent(self, event):
-        """
-        Exiting the interface has to kill the spotter class and subclasses
+        """Exiting the interface has to kill the spotter class and subclasses
         properly, especially the writer and serial handles, otherwise division
         by zero might be imminent.
         """
@@ -556,10 +556,11 @@ class Main(QtGui.QMainWindow):
             event.ignore()
 
     ###############################################################################
-    ##  TEMPLATES handling
+    ##                             TEMPLATES handling                             #
     ###############################################################################
     def parse_config(self, path, run_validate=True):
-        """ Template parsing and validation. """
+        """Template parsing and validation.
+        """
         template = configobj.ConfigObj(path, file_error=True, stringify=True,
                                        configspec=DIR_SPECIFICATION)
         if run_validate:
@@ -577,8 +578,7 @@ class Main(QtGui.QMainWindow):
         return template
 
     def load_config(self, filename=None, path=DIR_TEMPLATES):
-        """
-        Opens file dialog to choose template file and starts parsing it
+        """Opens file dialog to choose template file and starts parsing it.
         """
         # TODO: Shouldn't load a template unless there is a source?
         # Or simply disable relative templates?
@@ -611,7 +611,7 @@ class Main(QtGui.QMainWindow):
         self.ui.statusbar.showMessage('Opened template %s' % filename, 2000)
 
     def save_config(self, filename=None, directory=DIR_TEMPLATES):
-        """ Store a full set of configuration to file. """
+        """Store a full set of configuration to file."""
         config = configobj.ConfigObj(indent_type='    ')
 
         if filename is None:
