@@ -7,18 +7,18 @@ Created on Wed Apr 03 21:51:53 2013
 Checks state of serial connection and updates indicator Icon.
 """
 
-import os
+import logging
 from PyQt4 import QtGui, QtCore
 from serialIndicatorUi import Ui_indicator
 
 
 class SerialIndicator(QtGui.QWidget, Ui_indicator):
-    serial_wrapper = None
 
     def __init__(self, serial_wrapper=None, parent=None):
         super(SerialIndicator, self).__init__(parent)
+        self.log = logging.getLogger(__name__)
         self.setupUi(self)
-        self.connected = False
+        self.connected = None
         self.warning = 0
 
         self.icon_connected = QtGui.QPixmap("./lib/ui/arduino_on.png")
@@ -32,14 +32,21 @@ class SerialIndicator(QtGui.QWidget, Ui_indicator):
         self.check_timer = QtCore.QTimer(self)
         self.check_timer.timeout.connect(self.refresh)
 
+        self.serial_wrapper = None
         if serial_wrapper is not None:
             self.initialize(serial_wrapper)
+        else:
+            self.log.debug("No serial wrapper received on __init__")
 
     def initialize(self, serial_wrapper):
-        """Actually run things once the serial object is initated.
+        """Actually run things once the serial object is initiated.
         """
+        self.log.debug('Initialized with %s', str(serial_wrapper))
+        assert serial_wrapper is not None
         self.serial_wrapper = serial_wrapper
 
+        # reset connection flag, if not True or False, will check and updates
+        self.connected = None
         self.refresh()
         self.check_timer.start(1000)
 
@@ -47,7 +54,7 @@ class SerialIndicator(QtGui.QWidget, Ui_indicator):
         state = self.serial_wrapper.is_connected()
 
         # Connection state changed
-        if self.connected != state:
+        if not self.connected == state:
             self.connected = state
 
             if self.connected:
@@ -68,9 +75,9 @@ class SerialIndicator(QtGui.QWidget, Ui_indicator):
             self.warning = 0
 
     def blink(self):
+        """Show super obnoxious warning if the connection to Arduino was severed.
         """
-        Show super obnoxious warning if the connection to Arduino was severed.
-        """
+        print "blinking"
         if self.warning % 2:
             self.lbl_warning.setText('')
         else:
