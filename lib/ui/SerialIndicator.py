@@ -77,7 +77,6 @@ class SerialIndicator(QtGui.QWidget, Ui_indicator):
     def blink(self):
         """Show super obnoxious warning if the connection to Arduino was severed.
         """
-        print "blinking"
         if self.warning % 2:
             self.lbl_warning.setText('')
         else:
