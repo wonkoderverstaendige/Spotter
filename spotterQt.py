@@ -65,7 +65,10 @@ from lib.ui import GLFrame, PGFrame
 from lib.ui import SerialIndicator, StatusBar, SideBar, openDeviceDlg
 
 sys.path.append(DIR_TEMPLATES)
-gl = None
+if pg is not None:
+    FRAME_BACKEND = PGFrame.PGFrame
+else:
+    FRAME_BACKEND = GLFrame
 
 
 class Main(QtGui.QMainWindow):
@@ -100,13 +103,13 @@ class Main(QtGui.QMainWindow):
         self.settings = QtCore.QSettings()
 
         # Menu Bar items
-        #   File
+        #   File Menu
         self.connect(self.ui.actionFile, QtCore.SIGNAL('triggered()'), self.file_open_video)
         self.connect(self.ui.actionCamera, QtCore.SIGNAL('triggered()'), self.file_open_device)
         self.recent_files = self.settings.value("RecentFiles").toStringList()
         self.update_file_menu()
 
-        #   Configuration
+        #   Configuration/Template Menu
         self.connect(self.ui.actionLoadConfig, QtCore.SIGNAL('triggered()'), self.load_config)
         self.connect(self.ui.actionSaveConfig, QtCore.SIGNAL('triggered()'), self.save_config)
         self.connect(self.ui.actionRemoveTemplate, QtCore.SIGNAL('triggered()'),
@@ -114,7 +117,7 @@ class Main(QtGui.QMainWindow):
         self.connect(self.ui.action_clearRecentFiles, QtCore.SIGNAL('triggered()'), self.clear_recent_files)
 
         # Toolbar items
-        self.connect(self.ui.actionRecord, QtCore.SIGNAL('toggled(bool)'), self.record_video)
+        self.connect(self.ui.actionRecord, QtCore.SIGNAL('toggled(bool)'), self.toggle_record)
         self.ui.actionPlay.toggled.connect(self.toggle_play)
         self.ui.actionPause.toggled.connect(self.toggle_pause)
         self.ui.actionRepeat.toggled.connect(self.toggle_repeat)
@@ -130,22 +133,18 @@ class Main(QtGui.QMainWindow):
         self.ui.toolBar.addWidget(self.arduino_indicator)
 
         # OpenGL frame
-        if gl is not None:
-            self.gl_frame = GLFrame(AA=True)
-            self.ui.frame_video.addWidget(self.gl_frame)
-            self.gl_frame.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        if pg is None:
+            self.video_frame = FRAME_BACKEND(AA=True)
+            self.ui.frame_video.addWidget(self.video_frame)
+            self.video_frame.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
             # handling mouse events by the tabs for selection of regions etc.
-            self.gl_frame.sig_event.connect(self.mouse_event_to_tab)
-        else:
-            self.gl_frame = None
+            self.video_frame.sig_event.connect(self.mouse_event_to_tab)
 
         # PyQtGraph frame
         if pg is not None:
-            self.pg_frame = PGFrame.PGFrame()
-            self.ui.gridLayout_2.addWidget(self.pg_frame)
-            #self.pg_frame.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-        else:
-            self.pg_frame = None
+            self.video_frame = FRAME_BACKEND()
+            self.ui.gridLayout_2.addWidget(self.video_frame)
+            #self.video_frame.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
 
         # Video source timing scroll bar
         self.ui.scrollbar_t.valueChanged.connect(self.slider_changed)
@@ -208,7 +207,7 @@ class Main(QtGui.QMainWindow):
             self.setWindowTitle('Spotter - %s' % title[0].upper()+title[1:])
             self.ui.statusbar.showMessage('Opened %s' %  title[0].upper()+title[1:], 2000)
 
-            # Play control UI elements (spin boxes, slider, frame num lables etc.)
+            # Play control UI elements (spin boxes, slider, frame num labels etc.)
             indexed = True if self.spotter.grabber.source_indexed else False
             self.ui.scrollbar_t.setEnabled(indexed)
             num_frames = self.spotter.grabber.source_num_frames if indexed else 0
@@ -230,16 +229,21 @@ class Main(QtGui.QMainWindow):
                 if not self.spotter.grabber.source_index == self.ui.scrollbar_t.value():
                     self.spotter.grabber.grab(self.ui.scrollbar_t.value())
 
-            # Update the video frame display (either PG or GL frame, or both for testing)
+            # Update the video frame display
             if self.playing and not self.paused:
+                # Update Video Frame
+                if self.video_frame is not None:
+                    self.video_frame.update_world(self.spotter)
+
+            # TODO: Show both video frame backends simultaneously for comparison
                 # Update GL frame
-                if self.gl_frame is not None:
-                    if not (self.gl_frame.width and self.gl_frame.height):
-                        return
-                    self.gl_frame.update_world(self.spotter)
-                # Update PyQtGraph frame
-                if self.pg_frame is not None:
-                    self.pg_frame.update_world(self.spotter)
+                # if self.gl_frame is not None:
+                #     if not (self.gl_frame.width and self.gl_frame.height):
+                #         return
+                #     self.gl_frame.update_world(self.spotter)
+                # Update Video Frame
+                # if self.pg_frame is not None:
+                #     self.pg_frame.update_world(self.spotter)
 
             # Update the currently open tab
             #self.log.debug("Updating side bar")
@@ -342,8 +346,7 @@ class Main(QtGui.QMainWindow):
             self.ui.actionPause.setChecked(False)
 
     def toggle_pause(self):
-        """Pause playback at current frame. Right now, there is not really a difference
-        between not playing, and being paused.
+        """Pause playback _display_ at current frame.
         """
         self.paused = self.ui.actionPause.isChecked()
 
@@ -354,9 +357,11 @@ class Main(QtGui.QMainWindow):
         if self.source is not None:
             self.source.repeat = self.repeat
 
-    def record_video(self, state, filename=None):
+    def toggle_record(self, state, filename=None):
         """Control recording of grabbed video."""
-        # TODO: Select output video file name.
+        # TODO: Pre-select output video file name to not slow down start too much by dialog
+        # TODO: Records control side panel select range of filename choices, i.e.
+        # Automatic choice of filename, filename selection dialog, custom string etc.
         self.log.debug("Toggling writer recording state")
         if state:
             if filename is None:
