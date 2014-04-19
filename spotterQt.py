@@ -147,7 +147,8 @@ class Main(QtGui.QMainWindow):
             #self.video_frame.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
 
         # Video source timing scroll bar
-        self.ui.scrollbar_t.valueChanged.connect(self.slider_changed)
+        self.ui.scrollbar_pos.setVisible(False)
+        self.ui.scrollbar_pos.actionTriggered.connect(self.video_pos_scrollbar_moved)
 
         # Loading template list in folder
         default_path = os.path.join(os.path.abspath(DIR_CONFIG), DEFAULT_TEMPLATE)
@@ -205,35 +206,32 @@ class Main(QtGui.QMainWindow):
             # Add file/source name to main window title and show status bar message
             title = ': '.join([self.spotter.grabber.source_type, str(self.spotter.grabber.source.source)])
             self.setWindowTitle('Spotter - %s' % title[0].upper()+title[1:])
-            self.ui.statusbar.showMessage('Opened %s' %  title[0].upper()+title[1:], 2000)
+            self.ui.statusbar.showMessage('Opened %s' % title[0].upper()+title[1:], 2000)
 
             # Play control UI elements (spin boxes, slider, frame num labels etc.)
             indexed = True if self.spotter.grabber.source_indexed else False
-            self.ui.scrollbar_t.setEnabled(indexed)
+            self.ui.scrollbar_pos.setEnabled(indexed)
             num_frames = self.spotter.grabber.source_num_frames if indexed else 0
-            self.ui.scrollbar_t.setMaximum(num_frames)
+            self.ui.scrollbar_pos.setMaximum(num_frames)
             self.ui.spin_index.setMaximum(num_frames)
             self.ui.spin_index.setSuffix('/%d' % num_frames)
+            self.ui.scrollbar_pos.setVisible(indexed)
 
     ###############################################################################
     ##                             FRAME REFRESH                                  #
     ###############################################################################
     def refresh(self):
-        elapsed = self.stopwatch.restart()
+        #self.log.debug('Refresh Main window')
 
-        self.update_ui_elements()
+        elapsed = self.stopwatch.restart()
         try:
             # Trigger grabbing and processing of new frame
-            new_frame_available = self.spotter.update() if self.playing else False
-            if not self.playing:
-                if not self.spotter.grabber.source_index == self.ui.scrollbar_t.value():
-                    self.spotter.grabber.grab(self.ui.scrollbar_t.value())
+            new_frame_available = self.spotter.update(self.playing)
 
             # Update the video frame display
-            if self.playing and not self.paused:
+            if all([self.playing, not self.paused, new_frame_available]):
                 # Update Video Frame
-                if self.video_frame is not None:
-                    self.video_frame.update_world(self.spotter)
+                self.video_frame.update_world(self.spotter)
 
             # TODO: Show both video frame backends simultaneously for comparison
                 # Update GL frame
@@ -254,10 +252,10 @@ class Main(QtGui.QMainWindow):
             self.adjust_refresh_rate()
 
         finally:
+            self.update_ui_elements()
             # Based on stopwatch, show GUI refresh rate
-            #self.status_bar.update_fps(elapsed)
-            # start timer to next refresh
             self.update_fps(elapsed)
+            # start timer to next refresh
             QtCore.QTimer.singleShot(self.gui_refresh_interval, self.refresh)
 
     def update_ui_elements(self):
@@ -265,12 +263,13 @@ class Main(QtGui.QMainWindow):
         if self.spotter.grabber.source_indexed:
             index = self.spotter.grabber.source_index
             num_frames = self.spotter.grabber.source_num_frames
-            if not self.ui.scrollbar_t.value() == index or \
-                    not self.ui.spin_index.value() == index:
-                self.ui.scrollbar_t.setValue(index)
+            if not self.ui.scrollbar_pos.value() == index:
+                self.ui.scrollbar_pos.setValue(index)
+            if not self.ui.spin_index.value() == self.ui.scrollbar_pos.value():
+                #self.ui.scrollbar_pos.value()
                 self.ui.spin_index.setValue(index)
         else:
-            # Everything should be disabled!
+            # Everything should have been disabled!
             pass
 
     def update_fps(self, t):
@@ -371,10 +370,20 @@ class Main(QtGui.QMainWindow):
         else:
             self.spotter.stop_writer()
 
-    def slider_changed(self):
-        #print 'slider changed!', self.ui.scrollbar_t.value()
-        pass
-        # should update video position here...
+    def video_pos_scrollbar_moved(self):
+        """When the user moves the scrollbar or the spin box, update the index for the indexed
+        video source.
+        """
+        if not self.spotter.grabber.source_indexed:
+            return
+
+        before = self.spotter.grabber.source_index
+        # Move grabber index to new position if necessary
+        #if not self.playing:
+        if not self.spotter.grabber.source_index == self.ui.scrollbar_pos.value():
+            #self.spotter.grabber.grab(self.ui.scrollbar_pos.value())
+            self.spotter.grabber.source_index = self.ui.scrollbar_pos.value()
+        print before, self.spotter.grabber.source_index, self.ui.scrollbar_pos.value()
 
     def rewind(self):
         self.spotter.grabber.rewind()

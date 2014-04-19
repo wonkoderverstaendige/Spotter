@@ -353,24 +353,6 @@ class FileCapture(FrameSource):
         # initial size given
         self.size_init = kwargs['size'] if 'size' in kwargs else None
 
-    def grab(self, index=None):
-        """Grabs a frame from a file via OpenCV."""
-        if index is not None:
-            self.index = index
-
-        # First frame?
-        if self.frame_count == 0:
-            rv, img = self.first_frame()
-        else:
-            rv, img = self.capture.read()
-
-        if not rv:
-            return None
-
-        frame = Frame(self.index, img, str(self), add_timestamp=False, add_tickstamp=False)
-        self.frame_count += 1
-        return frame
-
     def first_frame(self):
         """Some housekeeping of properties when grabbing the first frame of the file."""
         for trial in xrange(10):
@@ -390,6 +372,24 @@ class FileCapture(FrameSource):
     def next(self):
         """Return next frame in file."""
         return self.grab()
+
+    def grab(self, index=None):
+        """Grabs a frame from a file via OpenCV."""
+        if index is not None:
+            self.index = index
+
+        # First frame?
+        if self.frame_count == 0:
+            rv, img = self.first_frame()
+        else:
+            rv, img = self.capture.read()
+
+        if not rv:
+            return None
+
+        frame = Frame(self.index, img, str(self), add_timestamp=False, add_tickstamp=False)
+        self.frame_count += 1
+        return frame
 
     @property
     def fps(self):
@@ -446,6 +446,7 @@ class FileCapture(FrameSource):
 
     @property
     def fourcc(self):
+        assert self.capture
         return self.capture.get(cv2.cv.CV_CAP_PROP_FOURCC)
 
     @property
@@ -454,13 +455,15 @@ class FileCapture(FrameSource):
 
         Returns None for non-indexed sources.
         """
-        if self.capture is not None:
-            return int(self.capture.get(cv2.cv.CV_CAP_PROP_POS_FRAMES)) if self.indexed else self.frame_count
+        assert self.capture
+        return int(self.capture.get(cv2.cv.CV_CAP_PROP_POS_FRAMES)) if self.indexed else self.frame_count
 
     @index.setter
     def index(self, idx):
         """Move position pointer in video to position in absolute number of frames."""
-        if self.capture is None or not self.indexed:
+        assert self.capture
+        if not self.indexed:
+            self.log.debug("Can't update index!")
             return
 
         idx = int(idx)

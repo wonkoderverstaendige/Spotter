@@ -149,9 +149,9 @@ class Writer:
         false, deletes capture object to allow proper exit
         """
         # FIXME: The interface initialization can take longer than the timeout on the writer!
+        # TODO: Loop over full content of pipe, i.e. process ALL incoming messages before sleeping
         while 42 and self.alive:
             # Process should terminate if not being talked to for a while
-            #self.log.debug("Alive signal timeout: %s", str(time.clock() - self.ts_last))
             if time.clock() - self.ts_last > STILL_ALIVE_TIMEOUT:
                 self.log.error("Alive signal timed out")
                 self.close()
@@ -161,17 +161,17 @@ class Writer:
                 new_pipe_msg = self.pipe.poll()
             except Exception, error:
                 self.log.error(error)
-                new_pipe_msg = False
+                new_pipe_msg = None
 
             if new_pipe_msg:
                 # any command in the pipe will keep the process alive
+                self.ts_last = time.clock()
                 full_message = self.pipe.recv()
                 cmd = full_message[0]
                 if len(full_message) > 1:
                     msg = full_message[:]
                 else:
                     msg = None
-                self.ts_last = time.clock()
                 if cmd == 'terminate':
                     self.log.debug('Writer received termination signal')
                     # don't close yet, first empty buffer!
@@ -192,7 +192,7 @@ class Writer:
                     self.write(item)
 
             # refresh time to keep CPU utilization down
-            time.sleep(0.01)
+            time.sleep(0.010)  # 10 ms may be a little on the long side of things.
 
         # Close writer upon termination signal
         if not self.alive:

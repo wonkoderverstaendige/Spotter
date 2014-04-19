@@ -78,11 +78,6 @@ class Spotter:
         self.log = logging.getLogger(__name__)
         self.log.info(str(multiprocessing.cpu_count()) + ' CPUs found')
 
-        #try:
-        #    import zmq  # ZeroMQ python bindings
-        #except ImportError:
-        #    zmq = None
-
         # Setup frame grabber object, fills frame buffer
         self.log.debug('Instantiating grabber...')
         self.grabber = grabber.Grabber(*args, **kwargs)
@@ -96,29 +91,34 @@ class Spotter:
                                                     self.writer_queue, child_pipe,))
         self.log.debug('Starting writer...')
         self.writer.start()
+        self.writer_pipe.send('started!')
 
-        # tracker object finds LEDs in frames
+        # Tracker object finds features in frames
         self.log.debug('Instantiating tracker...')
         self.tracker = tracker.Tracker(adaptive_tracking=True)
 
-        # chatter handles serial communication
+        # Chatter handles serial communication with arduino
         self.log.debug('Instantiating chatter...')
         self.chatter = chatter.Chatter(serial, auto=True)
 
-    def update(self):
+    def update(self, grab_new=True):
+
+        # send heart-beat to writer
+        self.writer_pipe.send(['alive'])
+
         # Get new frame
-        self.newest_frame = self.grabber.next()
-        if self.newest_frame is not None:
+        new_frame = self.grabber.next() if grab_new else None
+        if new_frame:
+            self.newest_frame = new_frame
+
             # resize frame if necessary
             # TODO: This should be handled by the grabber, which then could return the proper corrected frame dimensions
             if self.scale_resize < 1.0:
-                self.newest_frame.img = cv2.resize(self.newest_frame.img, (0, 0), fx=self.scale_resize,
-                                                   fy=self.scale_resize, interpolation=cv2.INTER_LINEAR)
-
-            #with timerclass.Timer(False, self.timings) as t:
+                new_frame.img = cv2.resize(new_frame.img, (0, 0), fx=self.scale_resize,
+                                           fy=self.scale_resize, interpolation=cv2.INTER_LINEAR)
 
             # Find and update position of tracked object
-            self.tracker.track_feature(self.newest_frame, method='hsv_thresh',
+            self.tracker.track_feature(new_frame, method='hsv_thresh',
                                        scale=self.scale_tracking*self.scale_resize)
 
             slots = []
@@ -128,13 +128,13 @@ class Spotter:
                 o.update_slots(self.chatter)
                 o.update_state()
                 slots.extend(o.linked_slots)
-                messages.append('\t'.join([self.newest_frame.time_text,
+                messages.append('\t'.join([new_frame.time_text,
                                            #str(self.newest_frame.tickstamp),
                                            str(o.label),
                                            str(o.position)]))
 
             for l in self.tracker.leds:
-                messages.append('\t'.join([self.newest_frame.time_text,
+                messages.append('\t'.join([new_frame.time_text,
                                            #str(self.newest_frame.tickstamp),
                                            str(l.label),
                                            str(l.position)]))
@@ -146,18 +146,25 @@ class Spotter:
                 slots.extend(r.linked_slots)
             self.chatter.update_pins(slots)
 
-            # Check on writer process to prevent data loss and preserve reference
+            # Check on writer process to prevent data loss
             if self.check_writer():
                 if self.recording:
                     self.writer_pipe.send(['record'])
-                    item = (copy.deepcopy(self.newest_frame),
+                    item = (copy.deepcopy(new_frame),
                             copy.deepcopy(messages))
                     self.writer_queue.put(item)
 #               time.sleep(0.001)  # required, or may crash?
-
-        # FIXME: Blocks if buffer runs full when writer crashes/closes
-        self.writer_pipe.send(['alive'])
         return self.newest_frame
+
+        # else:
+        #     # FIXME: Blocks if buffer runs full when writer crashes/closes
+        #     if self.writer.is_alive():
+        #         print 'before'
+        #         self.writer_pipe.send(['alive'])
+        #         print '\r\r\r\r\r\r\r\rafter'
+        #     else:
+        #         print 'Writer dead!'
+
 
     @property
     def source_type(self):
