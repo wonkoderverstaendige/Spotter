@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Sat Apr 19 05:47:32 2014
+# Created: Sat Apr 19 19:53:58 2014
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -228,10 +228,10 @@ class Ui_MainWindow(object):
         icon7.addPixmap(QtGui.QPixmap(_fromUtf8(":/arduino_off.svg")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionArduino.setIcon(icon7)
         self.actionArduino.setObjectName(_fromUtf8("actionArduino"))
-        self.actionLoadConfig = QtGui.QAction(MainWindow)
-        self.actionLoadConfig.setObjectName(_fromUtf8("actionLoadConfig"))
-        self.actionSaveConfig = QtGui.QAction(MainWindow)
-        self.actionSaveConfig.setObjectName(_fromUtf8("actionSaveConfig"))
+        self.actionLoadTemplate = QtGui.QAction(MainWindow)
+        self.actionLoadTemplate.setObjectName(_fromUtf8("actionLoadTemplate"))
+        self.actionSaveTemplate = QtGui.QAction(MainWindow)
+        self.actionSaveTemplate.setObjectName(_fromUtf8("actionSaveTemplate"))
         self.actionRemoveTemplate = QtGui.QAction(MainWindow)
         self.actionRemoveTemplate.setObjectName(_fromUtf8("actionRemoveTemplate"))
         self.actionSourceProperties = QtGui.QAction(MainWindow)
@@ -239,8 +239,8 @@ class Ui_MainWindow(object):
         self.actionOnTop = QtGui.QAction(MainWindow)
         self.actionOnTop.setCheckable(True)
         self.actionOnTop.setObjectName(_fromUtf8("actionOnTop"))
-        self.action_clearRecentFiles = QtGui.QAction(MainWindow)
-        self.action_clearRecentFiles.setObjectName(_fromUtf8("action_clearRecentFiles"))
+        self.actionClearRecentFiles = QtGui.QAction(MainWindow)
+        self.actionClearRecentFiles.setObjectName(_fromUtf8("actionClearRecentFiles"))
         self.actionPlay = QtGui.QAction(MainWindow)
         self.actionPlay.setCheckable(True)
         icon8 = QtGui.QIcon()
@@ -263,6 +263,8 @@ class Ui_MainWindow(object):
         self.actionFastForward = QtGui.QAction(MainWindow)
         self.actionFastForward.setIcon(icon4)
         self.actionFastForward.setObjectName(_fromUtf8("actionFastForward"))
+        self.actionClearRecentTemplates = QtGui.QAction(MainWindow)
+        self.actionClearRecentTemplates.setObjectName(_fromUtf8("actionClearRecentTemplates"))
         self.menu_Open.addAction(self.actionFile)
         self.menu_Open.addAction(self.actionCamera)
         self.menu_Save.addAction(self.action_Transcode_Video)
@@ -274,8 +276,8 @@ class Ui_MainWindow(object):
         self.menu_File.addSeparator()
         self.menu_File.addAction(self.actionE_xit)
         self.menuHelp.addAction(self.actionAbout)
-        self.menuTemplate.addAction(self.actionLoadConfig)
-        self.menuTemplate.addAction(self.actionSaveConfig)
+        self.menuTemplate.addAction(self.actionLoadTemplate)
+        self.menuTemplate.addAction(self.actionSaveTemplate)
         self.menuTemplate.addSeparator()
         self.menuTemplate.addAction(self.actionRemoveTemplate)
         self.menuView.addAction(self.actionOnTop)
@@ -320,16 +322,16 @@ class Ui_MainWindow(object):
         self.actionRecord.setToolTip(_translate("MainWindow", "Record Video", None))
         self.actionArduino.setText(_translate("MainWindow", "Arduino", None))
         self.actionArduino.setToolTip(_translate("MainWindow", "Arduino State", None))
-        self.actionLoadConfig.setText(_translate("MainWindow", "Load", None))
-        self.actionLoadConfig.setToolTip(_translate("MainWindow", "Load (Ctrl+T)", None))
-        self.actionLoadConfig.setShortcut(_translate("MainWindow", "Ctrl+T", None))
-        self.actionSaveConfig.setText(_translate("MainWindow", "Save", None))
-        self.actionSaveConfig.setToolTip(_translate("MainWindow", "Save current configuration", None))
+        self.actionLoadTemplate.setText(_translate("MainWindow", "Load", None))
+        self.actionLoadTemplate.setToolTip(_translate("MainWindow", "Load (Ctrl+T)", None))
+        self.actionLoadTemplate.setShortcut(_translate("MainWindow", "Ctrl+T", None))
+        self.actionSaveTemplate.setText(_translate("MainWindow", "Save", None))
+        self.actionSaveTemplate.setToolTip(_translate("MainWindow", "Save current configuration", None))
         self.actionRemoveTemplate.setText(_translate("MainWindow", "Remove all", None))
         self.actionSourceProperties.setText(_translate("MainWindow", "Source Props", None))
         self.actionOnTop.setText(_translate("MainWindow", "Always on Top", None))
-        self.action_clearRecentFiles.setText(_translate("MainWindow", "Clear recent", None))
-        self.action_clearRecentFiles.setToolTip(_translate("MainWindow", "Clear list of recently opened files", None))
+        self.actionClearRecentFiles.setText(_translate("MainWindow", "Clear recent", None))
+        self.actionClearRecentFiles.setToolTip(_translate("MainWindow", "Clear list of recently opened files", None))
         self.actionPlay.setText(_translate("MainWindow", "Play", None))
         self.actionPlay.setToolTip(_translate("MainWindow", "Start playback (Shift+Space)", None))
         self.actionPlay.setShortcut(_translate("MainWindow", "Shift+Space", None))
@@ -342,6 +344,8 @@ class Ui_MainWindow(object):
         self.actionRewind.setToolTip(_translate("MainWindow", "Rewind to first frame", None))
         self.actionFastForward.setText(_translate("MainWindow", "FastForward", None))
         self.actionFastForward.setToolTip(_translate("MainWindow", "Jump to last frame", None))
+        self.actionClearRecentTemplates.setText(_translate("MainWindow", "Clear recent", None))
+        self.actionClearRecentTemplates.setToolTip(_translate("MainWindow", "Clear list of recently opened templates", None))
 
 import icons_rc
 import images_rc

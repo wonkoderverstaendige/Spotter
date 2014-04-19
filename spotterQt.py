@@ -104,14 +104,18 @@ class Main(QtGui.QMainWindow):
         self.connect(self.ui.actionFile, QtCore.SIGNAL('triggered()'), self.file_open_video)
         self.connect(self.ui.actionCamera, QtCore.SIGNAL('triggered()'), self.file_open_device)
         self.recent_files = self.settings.value("RecentFiles").toStringList()
+        self.connect(self.ui.actionClearRecentFiles, QtCore.SIGNAL('triggered()'), self.clear_recent_files)
         self.update_file_menu()
 
         #   Configuration/Template Menu
-        self.connect(self.ui.actionLoadConfig, QtCore.SIGNAL('triggered()'), self.load_template)
-        self.connect(self.ui.actionSaveConfig, QtCore.SIGNAL('triggered()'), self.save_template)
+        self.connect(self.ui.actionLoadTemplate, QtCore.SIGNAL('triggered()'), self.load_template)
+        self.connect(self.ui.actionSaveTemplate, QtCore.SIGNAL('triggered()'), self.save_template)
         self.connect(self.ui.actionRemoveTemplate, QtCore.SIGNAL('triggered()'),
                      self.side_bar.remove_all_tabs)
-        self.connect(self.ui.action_clearRecentFiles, QtCore.SIGNAL('triggered()'), self.clear_recent_files)
+        self.connect(self.ui.actionClearRecentTemplates, QtCore.SIGNAL('triggered()'), self.clear_recent_templates)
+        self.recent_templates = self.settings.value("RecentTemplates").toStringList()
+        self.update_template_menu()
+
 
         # Toolbar items
         self.connect(self.ui.actionRecord, QtCore.SIGNAL('toggled(bool)'), self.toggle_record)
@@ -146,9 +150,6 @@ class Main(QtGui.QMainWindow):
         # Video source timing scroll bar
         self.ui.scrollbar_pos.setVisible(False)
         self.ui.scrollbar_pos.actionTriggered.connect(self.video_pos_scrollbar_moved)
-
-        # Loading list of template files
-        #list_of_files = [f for f in os.listdir(DIR_TEMPLATES) if f.lower().endswith('ini')]
 
         # Main Window states
         self.resize(self.settings.value("MainWindow/Size", QtCore.QVariant(QtCore.QSize(600, 500))).toSize())
@@ -478,6 +479,8 @@ class Main(QtGui.QMainWindow):
             else:
                 target.addAction(action)
 
+
+    # RECENTLY OPENED FILES
     def update_file_menu(self):
         """Update list of recently opened files in the File->Open menu.
         """
@@ -496,29 +499,29 @@ class Main(QtGui.QMainWindow):
 
         # list of files to show in the menu, only append if file still exists!
         recent_files = []
-        for fname in self.recent_files:
-            if fname != current_file and QtCore.QFile.exists(fname):
-                recent_files.append(fname)
+        for filename in self.recent_files:
+            if filename != current_file and QtCore.QFile.exists(filename):
+                recent_files.append(filename)
 
         # Generate actions for each entry in the list and append to menu
         if recent_files:
-            for i, fname in enumerate(recent_files):
+            for i, filename in enumerate(recent_files):
                 # TODO: Icons for the entries
                 action = QtGui.QAction(QtGui.QIcon(":/icon.png"),
-                                       "&%d %s" % (i + 1, QtCore.QFileInfo(fname).fileName()), self)
-                action.setData(QtCore.QVariant(fname))
+                                       "&%d %s" % (i + 1, QtCore.QFileInfo(filename).fileName()), self)
+                action.setData(QtCore.QVariant(filename))
                 self.connect(action, QtCore.SIGNAL("triggered()"), self.file_open_video)
                 self.ui.menu_Open.addAction(action)
             # convenience action to remove all entries
-            self.add_actions(self.ui.menu_Open, [None, self.ui.action_clearRecentFiles])
+            self.add_actions(self.ui.menu_Open, [None, self.ui.actionClearRecentFiles])
 
-    def add_recent_file(self, fname):
+    def add_recent_file(self, filename):
         """Add file to the list of recently opened files.
          NB: self.recent_files is a QStringList, not a python list!
         """
-        if fname is not None:
-            if not self.recent_files.contains(fname):
-                self.recent_files.prepend(QtCore.QString(fname))
+        if filename is not None:
+            if not self.recent_files.contains(filename):
+                self.recent_files.prepend(QtCore.QString(filename))
                 while self.recent_files.count() > 9:
                     self.recent_files.take_last()
 
@@ -527,6 +530,60 @@ class Main(QtGui.QMainWindow):
         """
         self.recent_files.clear()
         self.update_file_menu()
+
+    # RECENTLY OPENED TEMPLATES
+    def update_template_menu(self):
+        """Update list of recently opened templates in the Template menu.
+        """
+        # throw everything out and start over...
+        self.ui.menuTemplate.clear()
+        self.add_actions(self.ui.menuTemplate, [self.ui.actionLoadTemplate,
+                                                self.ui.actionSaveTemplate,
+                                                self.ui.actionRemoveTemplate,
+                                                None])
+
+        # try:
+        #     source_is_file = self.spotter is not None and self.spotter.grabber.source_type == 'file'
+        #     if source_is_file:
+        #         current_file = QtCore.QFileInfo(QtCore.QString(self.spotter.grabber.source.source)).fileName()
+        #     else:
+        #         current_file = None
+        # except TypeError:
+        #     current_file = None
+
+        # list of files to show in the menu, only append if file still exists!
+        recent_templates = []
+        for filename in self.recent_templates:
+            if QtCore.QFile.exists(filename):
+                recent_templates.append(filename)
+
+        # Generate actions for each entry in the list and append to menu
+        if recent_templates:
+            for i, filename in enumerate(recent_templates):
+                # TODO: Icons for the entries
+                action = QtGui.QAction(QtGui.QIcon(":/icon.png"),
+                                       "&%d %s" % (i + 1, QtCore.QFileInfo(filename).fileName()), self)
+                action.setData(QtCore.QVariant(filename))
+                self.connect(action, QtCore.SIGNAL("triggered()"), self.load_template)
+                self.ui.menuTemplate.addAction(action)
+            # convenience action to remove all entries
+            self.add_actions(self.ui.menuTemplate, [None, self.ui.actionClearRecentTemplates])
+
+    def add_recent_template(self, filename):
+        """Add file to the list of recently opened files.
+         NB: self.recent_files is a QStringList, not a python list!
+        """
+        if filename is not None:
+            if not self.recent_templates.contains(filename):
+                self.recent_templates.prepend(QtCore.QString(filename))
+                while self.recent_templates.count() > 9:
+                    self.recent_templates.take_last()
+
+    def clear_recent_templates(self):
+        """Remove all entries from the list of recently opened templates.
+        """
+        self.recent_templates.clear()
+        self.update_template_menu()
 
     def store_settings(self):
         """Store window states and other settings.
@@ -538,9 +595,13 @@ class Main(QtGui.QMainWindow):
             if self.spotter.grabber.source_type == 'file' else QtCore.QVariant()
         settings.setValue("LastFile", filename)
 
-        # recently opened files
+        # Recently opened files
         recent_files = QtCore.QVariant(self.recent_files) if self.recent_files else QtCore.QVariant()
         settings.setValue("RecentFiles", recent_files)
+
+        # Recently opened templates
+        recent_templates = QtCore.QVariant(self.recent_templates) if self.recent_templates else QtCore.QVariant()
+        settings.setValue("RecentTemplates", recent_templates)
 
         # Main Window states
         settings.setValue("MainWindow/Size", QtCore.QVariant(self.size()))
@@ -570,15 +631,20 @@ class Main(QtGui.QMainWindow):
     def load_template(self, filename=None, path=DIR_TEMPLATES):
         """Opens file dialog to choose template file and starts parsing it.
         """
-        # TODO: Recently used templates, similar to recently used files
         # TODO: Handle old relative coordinate style templates
         # Or simply disable relative templates?
         if self.spotter.grabber.source is None:
             self.ui.statusbar.showMessage("No video source! Can't load a template without in this version.", 5000)
             return
 
-        path = QtCore.QString(path)
+        # If no filename given, this is may be supposed to open a recent file
         if filename is None:
+            action = self.sender()
+            if isinstance(action, QtGui.QAction):
+                filename = action.data().toString()
+
+        if filename is None or not len(filename):
+            path = QtCore.QString(path)
             filename = QtGui.QFileDialog.getOpenFileName(self, 'Open Template', path, self.tr('All Files: *.*'))
         if not len(filename):
             return
@@ -602,6 +668,10 @@ class Main(QtGui.QMainWindow):
                                          abs_pos=abs_pos,
                                          focus_new=False)
             self.ui.statusbar.showMessage('Opened template %s' % filename, 5000)
+
+            # Add opened file to list of recent templates
+            self.add_recent_template(filename)
+            self.update_template_menu()
         else:
             self.log.debug("Couldn't open template.")
 
@@ -611,9 +681,11 @@ class Main(QtGui.QMainWindow):
             filename = str(QtGui.QFileDialog.getSaveFileName(self, 'Save Template', path))
         if not len(filename):
             return
-
         self.spotter.save_template(filename)
 
+        # Add file to list of recent templates
+        self.add_recent_template(filename)
+        self.update_template_menu()
 
 #############################################################
 def main(*args, **kwargs):

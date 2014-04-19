@@ -349,8 +349,8 @@
     <property name="title">
      <string>Template</string>
     </property>
-    <addaction name="actionLoadConfig"/>
-    <addaction name="actionSaveConfig"/>
+    <addaction name="actionLoadTemplate"/>
+    <addaction name="actionSaveTemplate"/>
     <addaction name="separator"/>
     <addaction name="actionRemoveTemplate"/>
    </widget>
@@ -488,7 +488,7 @@
     <string>Arduino State</string>
    </property>
   </action>
-  <action name="actionLoadConfig">
+  <action name="actionLoadTemplate">
    <property name="text">
     <string>Load</string>
    </property>
@@ -499,7 +499,7 @@
     <string>Ctrl+T</string>
    </property>
   </action>
-  <action name="actionSaveConfig">
+  <action name="actionSaveTemplate">
    <property name="text">
     <string>Save</string>
    </property>
@@ -525,7 +525,7 @@
     <string>Always on Top</string>
    </property>
   </action>
-  <action name="action_clearRecentFiles">
+  <action name="actionClearRecentFiles">
    <property name="text">
     <string>Clear recent</string>
    </property>
@@ -605,6 +605,14 @@
    </property>
    <property name="toolTip">
     <string>Jump to last frame</string>
+   </property>
+  </action>
+  <action name="actionClearRecentTemplates">
+   <property name="text">
+    <string>Clear recent</string>
+   </property>
+   <property name="toolTip">
+    <string>Clear list of recently opened templates</string>
    </property>
   </action>
  </widget>
