@@ -34,10 +34,9 @@ __version__ = 0.50
 
 NO_EXIT_CONFIRMATION = True
 DIR_EXAMPLES = './media/vid'
-DIR_CONFIG = './config'
 DIR_TEMPLATES = './templates'
-DIR_SPECIFICATION = './config/template_specification.ini'
-DEFAULT_TEMPLATE = 'defaults.ini'
+DIR_CONFIG = './lib/core/config'
+DEFAULT_TEMPLATE = DIR_CONFIG + 'defaults.ini'
 
 GUI_REFRESH_INTERVAL = 16
 AUTOPAUSE_ON_LOAD = False
@@ -51,7 +50,6 @@ import logging
 from lib.docopt import docopt
 from lib.configobj import configobj, validate
 
-
 try:
     from lib.pyqtgraph import QtGui, QtCore  # ALL HAIL LUKE!
     import lib.pyqtgraph as pg
@@ -64,7 +62,6 @@ from lib.ui.mainUi import Ui_MainWindow
 from lib.ui import GLFrame, PGFrame
 from lib.ui import SerialIndicator, StatusBar, SideBar, openDeviceDlg
 
-sys.path.append(DIR_TEMPLATES)
 if pg is not None:
     FRAME_BACKEND = PGFrame.PGFrame
 else:
@@ -110,8 +107,8 @@ class Main(QtGui.QMainWindow):
         self.update_file_menu()
 
         #   Configuration/Template Menu
-        self.connect(self.ui.actionLoadConfig, QtCore.SIGNAL('triggered()'), self.load_config)
-        self.connect(self.ui.actionSaveConfig, QtCore.SIGNAL('triggered()'), self.save_config)
+        self.connect(self.ui.actionLoadConfig, QtCore.SIGNAL('triggered()'), self.load_template)
+        self.connect(self.ui.actionSaveConfig, QtCore.SIGNAL('triggered()'), self.save_template)
         self.connect(self.ui.actionRemoveTemplate, QtCore.SIGNAL('triggered()'),
                      self.side_bar.remove_all_tabs)
         self.connect(self.ui.action_clearRecentFiles, QtCore.SIGNAL('triggered()'), self.clear_recent_files)
@@ -150,9 +147,7 @@ class Main(QtGui.QMainWindow):
         self.ui.scrollbar_pos.setVisible(False)
         self.ui.scrollbar_pos.actionTriggered.connect(self.video_pos_scrollbar_moved)
 
-        # Loading template list in folder
-        default_path = os.path.join(os.path.abspath(DIR_CONFIG), DEFAULT_TEMPLATE)
-        self.template_default = self.parse_config(default_path, True)
+        # Loading list of template files
         #list_of_files = [f for f in os.listdir(DIR_TEMPLATES) if f.lower().endswith('ini')]
 
         # Main Window states
@@ -570,47 +565,31 @@ class Main(QtGui.QMainWindow):
             event.ignore()
 
     ###############################################################################
-    ##                             TEMPLATES handling                             #
+    ##                             TEMPLATE handling                              #
     ###############################################################################
-    def parse_config(self, path, run_validate=True):
-        """Template parsing and validation.
-        """
-        template = configobj.ConfigObj(path, file_error=True, stringify=True,
-                                       configspec=DIR_SPECIFICATION)
-        if run_validate:
-            validator = validate.Validator()
-            results = template.validate(validator)
-            if not results is True:
-                self.log.error("Template error in file %s", path)
-                for (section_list, key, _) in configobj.flatten_errors(template, results):
-                    if key is not None:
-                        self.log.error('The "%s" key in the section "%s" failed validation', key,
-                                       ', '.join(section_list))
-                    else:
-                        self.log.error('The following section was missing:%s ', ', '.join(section_list))
-                return None
-        return template
-
-    def load_config(self, filename=None, path=DIR_TEMPLATES):
+    def load_template(self, filename=None, path=DIR_TEMPLATES):
         """Opens file dialog to choose template file and starts parsing it.
         """
-        # TODO: Shouldn't load a template unless there is a source?
+        # TODO: Recently used templates, similar to recently used files
+        # TODO: Handle old relative coordinate style templates
         # Or simply disable relative templates?
         if self.spotter.grabber.source is None:
-            self.ui.statusbar.showMessage("No video source open! Can't load a template without in this version.", 3000)
+            self.ui.statusbar.showMessage("No video source! Can't load a template without in this version.", 5000)
             return
+
         path = QtCore.QString(path)
         if filename is None:
             filename = QtGui.QFileDialog.getOpenFileName(self, 'Open Template', path, self.tr('All Files: *.*'))
         if not len(filename):
-            return None
-        filename = str(filename)
+            return
+        else:
+            filename = str(filename)
 
-        self.log.debug("Opening template %s", filename)
-        template = self.parse_config(filename)
+        template = self.spotter.load_template(filename)
         if template is not None:
             abs_pos = template['TEMPLATE']['absolute_positions']
-
+            print abs_pos
+          # ACTUALLY ADD COMPONENTS
             for f_key, f_val in template['FEATURES'].items():
                 self.side_bar.add_feature(f_val, f_key, focus_new=False)
 
@@ -622,86 +601,18 @@ class Main(QtGui.QMainWindow):
                                          shapes=template['SHAPES'],
                                          abs_pos=abs_pos,
                                          focus_new=False)
-        self.ui.statusbar.showMessage('Opened template %s' % filename, 2000)
+            self.ui.statusbar.showMessage('Opened template %s' % filename, 5000)
+        else:
+            self.log.debug("Couldn't open template.")
 
-    def save_config(self, filename=None, directory=DIR_TEMPLATES):
-        """Store a full set of configuration to file."""
-        config = configobj.ConfigObj(indent_type='    ')
-
+    def save_template(self, filename=None, path=DIR_TEMPLATES):
+        """Save current spotter state as template."""
         if filename is None:
-            filename = str(QtGui.QFileDialog.getSaveFileName(self, 'Save Template', directory))
+            filename = str(QtGui.QFileDialog.getSaveFileName(self, 'Save Template', path))
         if not len(filename):
             return
-        config.filename = filename
 
-        # General options and comment
-        config['TEMPLATE'] = {}
-        config['TEMPLATE']['name'] = filename
-        config['TEMPLATE']['date'] = '_'.join(map(str, time.localtime())[0:3])
-        config['TEMPLATE']['description'] = 'new template'
-        config['TEMPLATE']['absolute_positions'] = True
-        config['TEMPLATE']['resolution'] = self.spotter.grabber.size
-
-        # Features
-        config['FEATURES'] = {}
-        for f in self.spotter.tracker.leds:
-            section = {'type': 'LED',
-                       'range_hue': f.range_hue,
-                       'range_sat': f.range_sat,
-                       'range_val': f.range_val,
-                       'range_area': f.range_area,
-                       'fixed_pos': f.fixed_pos}
-            config['FEATURES'][str(f.label)] = section
-
-        # Objects
-        config['OBJECTS'] = {}
-        for o in self.spotter.tracker.oois:
-            features = [f.label for f in o.linked_leds]
-            analog_out = len(o.magnetic_signals) > 0
-            section = {'features': features,
-                       'analog_out': analog_out}
-            if analog_out:
-                section['analog_signal'] = [s[0] for s in o.magnetic_signals]
-                section['pin_pref'] = [s[1] for s in o.magnetic_signals]
-            section['trace'] = o.traced
-            config['OBJECTS'][str(o.label)] = section
-
-        # Shapes
-        shapelist = []
-        #rng = (self.gl_frame.width, self.gl_frame.height)
-        for r in self.spotter.tracker.rois:
-            for s in r.shapes:
-                if not s in shapelist:
-                    shapelist.append(s)
-        config['SHAPES'] = {}
-        for s in shapelist:
-            section = {'p1': s.points[0],
-                       'p2': s.points[1],
-                       'type': s.shape}
-            # if one would store the points normalized instead of absolute
-            # But that would require setting the flag in TEMPLATES section
-            #section = {'p1': geom.norm_points(s.points[0], rng),
-            #           'p2': geom.norm_points(s.points[1], rng),
-            #           'type': s.shape}
-            config['SHAPES'][str(s.label)] = section
-
-        # Regions
-        config['REGIONS'] = {}
-        for r in self.spotter.tracker.rois:
-            mo = r.magnetic_objects
-            section = {'shapes': [s.label for s in r.shapes],
-                       'digital_out': True,
-                       'digital_collision': [o[0].label for o in mo],
-                       'pin_pref': [o[1] for o in mo],
-                       'color': r.active_color[0:3]}
-            config['REGIONS'][str(r.label)] = section
-
-        config['SERIAL'] = {}
-        config['SERIAL']['auto'] = self.spotter.chatter.auto
-        config['SERIAL']['last_port'] = self.spotter.chatter.serial_port
-
-        # and finally
-        config.write()
+        self.spotter.save_template(filename)
 
 
 #############################################################

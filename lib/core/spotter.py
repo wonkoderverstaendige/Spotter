@@ -31,16 +31,22 @@ To do:
 
 """
 
-import cv2
-import time
-import multiprocessing
+import os
 import logging
+import time
 import copy
+import multiprocessing
+
+import cv2
 from lib.docopt import docopt
 from lib.core import grabber, tracker, writer, chatter
-import pickle
+from lib.configobj import configobj, validate
 
-timings_filename = 'tracking_3LEDs.p'
+DIR_CONFIG = os.path.join(os.path.dirname(__file__), './config')
+SPEC_TEMPLATE = os.path.join(DIR_CONFIG, 'template_specification.ini')
+DEFAULT_TEMPLATE = os.path.join(DIR_CONFIG, 'defaults.ini')
+DIR_TEMPLATES = os.path.join(os.path.dirname(__file__), '../../templates')
+PATH_TIMING_LOG = 'tracking_3LEDs.p'
 
 
 class Spotter:
@@ -78,6 +84,12 @@ class Spotter:
         self.log = logging.getLogger(__name__)
         self.log.info(str(multiprocessing.cpu_count()) + ' CPUs found')
 
+        # Loading template list in folder
+        self.log.debug('Loading default template...')
+        default_path = os.path.join(os.path.abspath(DIR_CONFIG), DEFAULT_TEMPLATE)
+        self.template_default = self.parse_template(default_path, True)
+
+
         # Setup frame grabber object, fills frame buffer
         self.log.debug('Instantiating grabber...')
         self.grabber = grabber.Grabber(*args, **kwargs)
@@ -103,6 +115,7 @@ class Spotter:
 
     def update(self, grab_new=True):
 
+        # FIXME: Stalls if buffer runs full, e.g. when writer crashes/closes
         # send heart-beat to writer
         self.writer_pipe.send(['alive'])
 
@@ -156,16 +169,6 @@ class Spotter:
 #               time.sleep(0.001)  # required, or may crash?
         return self.newest_frame
 
-        # else:
-        #     # FIXME: Blocks if buffer runs full when writer crashes/closes
-        #     if self.writer.is_alive():
-        #         print 'before'
-        #         self.writer_pipe.send(['alive'])
-        #         print '\r\r\r\r\r\r\r\rafter'
-        #     else:
-        #         print 'Writer dead!'
-
-
     @property
     def source_type(self):
         return self.newest_frame.source_type if self.newest_frame else None
@@ -205,18 +208,107 @@ class Spotter:
             # will be terminated otherwise
             if self.writer.is_alive():
                 self.writer.terminate()
-        #try:
-        #    fc = self.grabber.frame_count
-        #    tt = (time.clock() - self.ts_start)
-        #    self.log.info('Done! Grabbed ' + str(fc) + ' frames in ' + str(tt) + 's, with ' + str(fc/tt) + ' fps')
-        #except Exception, e:
-        #    print e
 
-        #outfile = open(timingfname, "wb")
-        #pickle.dump(self.timings, outfile)
+    def load_template(self, filename):
+        self.log.debug("Opening template %s", filename)
+        template = self.parse_template(filename)
+        # Add template components here?
+        return template
 
-        #sys.exit(0)
+    def save_template(self, filename):
+        """Save current state of spotter and all the sub-components as a template.
+        """
 
+        template = configobj.ConfigObj(indent_type='    ')
+        template.filename = filename
+
+        # General options and comment
+        template['TEMPLATE'] = {}
+        template['TEMPLATE']['name'] = filename
+        template['TEMPLATE']['date'] = '_'.join(map(str, time.localtime())[0:3])
+        template['TEMPLATE']['description'] = 'A new template.'
+        template['TEMPLATE']['absolute_positions'] = True
+        template['TEMPLATE']['resolution'] = self.grabber.source_size
+
+        # FEATURES
+        template['FEATURES'] = {}
+        for f in self.tracker.leds:
+            section = {'type': 'LED',
+                       'range_hue': f.range_hue,
+                       'range_sat': f.range_sat,
+                       'range_val': f.range_val,
+                       'range_area': f.range_area,
+                       'fixed_pos': f.fixed_pos}
+            template['FEATURES'][str(f.label)] = section
+
+        # OBJECTS
+        template['OBJECTS'] = {}
+        for o in self.tracker.oois:
+            features = [f.label for f in o.linked_leds]
+            analog_out = len(o.magnetic_signals) > 0
+            section = {'features': features,
+                       'analog_out': analog_out}
+            if analog_out:
+                section['analog_signal'] = [s[0] for s in o.magnetic_signals]
+                section['pin_pref'] = [s[1] for s in o.magnetic_signals]
+            section['trace'] = o.traced
+            template['OBJECTS'][str(o.label)] = section
+
+        # SHAPES
+        shape_list = []
+        #rng = (self.gl_frame.width, self.gl_frame.height)
+        for r in self.tracker.rois:
+            for s in r.shapes:
+                if not s in shape_list:
+                    shape_list.append(s)
+        template['SHAPES'] = {}
+        for s in shape_list:
+            section = {'p1': s.points[0],
+                       'p2': s.points[1],
+                       'type': s.shape}
+            # if one would store the points normalized instead of absolute
+            # But that would require setting the flag in TEMPLATES section
+            #section = {'p1': geom.norm_points(s.points[0], rng),
+            #           'p2': geom.norm_points(s.points[1], rng),
+            #           'type': s.shape}
+            template['SHAPES'][str(s.label)] = section
+
+        # REGIONS OF INTEREST
+        template['REGIONS'] = {}
+        for r in self.tracker.rois:
+            mo = r.magnetic_objects
+            section = {'shapes': [s.label for s in r.shapes],
+                       'digital_out': True,
+                       'digital_collision': [o[0].label for o in mo],
+                       'pin_pref': [o[1] for o in mo],
+                       'color': r.active_color[0:3]}
+            template['REGIONS'][str(r.label)] = section
+
+        template['SERIAL'] = {}
+        template['SERIAL']['auto'] = self.chatter.auto
+        template['SERIAL']['last_port'] = self.chatter.serial_port
+
+        # and finally
+        template.write()
+
+    def parse_template(self, path, run_validate=True):
+        """Template parsing and validation.
+        """
+        template = configobj.ConfigObj(path, file_error=True, stringify=True,
+                                       configspec=SPEC_TEMPLATE)
+        if run_validate:
+            validator = validate.Validator()
+            results = template.validate(validator)
+            if not results is True:
+                self.log.error("Template error in file %s", path)
+                for (section_list, key, _) in configobj.flatten_errors(template, results):
+                    if key is not None:
+                        self.log.error('The "%s" key in the section "%s" failed validation', key,
+                                       ', '.join(section_list))
+                    else:
+                        self.log.error('The following section was missing:%s ', ', '.join(section_list))
+                return None
+        return template
 
 #############################################################
 if __name__ == "__main__":                                  #
