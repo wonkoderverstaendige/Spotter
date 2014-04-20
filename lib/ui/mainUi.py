@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Sat Apr 19 19:53:58 2014
+# Created: Sun Apr 20 05:05:21 2014
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -44,7 +44,6 @@ class Ui_MainWindow(object):
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.frame_parameters = QtGui.QHBoxLayout()
         self.frame_parameters.setSpacing(0)
-        self.frame_parameters.setContentsMargins(0, -1, -1, -1)
         self.frame_parameters.setObjectName(_fromUtf8("frame_parameters"))
         self.gridLayout.addLayout(self.frame_parameters, 0, 3, 3, 1)
         spacerItem = QtGui.QSpacerItem(1024, 1, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
@@ -68,7 +67,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addLayout(self.frame_video, 0, 2, 1, 1)
         self.gridLayout_3 = QtGui.QGridLayout()
         self.gridLayout_3.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
-        self.gridLayout_3.setContentsMargins(0, -1, -1, -1)
+        self.gridLayout_3.setContentsMargins(3, -1, -1, -1)
         self.gridLayout_3.setHorizontalSpacing(3)
         self.gridLayout_3.setVerticalSpacing(0)
         self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))

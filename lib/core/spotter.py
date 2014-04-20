@@ -84,11 +84,10 @@ class Spotter:
         self.log = logging.getLogger(__name__)
         self.log.info(str(multiprocessing.cpu_count()) + ' CPUs found')
 
-        # Loading template list in folder
-        self.log.debug('Loading default template...')
-        default_path = os.path.join(os.path.abspath(DIR_CONFIG), DEFAULT_TEMPLATE)
-        self.template_default = self.parse_template(default_path, True)
-
+        # Default template holds all defaults for creating new things (LEDs, ROIs, etc) from scratch
+        # self.log.debug('Loading default template...')
+        # default_path = os.path.join(os.path.abspath(DIR_CONFIG), DEFAULT_TEMPLATE)
+        # self.template_default = self.load_template(default_path)
 
         # Setup frame grabber object, fills frame buffer
         self.log.debug('Instantiating grabber...')
@@ -107,7 +106,7 @@ class Spotter:
 
         # Tracker object finds features in frames
         self.log.debug('Instantiating tracker...')
-        self.tracker = tracker.Tracker(adaptive_tracking=True)
+        self.tracker = tracker.Tracker(self, adaptive_tracking=True)
 
         # Chatter handles serial communication with arduino
         self.log.debug('Instantiating chatter...')
@@ -146,7 +145,7 @@ class Spotter:
                                            str(o.label),
                                            str(o.position)]))
 
-            for l in self.tracker.leds:
+            for l in self.tracker.features:
                 messages.append('\t'.join([new_frame.time_text,
                                            #str(self.newest_frame.tickstamp),
                                            str(l.label),
@@ -209,10 +208,18 @@ class Spotter:
             if self.writer.is_alive():
                 self.writer.terminate()
 
-    def load_template(self, filename):
+    def load_template(self, filename, validation=True):
         self.log.debug("Opening template %s", filename)
-        template = self.parse_template(filename)
-        # Add template components here?
+
+        template = configobj.ConfigObj(filename, file_error=True, stringify=True,
+                                       configspec=SPEC_TEMPLATE)
+
+        if validation:
+            assert self.validate_template(template)
+
+        # ACTUALLY ADD COMPONENTS
+        self.tracker.add_from_template(template)
+
         return template
 
     def save_template(self, filename):
@@ -232,7 +239,7 @@ class Spotter:
 
         # FEATURES
         template['FEATURES'] = {}
-        for f in self.tracker.leds:
+        for f in self.tracker.features:
             section = {'type': 'LED',
                        'range_hue': f.range_hue,
                        'range_sat': f.range_sat,
@@ -291,24 +298,22 @@ class Spotter:
         # and finally
         template.write()
 
-    def parse_template(self, path, run_validate=True):
+    def validate_template(self, template):
         """Template parsing and validation.
         """
-        template = configobj.ConfigObj(path, file_error=True, stringify=True,
-                                       configspec=SPEC_TEMPLATE)
-        if run_validate:
-            validator = validate.Validator()
-            results = template.validate(validator)
-            if not results is True:
-                self.log.error("Template error in file %s", path)
-                for (section_list, key, _) in configobj.flatten_errors(template, results):
-                    if key is not None:
-                        self.log.error('The "%s" key in the section "%s" failed validation', key,
-                                       ', '.join(section_list))
-                    else:
-                        self.log.error('The following section was missing:%s ', ', '.join(section_list))
-                return None
-        return template
+        validator = validate.Validator()
+        results = template.validate(validator)
+        if not results is True:
+            self.log.error('Template error!')
+            for (section_list, key, _) in configobj.flatten_errors(template, results):
+                if key is not None:
+                    self.log.error('The "%s" key in the section "%s" failed validation', key,
+                                   ', '.join(section_list))
+                else:
+                    self.log.error('The following section was missing:%s ', ', '.join(section_list))
+            return None
+        else:
+            return template
 
 #############################################################
 if __name__ == "__main__":                                  #

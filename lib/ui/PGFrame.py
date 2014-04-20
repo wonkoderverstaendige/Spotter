@@ -75,10 +75,10 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
                 self.draw_jobs.append([self.draw_trace, ooi])
 
         # draw crosses for features
-        for led in self.spotter.tracker.leds:
-            if len(led.pos_hist):
-                if led.marker_visible:
-                    self.draw_jobs.append([self.draw_cross, led, 7, led.lblcolor])
+        for feature in self.spotter.tracker.features:
+            if len(feature.pos_hist):
+                if feature.marker_visible:
+                    self.draw_jobs.append([self.draw_cross, feature, 7, feature.lblcolor])
 
         # TODO: Paint ROIs (in this case, just update their color + position?)
         for roi in self.spotter.tracker.rois:
@@ -172,7 +172,7 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
             if not o in self.markers:
                 self.add_marker(o)
 
-        for f in self.spotter.tracker.leds:
+        for f in self.spotter.tracker.features:
             if not f in self.markers:
                 self.add_marker(f)
 
@@ -181,7 +181,7 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
         """
         orphaned = []
         for mk in self.markers.keys():
-            if mk not in self.spotter.tracker.oois and mk not in self.spotter.tracker.leds:
+            if mk not in self.spotter.tracker.oois and mk not in self.spotter.tracker.features:
                 orphaned.append(mk)
         for mk in orphaned:
             self.remove_marker(mk)

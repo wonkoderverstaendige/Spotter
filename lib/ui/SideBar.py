@@ -165,14 +165,14 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
 
         if not template['type'].lower() == 'led':
             return
-        else:
-            range_hue = map(int, template['range_hue'])
-            range_sat = map(int, template['range_sat'])
-            range_val = map(int, template['range_val'])
-            range_area = map(int, template['range_area'])
-            fixed_pos = template.as_bool('fixed_pos')
-            feature = self.spotter.tracker.add_led(label, range_hue, range_sat, range_val,
-                                                  range_area, fixed_pos)
+        # else:
+        #     range_hue = map(int, template['range_hue'])
+        #     range_sat = map(int, template['range_sat'])
+        #     range_val = map(int, template['range_val'])
+        #     range_area = map(int, template['range_area'])
+        #     fixed_pos = template.as_bool('fixed_pos')
+        #     feature = self.spotter.tracker.add_feature(label, range_hue, range_sat, range_val,
+        #                                           range_area, fixed_pos)
         self.features_page.add_item(feature, focus_new)
 
     ###############################################################################
@@ -202,55 +202,55 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
                 if template['features'][n] == l.label:
                     features.append(l)
 
-        analog_out = template['analog_out']
-        if analog_out:
-            # Magnetic objects from collision list
-            signal_names = template['analog_signal']
-            pin_prefs = template['pin_pref']
-            if pin_prefs is None:
-                pin_prefs = []
-            magnetic_signals = []
-            if template['pin_pref_strict']:
-                # If pin preference is strict but no/not enough pins given,
-                # reject all/those without given pin preference
-                if len(pin_prefs) == 0:
-                    signal_names = []
-            else:
-                # if not strict but also not enough given, fill 'em up with -1
-                # which sets those objects to being indifferent in their pin pref
-                if len(pin_prefs) < len(signal_names):
-                    pin_prefs[-(len(signal_names) - len(pin_prefs))] = -1
-
-            # Reject all objects that still don't have a corresponding pin pref
-            signal_names = signal_names[0:min(len(pin_prefs), len(signal_names))]
-
-            # Those still in the race, assemble into
-            # List of [object label, object, pin preference]
-            for isig, sn in enumerate(signal_names):
-            # Does an object with this name exist? If so, link its reference!
-            #                obj = None
-            #                for o in self.spotter.tracker.oois:
-            #                    if o.label == on:
-            #                        obj = o
-                magnetic_signals.append([sn, pin_prefs[isig]])
-        else:
-            magnetic_signals = None
-
-        trace = template['trace']
-        track = template['track']
-        object_ = self.spotter.tracker.add_ooi(features, label, trace, track, magnetic_signals)
-        self.objects_page.add_item(object_, focus_new)
-
-        if analog_out:
-            if any(template['analog_signal']):
-                if 'x position' in template['analog_signal']:
-                    object_.analog_pos = True
-                if 'y position' in template['analog_signal']:
-                    object_.analog_pos = True
-                if 'speed' in template['analog_signal']:
-                    object_.analog_spd = True
-                if 'direction' in template['analog_signal']:
-                    object_.analog_dir = True
+        # analog_out = template['analog_out']
+        # if analog_out:
+        #     # Magnetic objects from collision list
+        #     signal_names = template['analog_signal']
+        #     pin_prefs = template['pin_pref']
+        #     if pin_prefs is None:
+        #         pin_prefs = []
+        #     magnetic_signals = []
+        #     if template['pin_pref_strict']:
+        #         # If pin preference is strict but no/not enough pins given,
+        #         # reject all/those without given pin preference
+        #         if len(pin_prefs) == 0:
+        #             signal_names = []
+        #     else:
+        #         # if not strict but also not enough given, fill 'em up with -1
+        #         # which sets those objects to being indifferent in their pin pref
+        #         if len(pin_prefs) < len(signal_names):
+        #             pin_prefs[-(len(signal_names) - len(pin_prefs))] = -1
+        #
+        #     # Reject all objects that still don't have a corresponding pin pref
+        #     signal_names = signal_names[0:min(len(pin_prefs), len(signal_names))]
+        #
+        #     # Those still in the race, assemble into
+        #     # List of [object label, object, pin preference]
+        #     for isig, sn in enumerate(signal_names):
+        #     # Does an object with this name exist? If so, link its reference!
+        #     #                obj = None
+        #     #                for o in self.spotter.tracker.oois:
+        #     #                    if o.label == on:
+        #     #                        obj = o
+        #         magnetic_signals.append([sn, pin_prefs[isig]])
+        # else:
+        #     magnetic_signals = None
+        #
+        # trace = template['trace']
+        # track = template['track']
+        # object_ = self.spotter.tracker.add_ooi(features, label, trace, track, magnetic_signals)
+        # self.objects_page.add_item(object_, focus_new)
+        #
+        # if analog_out:
+        #     if any(template['analog_signal']):
+        #         if 'x position' in template['analog_signal']:
+        #             object_.analog_pos = True
+        #         if 'y position' in template['analog_signal']:
+        #             object_.analog_pos = True
+        #         if 'speed' in template['analog_signal']:
+        #             object_.analog_spd = True
+        #         if 'direction' in template['analog_signal']:
+        #             object_.analog_dir = True
 
     ###############################################################################
     ##  REGIONS Tab Updates

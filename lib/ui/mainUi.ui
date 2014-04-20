@@ -39,9 +39,6 @@
       <property name="spacing">
        <number>0</number>
       </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
      </layout>
     </item>
     <item row="1" column="2">
@@ -89,13 +86,13 @@
       <property name="sizeConstraint">
        <enum>QLayout::SetDefaultConstraint</enum>
       </property>
+      <property name="leftMargin">
+       <number>3</number>
+      </property>
       <property name="horizontalSpacing">
        <number>3</number>
       </property>
       <property name="verticalSpacing">
-       <number>0</number>
-      </property>
-      <property name="leftMargin">
        <number>0</number>
       </property>
       <item row="1" column="9">

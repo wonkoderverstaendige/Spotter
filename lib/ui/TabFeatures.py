@@ -195,4 +195,4 @@ class Tab(QtGui.QWidget, Ui_tab_features):
             print "[X,Y][B G R](H, S, V):", [x, y], pixel, utils.BGRpix2HSV(pixel)
 
     def closeEvent(self, close_event):
-        self.spotter.tracker.remove_led(self.feature)
+        self.spotter.tracker.remove_feature(self.feature)
