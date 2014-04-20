@@ -39,8 +39,8 @@ DIR_CONFIG = './lib/core/config'
 DEFAULT_TEMPLATE = DIR_CONFIG + 'defaults.ini'
 
 GUI_REFRESH_INTERVAL = 16
-AUTOPLAY_ON_LOAD = False
-AUTOPAUSE_ON_LOAD = False
+AUTO_PLAY_ON_LOAD = False
+AUTO_PAUSE_ON_LOAD = False
 
 import sys
 import os
@@ -49,7 +49,6 @@ import time
 import logging
 
 from lib.docopt import docopt
-from lib.configobj import configobj, validate
 
 try:
     from lib.pyqtgraph import QtGui, QtCore  # ALL HAIL LUKE!
@@ -117,7 +116,6 @@ class Main(QtGui.QMainWindow):
         self.recent_templates = self.settings.value("RecentTemplates").toStringList()
         self.update_template_menu()
 
-
         # Toolbar items
         self.connect(self.ui.actionRecord, QtCore.SIGNAL('toggled(bool)'), self.toggle_record)
         self.ui.actionPlay.toggled.connect(self.toggle_play)
@@ -143,10 +141,9 @@ class Main(QtGui.QMainWindow):
             self.video_frame.sig_event.connect(self.mouse_event_to_tab)
 
         # PyQtGraph frame
-        if pg is not None:
+        else:
             self.video_frame = FRAME_BACKEND()
             self.ui.gridLayout_2.addWidget(self.video_frame)
-            #self.video_frame.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
 
         # Video source timing scroll bar
         self.ui.scrollbar_pos.setVisible(False)
@@ -162,17 +159,19 @@ class Main(QtGui.QMainWindow):
         self.connect(self.ui.actionOnTop, QtCore.SIGNAL('toggled(bool)'), self.toggle_window_on_top)
         self.toggle_window_on_top(on_top)
 
+        # starting values, likely overwritten during initialization
         self.playing = False
         self.paused = False
         self.repeat = False
-
         self.gui_fps = 30.0
         self.gui_fps_low = False
         self.gui_fps_low_now = False
         self.gui_refresh_offset = 0
         self.gui_refresh_interval = GUI_REFRESH_INTERVAL
         self.stopwatch = QtCore.QElapsedTimer()
-        QtCore.QTimer.singleShot(0, self.initialize)  # fires when event loop starts
+
+        # fires when event loop starts
+        QtCore.QTimer.singleShot(0, self.initialize)
 
     ###############################################################################
     ##                           SPOTTER CLASS INIT                               #
@@ -199,8 +198,8 @@ class Main(QtGui.QMainWindow):
         self.log.debug('New source selected, updating UI elements.')
 
         if self.spotter.grabber.source:
-            self.ui.actionPlay.setChecked(AUTOPLAY_ON_LOAD)
-            self.ui.actionPause.setChecked(AUTOPAUSE_ON_LOAD)
+            self.ui.actionPlay.setChecked(AUTO_PLAY_ON_LOAD)
+            self.ui.actionPause.setChecked(AUTO_PAUSE_ON_LOAD)
 
             # Add file/source name to main window title and show status bar message
             title = ': '.join([self.spotter.grabber.source_type, str(self.spotter.grabber.source.source)])
@@ -271,11 +270,11 @@ class Main(QtGui.QMainWindow):
             # Everything should have been disabled!
             pass
 
-    def update_fps(self, t):
+    def update_fps(self, elapsed):
         """Refresh the UI refresh rate indicator."""
         # TODO: This needs to be moved into its own widget or back into the status bar (StatusBar.py)
-        if t != 0:
-            self.gui_fps = self.gui_fps*0.9 + 0.1*1000./t
+        if elapsed != 0:
+            self.gui_fps = self.gui_fps*0.9 + 0.1*1000./elapsed
             if self.gui_fps > 100:
                 self.ui.lbl_fps.setText('FPS: {:.0f}'.format(self.gui_fps))
             else:
@@ -308,7 +307,7 @@ class Main(QtGui.QMainWindow):
             self.gui_refresh_interval = forced
             return
 
-        if self.spotter.source_type == 'file':
+        if self.spotter.grabber.source_type == 'file':
             if not self.ui.spin_offset.isEnabled():
                 self.ui.spin_offset.setEnabled(True)
             try:
