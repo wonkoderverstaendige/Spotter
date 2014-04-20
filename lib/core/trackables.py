@@ -186,7 +186,7 @@ class ObjectOfInterest:
     """
     # TODO: Use general "features" rather than LEDs specifically
 
-    linked_leds = None
+    linked_features = None
 
     tracked = True
     traced = False
@@ -197,8 +197,8 @@ class ObjectOfInterest:
 
     slots = None
 
-    def __init__(self, led_list, label, traced=False, tracked=True, magnetic_signals=None):
-        self.linked_leds = led_list
+    def __init__(self, feature_list, label, traced=False, tracked=True, magnetic_signals=None):
+        self.linked_features = feature_list
         self.label = label
         self.traced = traced
         self.tracked = tracked
@@ -231,7 +231,7 @@ class ObjectOfInterest:
         else:  # search full frame
             roi = [(0, 0), (2000, 2000)]
 
-        for l in self.linked_leds:
+        for l in self.linked_features:
             if l.fixed_pos:
                 # TODO: Movable feature ROIs
                 l.search_roi.move_to([(0, 259), (100, 359)])
@@ -257,7 +257,7 @@ class ObjectOfInterest:
         """Calculate position from detected features linked to object."""
         if not self.tracked:
             return
-        feature_positions = [f.pos_hist[-1] for f in self.linked_leds if len(f.pos_hist)]
+        feature_positions = [f.pos_hist[-1] for f in self.linked_features if len(f.pos_hist)]
         self.pos_hist.append(geom.middle_point(feature_positions))
 
     @property
@@ -297,11 +297,11 @@ class ObjectOfInterest:
         """
         # TODO: Direction based on movement if only one feature
         # TODO: Calculate angle when having multiple features
-        if not self.tracked or self.linked_leds is None or len(self.linked_leds) < 2:
+        if not self.tracked or self.linked_features is None or len(self.linked_features) < 2:
             return None
 
         feature_coords = []
-        for feature in self.linked_leds:
+        for feature in self.linked_features:
             if len(feature.pos_hist) > 0 and feature.pos_hist[-1] is not None:
                 feature_coords.append(feature.pos_hist[-1])
 

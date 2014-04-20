@@ -48,22 +48,22 @@ class Tab(QtGui.QWidget, Ui_tab_features):
         self.spin_area_max.setValue(self.feature.range_area[1])
 
         # Connect spin boxes
-        self.connect(self.spin_hue_min, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
-        self.connect(self.spin_hue_max, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
-        self.connect(self.spin_sat_min, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
-        self.connect(self.spin_sat_max, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
-        self.connect(self.spin_val_min, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
-        self.connect(self.spin_val_max, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
-        self.connect(self.spin_area_min, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
-        self.connect(self.spin_area_max, QtCore.SIGNAL('valueChanged(int)'), self.update_led)
+        self.connect(self.spin_hue_min, QtCore.SIGNAL('valueChanged(int)'), self.update_feature)
+        self.connect(self.spin_hue_max, QtCore.SIGNAL('valueChanged(int)'), self.update_feature)
+        self.connect(self.spin_sat_min, QtCore.SIGNAL('valueChanged(int)'), self.update_feature)
+        self.connect(self.spin_sat_max, QtCore.SIGNAL('valueChanged(int)'), self.update_feature)
+        self.connect(self.spin_val_min, QtCore.SIGNAL('valueChanged(int)'), self.update_feature)
+        self.connect(self.spin_val_max, QtCore.SIGNAL('valueChanged(int)'), self.update_feature)
+        self.connect(self.spin_area_min, QtCore.SIGNAL('valueChanged(int)'), self.update_feature)
+        self.connect(self.spin_area_max, QtCore.SIGNAL('valueChanged(int)'), self.update_feature)
 
         # Connect checkboxes
         self.ckb_track.setChecked(self.feature.detection_active)
-        self.connect(self.ckb_track, QtCore.SIGNAL('stateChanged(int)'), self.update_led)
+        self.connect(self.ckb_track, QtCore.SIGNAL('stateChanged(int)'), self.update_feature)
         self.ckb_fixed_pos.setChecked(self.feature.fixed_pos)
-        self.connect(self.ckb_fixed_pos, QtCore.SIGNAL('stateChanged(int)'), self.update_led)
+        self.connect(self.ckb_fixed_pos, QtCore.SIGNAL('stateChanged(int)'), self.update_feature)
         self.ckb_marker.setChecked(self.feature.marker_visible)
-        self.connect(self.ckb_marker, QtCore.SIGNAL('stateChanged(int)'), self.update_led)
+        self.connect(self.ckb_marker, QtCore.SIGNAL('stateChanged(int)'), self.update_feature)
 
         self.connect(self.btn_pick_color, QtCore.SIGNAL('toggled(bool)'), self.pick_color)
 
@@ -87,7 +87,7 @@ class Tab(QtGui.QWidget, Ui_tab_features):
         self.update_color_space()
         self.update_zoom()
 
-    def update_led(self):
+    def update_feature(self):
         self.feature.range_hue = (self.spin_hue_min.value(), self.spin_hue_max.value())
         self.feature.range_sat = (self.spin_sat_min.value(), self.spin_sat_max.value())
         self.feature.range_val = (self.spin_val_min.value(), self.spin_val_max.value())
