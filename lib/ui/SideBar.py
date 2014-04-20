@@ -42,9 +42,10 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
         self.spotter = None
 
     def initialize(self, spotter, *args, **kwargs):
-        """Start up tab contents now that the spotter instance is up and running in
-         the main window.
+        """Start up tab contents now that the spotter instance is (or rather, should be)
+        up and running in the main window.
         """
+        assert spotter
         self.spotter = spotter
         self.log.debug('Opening features main tab')
         self.features_page = MainTabPage("Features", TabFeatures.Tab, spotter=self.spotter, *args, **kwargs)
@@ -83,8 +84,7 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
         self.add_serial(self.spotter.chatter)
 
     def add_tab(self, tab_widget, new_tab_class, tab_equivalent, focus_new=True):
-        """
-        Add new tab with Widget new_tab_class and switches to it. The
+        """Add new tab with Widget new_tab_class and switches to it. The
         tab_equivalent is the object that is being represented by the tab,
         for example an LED or Object.
         """
@@ -102,6 +102,12 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
         return self.tabs_main.tabText(self.tabs_main.currentIndex())
 
     def get_child_page(self):
+        """Return the currently active page of the currently selected tab.
+
+        For example, when the "Features" tab is opened, will return the page of
+        whatever feature is currently selected.
+        """
+        # TODO: Replace with dict lookup
         active_top_tab_label = self.tabs_main.tabText(self.tabs_main.currentIndex())
         if active_top_tab_label == "Features" and (self.tabs_main.count() > 1):
             return self.features_page.current_page_widget()
@@ -115,8 +121,7 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
             return None
 
     def update_current_page(self):
-        """
-        Currently visible tab is the only one that requires to be updated
+        """Currently visible tab is the only one that requires to be updated
         live when parameters of its associated object change, e.g. coordinates
         of tracked objects or LEDs. The rest should happen behind the scenes
         in the spotter sub-classes.
@@ -126,8 +131,7 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
             current_page.update()
 
     def update_all_tabs(self):
-        """
-        This is potentially very expensive! Best only trigger on 'large'
+        """This is potentially very expensive! Best only trigger on 'large'
         event or introduce some selectivity, i.e. only update affected tabs as
         far as one can tell.
         """
@@ -138,6 +142,11 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
         #        tab.update()
 
     def remove_all_tabs(self):
+        """Remove all tabs that CAN be removed. This triggers removal of the underlying
+        represented features, objects and regions.
+
+        Does not remove recording control, source information and serial tabs.
+        """
         self.features_page.remove_all_pages()
         self.objects_page.remove_all_pages()
         self.regions_page.remove_all_pages()
@@ -146,14 +155,11 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
     ##  FEATURES Tab Updates
     ###############################################################################
     def tab_features_switch(self, idx_tab=0):
-        """
-        Switch to the tab page with index idx_tab.
-        """
+        """Switch to the tab page with index idx_tab."""
         self.features_page.tabs_sub.setCurrentIndex(idx_tab)
 
     def add_feature(self, template=None, label=None, focus_new=True):
-        """
-        Create a feature from trackables and add a corresponding tab to
+        """Create a feature from trackables and add a corresponding tab to
         the tab widget, which is linked to show and edit feature properties.
         TODO: Create new templates when running out by fitting them into
         the color space somehow.
@@ -164,15 +170,12 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
             label = 'LED_' + str(len(self.spotter.tracker.leds))
 
         if not template['type'].lower() == 'led':
-            return
-        # else:
-        #     range_hue = map(int, template['range_hue'])
-        #     range_sat = map(int, template['range_sat'])
-        #     range_val = map(int, template['range_val'])
-        #     range_area = map(int, template['range_area'])
-        #     fixed_pos = template.as_bool('fixed_pos')
-        #     feature = self.spotter.tracker.add_feature(label, range_hue, range_sat, range_val,
-        #                                           range_area, fixed_pos)
+            raise NotImplementedError
+
+        self.represent_feature(self.spotter.tracker.add_feature(label, template), focus_new)
+
+    def represent_feature(self, feature, focus_new=True):
+        """Add a page for this new feature. """
         self.features_page.add_item(feature, focus_new)
 
     ###############################################################################
@@ -196,72 +199,20 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
             template = self.parent.template_default['OBJECTS'][key]
             label = 'Object_' + str(len(self.spotter.tracker.oois))
 
-        features = []
-        for n in xrange(min(len(self.spotter.tracker.leds), len(template['features']))):
-            for l in self.spotter.tracker.leds:
-                if template['features'][n] == l.label:
-                    features.append(l)
+        self.represent_object(self.spotter.tracker.add_ooi(label, template), focus_new)
 
-        # analog_out = template['analog_out']
-        # if analog_out:
-        #     # Magnetic objects from collision list
-        #     signal_names = template['analog_signal']
-        #     pin_prefs = template['pin_pref']
-        #     if pin_prefs is None:
-        #         pin_prefs = []
-        #     magnetic_signals = []
-        #     if template['pin_pref_strict']:
-        #         # If pin preference is strict but no/not enough pins given,
-        #         # reject all/those without given pin preference
-        #         if len(pin_prefs) == 0:
-        #             signal_names = []
-        #     else:
-        #         # if not strict but also not enough given, fill 'em up with -1
-        #         # which sets those objects to being indifferent in their pin pref
-        #         if len(pin_prefs) < len(signal_names):
-        #             pin_prefs[-(len(signal_names) - len(pin_prefs))] = -1
-        #
-        #     # Reject all objects that still don't have a corresponding pin pref
-        #     signal_names = signal_names[0:min(len(pin_prefs), len(signal_names))]
-        #
-        #     # Those still in the race, assemble into
-        #     # List of [object label, object, pin preference]
-        #     for isig, sn in enumerate(signal_names):
-        #     # Does an object with this name exist? If so, link its reference!
-        #     #                obj = None
-        #     #                for o in self.spotter.tracker.oois:
-        #     #                    if o.label == on:
-        #     #                        obj = o
-        #         magnetic_signals.append([sn, pin_prefs[isig]])
-        # else:
-        #     magnetic_signals = None
-        #
-        # trace = template['trace']
-        # track = template['track']
-        # object_ = self.spotter.tracker.add_ooi(features, label, trace, track, magnetic_signals)
-        # self.objects_page.add_item(object_, focus_new)
-        #
-        # if analog_out:
-        #     if any(template['analog_signal']):
-        #         if 'x position' in template['analog_signal']:
-        #             object_.analog_pos = True
-        #         if 'y position' in template['analog_signal']:
-        #             object_.analog_pos = True
-        #         if 'speed' in template['analog_signal']:
-        #             object_.analog_spd = True
-        #         if 'direction' in template['analog_signal']:
-        #             object_.analog_dir = True
+    def represent_object(self, object_, focus_new=True):
+        """Add page for new object, representing it in the GUI"""
+        self.objects_page.add_item(object_, focus_new)
 
     ###############################################################################
     ##  REGIONS Tab Updates
     ###############################################################################
     def tab_regions_switch(self, idx_tab=0):
-        """
-        Switch to the tab page with index idx_tab.
-        """
+        """Switch to the tab page with index idx_tab."""
         self.regions_page.tabs_sub.setCurrentIndex(idx_tab)
 
-    def add_region(self, template=None, label=None, shapes=None, abs_pos=True, focus_new=True):
+    def add_region(self, template=None, label=None, shapes=None, focus_new=True):
         """Create a new region of interest that will be linked to Objects with
         conditions to trigger events.
         """
@@ -274,57 +225,10 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
         if not shapes:
             shapes = self.parent.template_default['SHAPES']
 
-        # extract shapes from shape templates
-        shape_list = []
-        points = None
-        for s_key in template['shapes']:
-            if s_key in shapes:
-                shape_type = shapes[s_key]['type']
-                if abs_pos:
-                    points = [shapes[s_key]['p1'], shapes[s_key]['p2']]
-                else:
-                    if self.parent.spotter.newest_frame is not None:
-                        shape = self.parent.spotter.newest_frame.shape
-                        points = geom.scale_points([shapes[s_key]['p1'],
-                                                    shapes[s_key]['p2']],
-                                                   (shape[0],
-                                                    shape[1]))
-                if points is not None:
-                    shape_list.append([shape_type, points, s_key])
+        self.represent_region(self.spotter.tracker.add_roi(label, template, shapes), focus_new)
 
-        # Magnetic objects from collision list
-        obj_names = template['digital_collision']
-        pin_prefs = template['pin_pref']
-        if pin_prefs is None:
-            pin_prefs = []
-        magnetic_objects = []
-        if template['pin_pref_strict']:
-            # If pin preference is strict but no/not enough pins given,
-            # reject all/those without given pin preference
-            if len(pin_prefs) == 0:
-                obj_names = []
-        else:
-            # if not strict but also not enough given, fill 'em up with -1
-            # which sets those objects to being indifferent in their pin pref
-            if len(pin_prefs) < len(obj_names):
-                pin_prefs[-(len(obj_names) - len(pin_prefs))] = -1
-
-        # Reject all objects that still don't have a corresponding pin pref
-        obj_names = obj_names[0:min(len(pin_prefs), len(obj_names))]
-
-        # Those still in the race, assemble into
-        # List of [object label, object, pin preference]
-        for io, on in enumerate(obj_names):
-            # Does an object with this name exist? If so, link its reference!
-            obj = None
-            for o in self.spotter.tracker.oois:
-                if o.label == on:
-                    obj = o
-            magnetic_objects.append([obj, pin_prefs[io]])
-
-        color = template['color']
-
-        region = self.spotter.tracker.add_roi(shape_list, label, color, magnetic_objects)
+    def represent_region(self, region, focus_new=True):
+        """Add page for new region of interest, representing it in the GUI."""
         self.regions_page.add_item(region, focus_new)
 
     ###############################################################################
@@ -335,8 +239,7 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
             self.spotter.chatter.read_all()
 
     def add_serial(self, serial_object, label=None):
-        """
-        Serial object tab. Probably an Arduino compatible board linked to it.
+        """Serial object tab. Probably an Arduino compatible board linked to it.
         """
         self.serial_page.add_item(serial_object, update_all_tabs=self.update_all_tabs())
 
@@ -344,8 +247,7 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
     ##  SOURCE Tab Updates
     ###############################################################################
     def add_source(self, source_object, label=None):
-        """
-        Serial object tab. Probably an Arduino compatible board linked to it.
+        """Serial object tab. Probably an Arduino compatible board linked to it.
         """
         self.source_page.add_item(source_object, update_all_tabs=self.update_all_tabs())
 
@@ -353,7 +255,6 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
     ##  RECORD Tab Updates
     ###############################################################################
     def add_record(self, record_object, label=None):
-        """
-        Serial object tab. Probably an Arduino compatible board linked to it.
+        """Serial object tab. Probably an Arduino compatible board linked to it.
         """
         self.record_page.add_item(record_object, update_all_tabs=self.update_all_tabs())

@@ -35,7 +35,7 @@ DEBUG = True
 
 
 class Tracker:
-    """ Performs tracking and returns positions of found LEDs """
+    """ Performs tracking and returns positions of found features """
     frame = None
     scale = 1.0
 
@@ -70,8 +70,8 @@ class Tracker:
             self.log.debug("Removing feature %s", feature)
             self.features.remove(feature)
             for o in self.oois:
-                if feature in o.linked_leds:
-                    o.linked_leds.remove(feature)
+                if feature in o.linked_features:
+                    o.linked_features.remove(feature)
         except ValueError:
             self.log.error("Feature to be removed not found")
 
@@ -86,6 +86,7 @@ class Tracker:
                     linked_features.append(l)
 
         # Super awkward handling of pin assignment preferences. Holy moly. Unreadable.
+        # FIXME: Magnetic signal mumpitz has to be rewritten completely.
         analog_out = template['analog_out']
         if analog_out:
             # Magnetic objects from collision list
@@ -151,13 +152,18 @@ class Tracker:
         for s_key in template['shapes']:
             if s_key in shapes:
                 shape_type = shapes[s_key]['type']
+
+                # IMPORTANT! Relative positions have to be handled with care...
                 if absolute_positions:
                     points = [shapes[s_key]['p1'], shapes[s_key]['p2']]
                 else:
                     if self.parent.newest_frame is not None:
                         frame_size = self.parent.newest_frame.shape
+
+                        # TODO: Needs to know if the frame was rotated, transposed, etc.
+                        # assumed to have been
                         points = geom.scale_points([shapes[s_key]['p1'], shapes[s_key]['p2']],
-                                                   (frame_size[0], frame_size[1]))
+                                                   (frame_size[1], frame_size[0]))
                 if points is not None:
                     shape_list.append([shape_type, points, s_key])
 

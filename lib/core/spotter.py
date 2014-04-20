@@ -61,6 +61,7 @@ class Spotter:
     record_to_file = True
 
     newest_frame = None  # fresh from the frame source; to be processed/written
+    # FIXME: Can be removed?
     still_frame = None   # frame shown in GUI, may be an older one
     hsv_frame = None     # converted into HSV color space for tracking
 
@@ -209,18 +210,22 @@ class Spotter:
                 self.writer.terminate()
 
     def load_template(self, filename, validation=True):
+        """Load and validate template file.
+        """
         self.log.debug("Opening template %s", filename)
 
         template = configobj.ConfigObj(filename, file_error=True, stringify=True,
                                        configspec=SPEC_TEMPLATE)
-
         if validation:
             assert self.validate_template(template)
 
-        # ACTUALLY ADD COMPONENTS
-        self.tracker.add_from_template(template)
-
         return template
+
+    def apply_template(self, template):
+        """Create components defined in template and return their references so they may
+        be linked with their representations in the GUI.
+        """
+        return self.tracker.add_from_template(template)
 
     def save_template(self, filename):
         """Save current state of spotter and all the sub-components as a template.

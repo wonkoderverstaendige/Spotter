@@ -460,7 +460,7 @@ class Main(QtGui.QMainWindow):
             self.update_file_menu()
             self.new_source()
         else:
-            self.ui.statusbar.showMessage('Failed to open %s' % filename, 2000)
+            self.ui.statusbar.showMessage('Failed to open %s' % filename, 5000)
 
     def file_open_device(self):
         """Open camera as frame source.
@@ -561,8 +561,18 @@ class Main(QtGui.QMainWindow):
 
         template = self.spotter.load_template(filename)
         if template is not None:
-            self.ui.statusbar.showMessage('Opened template %s' % filename, 5000)
+            features, objects_, regions = self.spotter.apply_template(template)
 
+            for f in features:
+                self.side_bar.represent_feature(f, focus_new=False)
+
+            for o in objects_:
+                self.side_bar.represent_object(o, focus_new=False)
+
+            for r in regions:
+                self.side_bar.represent_region(r, focus_new=False)
+
+            self.ui.statusbar.showMessage('Opened template %s' % filename, 5000)
             # Add opened file to list of recent templates
             self.add_recent_template(filename)
             self.update_template_menu()
