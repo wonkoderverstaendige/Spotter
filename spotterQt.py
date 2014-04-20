@@ -647,8 +647,8 @@ class Main(QtGui.QMainWindow):
         settings.setValue("MainWindow/Size", QtCore.QVariant(self.size()))
         settings.setValue("MainWindow/Position", QtCore.QVariant(self.pos()))
         settings.setValue("MainWindow/State", QtCore.QVariant(self.saveState()))
-        settings.setValue("MainWindow/AlwaysOnTop", QtCore.QVariant(int(self.windowFlags() \
-                                                                        & QtCore.Qt.WindowStaysOnTopHint)))
+        on_top = int(self.windowFlags() & QtCore.Qt.WindowStaysOnTopHint)
+        settings.setValue("MainWindow/AlwaysOnTop", QtCore.QVariant(on_top))
 
     def closeEvent(self, event):
         """Exiting the interface has to kill the spotter class and subclasses
