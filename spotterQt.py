@@ -156,7 +156,10 @@ class Main(QtGui.QMainWindow):
         self.move(self.settings.value("MainWindow/Position", QtCore.QVariant(QtCore.QPoint(0, 0))).toPoint())
         self.restoreState(self.settings.value("MainWindow/State").toByteArray())
         #self.center_window()
+        on_top = True if self.settings.value("MainWindow/AlwaysOnTop").toInt()[0] else False
+        self.ui.actionOnTop.setChecked(on_top)
         self.connect(self.ui.actionOnTop, QtCore.SIGNAL('toggled(bool)'), self.toggle_window_on_top)
+        self.toggle_window_on_top(on_top)
 
         self.playing = False
         self.paused = False
@@ -479,7 +482,6 @@ class Main(QtGui.QMainWindow):
             else:
                 target.addAction(action)
 
-
     # RECENTLY OPENED FILES
     def update_file_menu(self):
         """Update list of recently opened files in the File->Open menu.
@@ -531,7 +533,54 @@ class Main(QtGui.QMainWindow):
         self.recent_files.clear()
         self.update_file_menu()
 
-    # RECENTLY OPENED TEMPLATES
+    ###############################################################################
+    ##                             TEMPLATE handling                              #
+    ###############################################################################
+    def load_template(self, filename=None, path=DIR_TEMPLATES):
+        """Opens file dialog to choose template file and starts parsing it.
+        """
+        # TODO: Handle old relative coordinate style templates
+        # Or simply disable relative templates?
+        if self.spotter.grabber.source is None:
+            self.ui.statusbar.showMessage("No video source! Can't load a template without in this version.", 5000)
+            return
+
+        # If no filename given, this is may be supposed to open a recent file
+        if filename is None:
+            action = self.sender()
+            if isinstance(action, QtGui.QAction):
+                filename = action.data().toString()
+
+        if filename is None or not len(filename):
+            path = QtCore.QString(path)
+            filename = QtGui.QFileDialog.getOpenFileName(self, 'Open Template', path, self.tr('All Files: *.*'))
+        if not len(filename):
+            return
+        else:
+            filename = str(filename)
+
+        template = self.spotter.load_template(filename)
+        if template is not None:
+            self.ui.statusbar.showMessage('Opened template %s' % filename, 5000)
+
+            # Add opened file to list of recent templates
+            self.add_recent_template(filename)
+            self.update_template_menu()
+        else:
+            self.log.debug("Couldn't open template.")
+
+    def save_template(self, filename=None, path=DIR_TEMPLATES):
+        """Save current spotter state as template."""
+        if filename is None:
+            filename = str(QtGui.QFileDialog.getSaveFileName(self, 'Save Template', path))
+        if not len(filename):
+            return
+        self.spotter.save_template(filename)
+
+        # Add file to list of recent templates
+        self.add_recent_template(filename)
+        self.update_template_menu()
+
     def update_template_menu(self):
         """Update list of recently opened templates in the Template menu.
         """
@@ -541,15 +590,6 @@ class Main(QtGui.QMainWindow):
                                                 self.ui.actionSaveTemplate,
                                                 self.ui.actionRemoveTemplate,
                                                 None])
-
-        # try:
-        #     source_is_file = self.spotter is not None and self.spotter.grabber.source_type == 'file'
-        #     if source_is_file:
-        #         current_file = QtCore.QFileInfo(QtCore.QString(self.spotter.grabber.source.source)).fileName()
-        #     else:
-        #         current_file = None
-        # except TypeError:
-        #     current_file = None
 
         # list of files to show in the menu, only append if file still exists!
         recent_templates = []
@@ -607,6 +647,8 @@ class Main(QtGui.QMainWindow):
         settings.setValue("MainWindow/Size", QtCore.QVariant(self.size()))
         settings.setValue("MainWindow/Position", QtCore.QVariant(self.pos()))
         settings.setValue("MainWindow/State", QtCore.QVariant(self.saveState()))
+        settings.setValue("MainWindow/AlwaysOnTop", QtCore.QVariant(int(self.windowFlags() \
+                                                                        & QtCore.Qt.WindowStaysOnTopHint)))
 
     def closeEvent(self, event):
         """Exiting the interface has to kill the spotter class and subclasses
@@ -625,67 +667,6 @@ class Main(QtGui.QMainWindow):
         else:
             event.ignore()
 
-    ###############################################################################
-    ##                             TEMPLATE handling                              #
-    ###############################################################################
-    def load_template(self, filename=None, path=DIR_TEMPLATES):
-        """Opens file dialog to choose template file and starts parsing it.
-        """
-        # TODO: Handle old relative coordinate style templates
-        # Or simply disable relative templates?
-        if self.spotter.grabber.source is None:
-            self.ui.statusbar.showMessage("No video source! Can't load a template without in this version.", 5000)
-            return
-
-        # If no filename given, this is may be supposed to open a recent file
-        if filename is None:
-            action = self.sender()
-            if isinstance(action, QtGui.QAction):
-                filename = action.data().toString()
-
-        if filename is None or not len(filename):
-            path = QtCore.QString(path)
-            filename = QtGui.QFileDialog.getOpenFileName(self, 'Open Template', path, self.tr('All Files: *.*'))
-        if not len(filename):
-            return
-        else:
-            filename = str(filename)
-
-        template = self.spotter.load_template(filename)
-        if template is not None:
-            abs_pos = template['TEMPLATE']['absolute_positions']
-            print abs_pos
-          # ACTUALLY ADD COMPONENTS
-            for f_key, f_val in template['FEATURES'].items():
-                self.side_bar.add_feature(f_val, f_key, focus_new=False)
-
-            for o_key, o_val in template['OBJECTS'].items():
-                self.side_bar.add_object(o_val, o_key, focus_new=False)
-
-            for r_key, r_val in template['REGIONS'].items():
-                self.side_bar.add_region(r_val, r_key,
-                                         shapes=template['SHAPES'],
-                                         abs_pos=abs_pos,
-                                         focus_new=False)
-            self.ui.statusbar.showMessage('Opened template %s' % filename, 5000)
-
-            # Add opened file to list of recent templates
-            self.add_recent_template(filename)
-            self.update_template_menu()
-        else:
-            self.log.debug("Couldn't open template.")
-
-    def save_template(self, filename=None, path=DIR_TEMPLATES):
-        """Save current spotter state as template."""
-        if filename is None:
-            filename = str(QtGui.QFileDialog.getSaveFileName(self, 'Save Template', path))
-        if not len(filename):
-            return
-        self.spotter.save_template(filename)
-
-        # Add file to list of recent templates
-        self.add_recent_template(filename)
-        self.update_template_menu()
 
 #############################################################
 def main(*args, **kwargs):
