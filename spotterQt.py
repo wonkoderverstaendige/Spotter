@@ -39,6 +39,7 @@ DIR_CONFIG = './lib/core/config'
 DEFAULT_TEMPLATE = DIR_CONFIG + 'defaults.ini'
 
 GUI_REFRESH_INTERVAL = 16
+AUTOPLAY_ON_LOAD = False
 AUTOPAUSE_ON_LOAD = False
 
 import sys
@@ -197,15 +198,14 @@ class Main(QtGui.QMainWindow):
         # TODO: Force refresh with at least one new frame!
         self.log.debug('New source selected, updating UI elements.')
 
-        # opening a new source will pause playback if AUTOPAUSE_ON_LOAD is set true
         if self.spotter.grabber.source:
-            self.ui.actionPlay.setChecked(True)
+            self.ui.actionPlay.setChecked(AUTOPLAY_ON_LOAD)
             self.ui.actionPause.setChecked(AUTOPAUSE_ON_LOAD)
 
             # Add file/source name to main window title and show status bar message
             title = ': '.join([self.spotter.grabber.source_type, str(self.spotter.grabber.source.source)])
             self.setWindowTitle('Spotter - %s' % title[0].upper()+title[1:])
-            self.ui.statusbar.showMessage('Opened %s' % title[0].upper()+title[1:], 2000)
+            self.ui.statusbar.showMessage('Opened %s' % title[0].upper()+title[1:], 5000)
 
             # Play control UI elements (spin boxes, slider, frame num labels etc.)
             indexed = True if self.spotter.grabber.source_indexed else False
