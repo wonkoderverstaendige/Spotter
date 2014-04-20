@@ -29,7 +29,8 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
 
         # Central Video Frame
         self.gv_video.setBackground(None)
-        self.vb = pg.ViewBox()
+        self.vb = pg.ViewBox(invertY=True)
+        # self.vb.setMouseEnabled(False, False)
         self.gv_video.setCentralItem(self.vb)
         self.vb.setAspectLocked()
         self.img = pg.ImageItem()
@@ -59,9 +60,9 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
             #self.img.setImage(cv2.flip(cv2.transpose(cv2.cvtColor(self.frame.img, code=cv2.COLOR_BGR2RGB)), flipCode=1),
             #                  autoLevels=False)
             #self.img.setImage(cv2.cvtColor(self.frame.img, code=cv2.COLOR_BGR2RGB), autoLevels=False)
-            self.img.setImage(np.rot90(cv2.cvtColor(self.frame.img, code=cv2.COLOR_BGR2RGB), 3), autoLevels=False)
+            #self.img.setImage(np.rot90(cv2.cvtColor(self.frame.img, code=cv2.COLOR_BGR2RGB), 3), autoLevels=False)
             #self.img.setImage(cv2.flip(self.frame.img, flipCode=-1), autoLevels=False)
-            #self.img.setImage(cv2.transpose(cv2.cvtColor(self.frame.img, code=cv2.COLOR_BGR2RGB)), autoLevels=False)
+            self.img.setImage(cv2.transpose(cv2.cvtColor(self.frame.img, code=cv2.COLOR_BGR2RGB)), autoLevels=False)
             #self.gv_video.scaleToImage(self.img)
 
         self.populate_markers()
@@ -106,12 +107,13 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
         if self.frame is None:
             return
 
-        # as we rotate the frame, height becomes width!
         points = []
         for n in xrange(min(len(ref.pos_hist), num_points)):
             if ref.pos_hist[-n - 1] is not None:
-                points.append([ref.pos_hist[-n - 1][0] * 1.0,
-                               self.frame.width-ref.pos_hist[-n - 1][1] * 1.0])
+                # if we rotate the frame, height becomes width!
+                # points.append([ref.pos_hist[-n - 1][0] * 1.0,
+                #                self.frame.width-ref.pos_hist[-n - 1][1] * 1.0])
+                points.append([ref.pos_hist[-n - 1][0] * 1.0, ref.pos_hist[-n - 1][1] * 1.0])
 
         self.traces[ref].setData(np.asarray(points))
 
@@ -122,8 +124,9 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
         if self.frame is None:
             return
         if ref.pos_hist[-1] is not None:
-            # as we rotate the frame, height becomes width!
-            ax, ay = ref.pos_hist[-1][0], self.frame.width-ref.pos_hist[-1][1]
+            # if we rotate the frame, height becomes width!
+            # ax, ay = ref.pos_hist[-1][0], self.frame.width-ref.pos_hist[-1][1]
+            ax, ay = ref.pos_hist[-1][0], ref.pos_hist[-1][1]
             if angled:
                 cross = [[ax-size, ay-size], [ax+size, ay+size], [ax, ay], [ax+size, ay-size], [ax-size, ay+size]]
             else:
@@ -225,14 +228,17 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
         for s in rk.shapes:
             # translate opencv coordinates into pyqtgraph coordinates
             x_pg = s.points[0][0]
-            y_pg = self.frame.width-s.points[0][1]
+            # if frame rotated, y axis flipped!
+            # y_pg = self.frame.width-s.points[0][1]
+            y_pg = s.points[0][1]
             w = s.width
             h = s.height
+
             if s.shape == 'circle':
-                print self.frame.width, s.points, s.radius, x_pg, y_pg
                 pg_roi = pg.CircleROI((x_pg-s.radius, y_pg-s.radius), (w, h), pen=pg.mkPen(rk.color))
             elif s.shape == 'rectangle':
-                pg_roi = pg.RectROI((x_pg, y_pg-h), (w, h), pen=pg.mkPen(rk.color))
+                # pg_roi = pg.RectROI((x_pg, y_pg-h), (w, h), pen=pg.mkPen(rk.color))
+                pg_roi = pg.RectROI((x_pg, y_pg), (w, h), pen=pg.mkPen(rk.color))
             else:
                 pg_roi = None
 
@@ -240,6 +246,7 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
                 pg_roi.sigRegionChanged.connect(self.move_roi_shape)
                 roi_shapes.append(pg_roi)
                 self.vb.addItem(pg_roi)
+
         self.rois[rk] = roi_shapes
 
     def remove_roi(self, roi):

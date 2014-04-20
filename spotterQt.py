@@ -39,7 +39,7 @@ DIR_CONFIG = './lib/core/config'
 DEFAULT_TEMPLATE = DIR_CONFIG + 'defaults.ini'
 
 GUI_REFRESH_INTERVAL = 16
-AUTO_PLAY_ON_LOAD = False
+AUTO_PLAY_ON_LOAD = True
 AUTO_PAUSE_ON_LOAD = False
 
 import sys
