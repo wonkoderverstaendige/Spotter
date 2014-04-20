@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainUi.ui'
 #
-# Created: Sun Apr 20 05:54:58 2014
+# Created: Sun Apr 20 07:26:02 2014
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -41,6 +41,8 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.gridLayout = QtGui.QGridLayout(self.centralwidget)
         self.gridLayout.setMargin(0)
+        self.gridLayout.setHorizontalSpacing(1)
+        self.gridLayout.setVerticalSpacing(0)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.frame_parameters = QtGui.QHBoxLayout()
         self.frame_parameters.setSpacing(0)
@@ -58,7 +60,7 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.frame.sizePolicy().hasHeightForWidth())
         self.frame.setSizePolicy(sizePolicy)
         self.frame.setStyleSheet(_fromUtf8("background-image: url(:/logo_name_translucent.png); background-repeat: no-repeat; background-position: center center;"))
-        self.frame.setFrameShape(QtGui.QFrame.StyledPanel)
+        self.frame.setFrameShape(QtGui.QFrame.WinPanel)
         self.frame.setFrameShadow(QtGui.QFrame.Sunken)
         self.frame.setObjectName(_fromUtf8("frame"))
         self.gridLayout_2 = QtGui.QGridLayout(self.frame)
