@@ -42,7 +42,7 @@ from lib.docopt import docopt
 from lib.core import grabber, tracker, writer, chatter
 from lib.configobj import configobj, validate
 
-DIR_CONFIG = os.path.join(os.path.dirname(__file__), './config')
+DIR_CONFIG = os.path.join(os.path.dirname(__file__), 'config')
 SPEC_TEMPLATE = os.path.join(DIR_CONFIG, 'template_specification.ini')
 DEFAULT_TEMPLATE = os.path.join(DIR_CONFIG, 'defaults.ini')
 DIR_TEMPLATES = os.path.join(os.path.dirname(__file__), '../../templates')
@@ -86,9 +86,9 @@ class Spotter:
         self.log.info(str(multiprocessing.cpu_count()) + ' CPUs found')
 
         # Default template holds all defaults for creating new things (LEDs, ROIs, etc) from scratch
-        # self.log.debug('Loading default template...')
-        # default_path = os.path.join(os.path.abspath(DIR_CONFIG), DEFAULT_TEMPLATE)
-        # self.template_default = self.load_template(default_path)
+        self.log.debug('Loading default template...')
+        default_path = os.path.join(os.path.abspath(DIR_CONFIG), DEFAULT_TEMPLATE)
+        self.template_default = self.load_template(default_path)
 
         # Setup frame grabber object, fills frame buffer
         self.log.debug('Instantiating grabber...')

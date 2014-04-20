@@ -48,8 +48,15 @@ class Tracker:
         self.features = []
         self.adaptive_tracking = adaptive_tracking
 
-    def add_feature(self, label, template):
-        # range_hue, range_sat, range_val, range_area, fixed_pos=False, linked_to=None):
+    def add_feature(self, label=None, template=None):
+        if None in [template, label]:
+            key = self.parent.template_default['FEATURES'].iterkeys().next()
+            template = self.parent.template_default['FEATURES'][key]
+            label = 'LED_' + str(len(self.features))
+
+        assert template
+        if not template['type'].lower() == 'led':
+            raise NotImplementedError
 
         range_hue = map(int, template['range_hue'])
         range_sat = map(int, template['range_sat'])
@@ -58,9 +65,10 @@ class Tracker:
         fixed_pos = template.as_bool('fixed_pos')
         linked_to = None
 
-        roi = trkbl.Shape('rectangle', None, None)
+        search_window = trkbl.Shape('rectangle', None, None)
 
-        feature = trkbl.LED(label, range_hue, range_sat, range_val, range_area, fixed_pos, linked_to, roi)
+        feature = trkbl.LED(label, range_hue, range_sat, range_val, range_area,
+                            fixed_pos, linked_to, search_window)
         self.features.append(feature)
         self.log.debug("Added feature %s", feature)
         return feature
@@ -75,8 +83,13 @@ class Tracker:
         except ValueError:
             self.log.error("Feature to be removed not found")
 
-    def add_ooi(self, label, template):
-        # feature_list, label, traced=False, tracked=True, magnetic_signals=None):
+    def add_ooi(self, label=None, template=None):
+        if None in [label, template]:
+            key = self.parent.template_default['OBJECTS'].iterkeys().next()
+            template = self.parent.template_default['OBJECTS'][key]
+            label = 'Object_' + str(len(self.oois))
+        assert label
+        assert template
 
         # generate list of all features linked to this object
         linked_features = []
@@ -144,8 +157,14 @@ class Tracker:
         except ValueError:
             self.log.error("Object to be removed not found")
 
-    def add_roi(self, label, template, shapes, absolute_positions=True):
-        # shape_list, label, color=None, magnetic_objects=None
+    def add_roi(self, label=None, template=None, shapes=None, absolute_positions=True):
+        if None in [label, template, shapes]:
+            key = self.parent.template_default['REGIONS'].iterkeys().next()
+            template = self.parent.template_default['REGIONS'][key]
+            label = 'ROI_' + str(len(self.rois))
+        if not shapes:
+            shapes = self.parent.template_default['SHAPES']
+
         # extract shapes from shape templates
         shape_list = []
         points = None

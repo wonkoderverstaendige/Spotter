@@ -161,17 +161,7 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
     def add_feature(self, template=None, label=None, focus_new=True):
         """Create a feature from trackables and add a corresponding tab to
         the tab widget, which is linked to show and edit feature properties.
-        TODO: Create new templates when running out by fitting them into
-        the color space somehow.
         """
-        if not template:
-            key = self.parent.template_default['FEATURES'].iterkeys().next()
-            template = self.parent.template_default['FEATURES'][key]
-            label = 'LED_' + str(len(self.spotter.tracker.leds))
-
-        if not template['type'].lower() == 'led':
-            raise NotImplementedError
-
         self.represent_feature(self.spotter.tracker.add_feature(label, template), focus_new)
 
     def represent_feature(self, feature, focus_new=True):
@@ -194,11 +184,6 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
         TODO: Create new objects even when running out of templates for example
         by randomizing offsets.
         """
-        if not template:
-            key = self.parent.template_default['OBJECTS'].iterkeys().next()
-            template = self.parent.template_default['OBJECTS'][key]
-            label = 'Object_' + str(len(self.spotter.tracker.oois))
-
         self.represent_object(self.spotter.tracker.add_ooi(label, template), focus_new)
 
     def represent_object(self, object_, focus_new=True):
@@ -216,15 +201,6 @@ class SideBar(QtGui.QWidget, Ui_side_bar):
         """Create a new region of interest that will be linked to Objects with
         conditions to trigger events.
         """
-        # TODO: New regions created empty!
-        # Defaults if nothing else given
-        if not template:
-            key = self.parent.template_default['REGIONS'].iterkeys().next()
-            template = self.parent.template_default['REGIONS'][key]
-            label = 'ROI_' + str(len(self.spotter.tracker.rois))
-        if not shapes:
-            shapes = self.parent.template_default['SHAPES']
-
         self.represent_region(self.spotter.tracker.add_roi(label, template, shapes), focus_new)
 
     def represent_region(self, region, focus_new=True):
