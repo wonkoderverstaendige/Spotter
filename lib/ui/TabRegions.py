@@ -54,8 +54,12 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         # List of items in the table to compare when updated. Ugly solution.
         self.slots_items = []
 
-        self.connect(self.btn_add_shape, QtCore.SIGNAL('toggled(bool)'), self.accept_selection)
+        # for gl frame backend...
+        #self.connect(self.btn_add_shape, QtCore.SIGNAL('toggled(bool)'), self.accept_selection)
+        self.connect(self.btn_add_shape, QtCore.SIGNAL('clicked()'), self.add_shape)
         self.connect(self.btn_remove_shape, QtCore.SIGNAL('clicked()'), self.remove_shape)
+        self.combo_new_shape.addItems(['Rectangle', 'Circle', 'Ellipse', 'Polygon'])
+
         #self.connect(self.btn_lock_table, QtCore.SIGNAL('toggled(bool)'), self.lock_slot_table)
 
         # coordinate spin box update signals
@@ -90,59 +94,60 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
             if not self.spin_shape_y.value() == tree_item.shape.points[0][1]:
                 self.spin_shape_y.setValue(tree_item.shape.points[0][1])
 
-    def accept_selection(self, state):
-        """ Called by the 'Add' button toggle to accept input for new shapes """
-        self.event_add_selection = state
-
-    def process_event(self, event_type, event):
-        """ Handle mouse interactions, mainly to draw and move shapes """
-        modifiers = QtGui.QApplication.keyboardModifiers()
-
-        if event_type == "mousePress":
-            self.button_start = int(event.buttons())
-            self.coord_start = [event.x(), event.y()]
-            self.coord_last = self.coord_start
-        elif event_type == "mouseDrag":
-            if int(event.buttons()) == QtCore.Qt.MiddleButton:
-                dx = event.x() - self.coord_last[0]
-                dy = event.y() - self.coord_last[1]
-                self.coord_last = [event.x(), event.y()]
-                if modifiers == QtCore.Qt.ShiftModifier:
-                    self.move_region(dx, dy)
-                else:
-                    self.move_shape(dx, dy)
-
-                self.spin_shape = None
-                self.update_spin_boxes()
-        elif event_type == "mouseRelease":
-            # Beware button vs. buttons. buttons() does not hold the button triggering
-            # the event. button() does for release, but not for move events.
-            button = int(event.button())
-            if not button == self.button_start:
-                # user clicked different button than initially, to cancel
-                # selection I presume
-                self.coord_end = None
-                self.coord_start = None
-                self.button_start = None
-                return
-
-            if button == QtCore.Qt.LeftButton and self.event_add_selection:
-                # Finalize region selection
-                self.coord_end = [event.x(), event.y()]
-
-                shape_type = None
-                if modifiers == QtCore.Qt.NoModifier:
-                    shape_type = 'rectangle'
-                elif modifiers == QtCore.Qt.ShiftModifier:
-                    shape_type = 'circle'
-                elif modifiers == QtCore.Qt.ControlModifier:
-                    shape_type = 'line'
-
-                shape_points = [self.coord_start, self.coord_end]
-                if shape_type and shape_points:
-                    self.add_shape(shape_type, shape_points)
-        else:
-            print 'Event not understood. Hulk sad and confused.'
+    # THIS IS NOT USED BY THE PGFrame backend. Should be used for fancy creation of ROIs.
+    # def accept_selection(self, state):
+    #     """ Called by the 'Add' button toggle to accept input for new shapes """
+    #     self.event_add_selection = state
+    #
+    # def process_event(self, event_type, event):
+    #     """ Handle mouse interactions, mainly to draw and move shapes """
+    #     modifiers = QtGui.QApplication.keyboardModifiers()
+    #
+    #     if event_type == "mousePress":
+    #         self.button_start = int(event.buttons())
+    #         self.coord_start = [event.x(), event.y()]
+    #         self.coord_last = self.coord_start
+    #     elif event_type == "mouseDrag":
+    #         if int(event.buttons()) == QtCore.Qt.MiddleButton:
+    #             dx = event.x() - self.coord_last[0]
+    #             dy = event.y() - self.coord_last[1]
+    #             self.coord_last = [event.x(), event.y()]
+    #             if modifiers == QtCore.Qt.ShiftModifier:
+    #                 self.move_region(dx, dy)
+    #             else:
+    #                 self.move_shape(dx, dy)
+    #
+    #             self.spin_shape = None
+    #             self.update_spin_boxes()
+    #     elif event_type == "mouseRelease":
+    #         # Beware button vs. buttons. buttons() does not hold the button triggering
+    #         # the event. button() does for release, but not for move events.
+    #         button = int(event.button())
+    #         if not button == self.button_start:
+    #             # user clicked different button than initially, to cancel
+    #             # selection I presume
+    #             self.coord_end = None
+    #             self.coord_start = None
+    #             self.button_start = None
+    #             return
+    #
+    #         if button == QtCore.Qt.LeftButton and self.event_add_selection:
+    #             # Finalize region selection
+    #             self.coord_end = [event.x(), event.y()]
+    #
+    #             shape_type = None
+    #             if modifiers == QtCore.Qt.NoModifier:
+    #                 shape_type = 'rectangle'
+    #             elif modifiers == QtCore.Qt.ShiftModifier:
+    #                 shape_type = 'circle'
+    #             elif modifiers == QtCore.Qt.ControlModifier:
+    #                 shape_type = 'line'
+    #
+    #             shape_points = [self.coord_start, self.coord_end]
+    #             if shape_type and shape_points:
+    #                 self.add_shape(shape_type, shape_points)
+    #     else:
+    #         print 'Event not understood. Hulk sad and confused.'
 
     def move_region(self, dx, dy):
         self.region.move(dx, dy)
@@ -161,20 +166,33 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         if n_items and not self.tree_region_shapes.currentItem():
             self.tree_region_shapes.setCurrentItem(self.tree_region_shapes.topLevelItem(0))
 
-    def add_shape(self, shape_type, shape_points):  # , shape_label
+    def add_shape(self, shape_type=None, shape_points=None, shape_label=None):
         """
         Add a new geometric shape to the region. First, create a new
         item widget. Add it to the region object via its add_shape function
         which will take care of adding it to the list etc. Then add the item
         to the tree widget. Last uncheck the "Add" button.
         """
+        # FIXME: Only allow globally unique names
+        if None in [shape_type, shape_points]:
+            shape_type = str(self.combo_new_shape.currentText()).lower()
+            if shape_type == 'rectangle':
+                shape_points = [(50, 50), (150, 100)]
+            elif shape_type == 'circle':
+                shape_points = [(0, 0), (100, 0)]
+            else:
+                raise NotImplementedError
+
         shape_item = QtGui.QTreeWidgetItem([shape_type])
-        shape_item.shape = self.region.add_shape(shape_type, shape_points, shape_type)
+        shape_item.shape = self.region.add_shape(shape_type=shape_type,
+                                                 points=shape_points,
+                                                 label=shape_label)
         shape_item.setCheckState(0, QtCore.Qt.Checked)
-        self.tree_region_shapes.addTopLevelItem(shape_item)
-        self.tree_region_shapes.setCurrentItem(shape_item)
-        shape_item.setFlags(shape_item.flags() | QtCore.Qt.ItemIsEditable)
-        self.btn_add_shape.setChecked(False)
+        if shape_item.shape is not None:
+            self.tree_region_shapes.addTopLevelItem(shape_item)
+            self.tree_region_shapes.setCurrentItem(shape_item)
+            shape_item.setFlags(shape_item.flags() | QtCore.Qt.ItemIsEditable)
+            #self.btn_add_shape.setChecked(False)
 
     def remove_shape(self):
         """ Remove a shape from the list defining a ROI """
@@ -193,18 +211,19 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         checking if the spin box update is caused by just switching to a
         different shape in the shape tree list!
         """
+        #self.log.debug('Updating shape position')
         if not self.tree_region_shapes.currentItem():
             return
 
-        if self.tree_region_shapes.currentItem().shape == self.spin_shape:
-            # find the shape in the shape list of the RegionOfInterest
-            idx = self.region.shapes.index(self.tree_region_shapes.currentItem().shape)
-            dx = self.spin_shape_x.value() - self.region.shapes[idx].points[0][0]
-            dy = self.spin_shape_y.value() - self.region.shapes[idx].points[0][1]
-            self.move_shape(dx, dy)
-        else:
-            self.spin_shape = self.tree_region_shapes.currentItem().shape
-            return
+        # if self.tree_region_shapes.currentItem().shape == self.spin_shape:
+        #     # find the shape in the shape list of the RegionOfInterest
+        #     idx = self.region.shapes.index(self.tree_region_shapes.currentItem().shape)
+        #     dx = self.spin_shape_x.value() - self.region.shapes[idx].points[0][0]
+        #     dy = self.spin_shape_y.value() - self.region.shapes[idx].points[0][1]
+        #     self.move_shape(dx, dy)
+        # else:
+        #     self.spin_shape = self.tree_region_shapes.currentItem().shape
+        #     return
 
     def move_shape(self, dx, dy):
         """
@@ -212,16 +231,17 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         by delta coming from change of the spin boxes or dragging the mouse
         while middle clicking
         """
+        #self.log.debug('Moving shape by %d, %d' % (dx, dy))
         if not self.tree_region_shapes.currentItem():
             return
-
-        if self.tree_region_shapes.currentItem().shape == self.spin_shape:
-            # find the shape in the shape list of the RegionOfInterest
-            idx = self.region.shapes.index(self.tree_region_shapes.currentItem().shape)
-            self.region.shapes[idx].move(dx, dy)
-        else:
-            self.spin_shape = self.tree_region_shapes.currentItem().shape
-            return
+        #
+        # if self.tree_region_shapes.currentItem().shape == self.spin_shape:
+        #     # find the shape in the shape list of the RegionOfInterest
+        #     idx = self.region.shapes.index(self.tree_region_shapes.currentItem().shape)
+        #     self.region.shapes[idx].move(dx, dy)
+        # else:
+        #     self.spin_shape = self.tree_region_shapes.currentItem().shape
+        #     return
 
     @staticmethod
     def shape_item_changed(item, column):

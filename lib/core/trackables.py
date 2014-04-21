@@ -8,6 +8,7 @@ Classes related to tracking.
 
 import math
 import random
+import logging
 import lib.utilities as utils
 import lib.geometry as geom
 
@@ -20,23 +21,35 @@ class Shape:
     points: list of points defining the shape. Two for rectangle and circle,
     """
     # TODO: n-polygon and collision detection
-    def __init__(self, shape, points=None, label=None, parent=None, representation=None):
+    def __init__(self, shape_type, points=None, label=None, parent=None, representation=None):
+        self.log = logging.getLogger(__name__)
+        try:
+            if shape_type not in ['rectangle', 'circle']:  # , 'ellipse', 'polygon'
+                raise NotImplementedError('Shape %s not supported at this point. Kick butt of developer.' % shape_type)
+        except NotImplementedError, error:
+            raise error
+
         self.active = True
-        self.selected = False
 
         self.collision_check = None
 
-        self.shape = shape.lower()
+        self.shape = shape_type.lower()
         self.label = label
 
         self.points = points
-        if shape == 'circle':
+        if shape_type == 'circle':
             # normalize the point positions based on radius,
             # second point is always to the right of the center
             self.points = [points[0], (int(points[0][0]), points[0][1]+self.radius)]
             self.collision_check = self.collision_check_circle
-        elif shape == 'rectangle':
+        elif shape_type == 'rectangle':
             self.collision_check = self.collision_check_rectangle
+        elif shape_type == 'ellipse':
+            self.collision_check = self.collision_check_ellipse
+        elif shape_type == 'polygon':
+            self.collision_check = self.collision_check_polygon
+        else:
+            raise NotImplementedError
 
         self.representation = representation
         self.parent = parent
@@ -71,6 +84,20 @@ class Shape:
         else:
             return max(self.points[0][1], self.points[1][1])-min(self.points[0][1], self.points[1][1])
 
+    def origin(self):
+        if self.shape == 'circle':
+            return self.points[0][0]-self.radius, self.points[0][1]-self.radius
+        elif self.shape == 'rectangle':
+            return self.points[0][0], self.points[0][1]
+        else:
+            raise NotImplementedError
+
+    def size(self):
+        return None
+
+    def angle(self):
+        return None
+
     def collision_check_circle(self, point):
         """ Circle points: center point, one point on the circle. Test for
         collision by comparing distance between center and point of object with
@@ -94,6 +121,17 @@ class Shape:
                         (point[1] < max(self.points[0][1], self.points[1][1]))
         return self.active and x_in_interval and y_in_interval
 
+    def collision_check_ellipse(self, point):
+        """Check if point is in ellipse. """
+        # Check if BB
+        pass
+        # if BB, check fully
+
+    def collision_check_polygon(self, point):
+        """Check if point is in polygon. """
+        # First check BB, then check detailed
+        pass
+
 
 class Feature:
     """ General class holding a feature to be tracked with whatever tracking
@@ -109,6 +147,7 @@ class LED(Feature):
 
     def __init__(self, label, range_hue, range_sat, range_val, range_area, fixed_pos, linked_to, roi=None):
         Feature.__init__(self)
+        self.log = logging.getLogger(__name__)
         self.label = label
         self.detection_active = True
         self.marker_visible = True
@@ -145,6 +184,7 @@ class LED(Feature):
 
 class Slot:
     def __init__(self, label, slot_type, state=None, state_idx=None, ref=None):
+        self.log = logging.getLogger(__name__)
 
         # While nice, should be used for style, not for identity testing
         # FIXME: Use instance comparisons vs. label comparisons
@@ -198,6 +238,8 @@ class ObjectOfInterest:
     slots = None
 
     def __init__(self, feature_list, label, traced=False, tracked=True, magnetic_signals=None):
+        self.log = logging.getLogger(__name__)
+
         self.linked_features = feature_list
         self.label = label
         self.traced = traced
@@ -344,6 +386,7 @@ class RegionOfInterest:
     passive_color = None
 
     def __init__(self, shape_list=None, label=None, color=None, obj_list=None, magnetic_objects=None):
+        self.log = logging.getLogger(__name__)
         self.label = label
 
         # Aesthetics
@@ -397,6 +440,8 @@ class RegionOfInterest:
             self.normal_color = self.normalize_color(color)
         self.passive_color = self.scale_color(self.normal_color, 150)
         self.active_color = self.scale_color(self.normal_color, 255)
+        self.toggle_highlight()
+        print "Changed color"
 
     @property
     def linked_slots(self):
@@ -413,17 +458,23 @@ class RegionOfInterest:
             shape.move(dx, dy)
 
     def add_shape(self, shape_type, points, label):
-        """ Adds a new shape. """
-        shape = Shape(shape_type, points, label)
-        self.shapes.append(shape)
-        return shape
+        """ Adds a new shape instance. """
+        shape = Shape(shape_type=shape_type,
+                      points=points,
+                      label=label,
+                      parent=self)
+        if shape is None:
+            return None
+        else:
+            self.shapes.append(shape)
+            return shape
 
     def remove_shape(self, shape):
         """ Removes a shape. """
         try:
             self.shapes.remove(shape)
         except ValueError:
-            print "Couldn't find shape for removal"
+            self.log.error("Couldn't find shape for removal")
 
     def refresh_slot_list(self):
         """
@@ -443,7 +494,7 @@ class RegionOfInterest:
                 self.unlink_object(slot.ref)
 
     def link_object(self, obj):
-        print "Linked Object", obj.label, "to", self
+        self.log.debug("Linked Object %s to %s" % (obj.label, self.label))
         if obj in self.oois:
             self.slots.append(Slot(label=obj.label, slot_type='digital', state=self.test_collision,
                                    state_idx=obj, ref=obj))
@@ -452,7 +503,7 @@ class RegionOfInterest:
         for slot in self.slots:
             if slot.ref is obj:
                 self.slots.remove(slot)
-                print "Removed object", obj.label, "from slot list of", self.label
+                self.log.debug("Removed object %s from slot list of %s" % (obj.label, self.label))
 
     def test_collision(self, obj):
         return self.check_shape_collision(obj.position)

@@ -48,7 +48,7 @@
           <x>0</x>
           <y>0</y>
           <width>249</width>
-          <height>396</height>
+          <height>404</height>
          </rect>
         </property>
         <attribute name="label">
@@ -63,26 +63,13 @@
          </property>
          <item row="0" column="0">
           <layout class="QGridLayout" name="gridLayout_5">
-           <property name="topMargin">
+           <property name="leftMargin">
             <number>0</number>
            </property>
            <property name="spacing">
-            <number>0</number>
+            <number>2</number>
            </property>
-           <item row="7" column="1">
-            <widget class="QPushButton" name="btn_remove_shape">
-             <property name="minimumSize">
-              <size>
-               <width>30</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>&amp;Remove</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="0" rowspan="2" colspan="2">
+           <item row="5" column="1" rowspan="2" colspan="3">
             <widget class="QTreeWidget" name="tree_region_shapes">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -106,26 +93,7 @@
              </column>
             </widget>
            </item>
-           <item row="7" column="0">
-            <widget class="QPushButton" name="btn_add_shape">
-             <property name="minimumSize">
-              <size>
-               <width>30</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="statusTip">
-              <string>Drag: Rectangle. Shift+drag: Circle. Ctrl+drag: Line.</string>
-             </property>
-             <property name="text">
-              <string>&amp;Add</string>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="8" column="0" colspan="2">
+           <item row="12" column="1" colspan="3">
             <layout class="QGridLayout" name="gridLayout_10">
              <property name="spacing">
               <number>0</number>
@@ -175,7 +143,7 @@
              </item>
             </layout>
            </item>
-           <item row="0" column="0" colspan="2">
+           <item row="0" column="1" colspan="3">
             <layout class="QGridLayout" name="gridLayout_3">
              <property name="leftMargin">
               <number>3</number>
@@ -190,6 +158,9 @@
               <widget class="QSpinBox" name="spin_shape_y">
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
                </property>
                <property name="buttonSymbols">
                 <enum>QAbstractSpinBox::PlusMinus</enum>
@@ -271,6 +242,9 @@
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
                <property name="buttonSymbols">
                 <enum>QAbstractSpinBox::PlusMinus</enum>
                </property>
@@ -287,6 +261,38 @@
              </item>
             </layout>
            </item>
+           <item row="9" column="3">
+            <widget class="QPushButton" name="btn_remove_shape">
+             <property name="minimumSize">
+              <size>
+               <width>30</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>&amp;Remove</string>
+             </property>
+            </widget>
+           </item>
+           <item row="9" column="1">
+            <widget class="QComboBox" name="combo_new_shape"/>
+           </item>
+           <item row="9" column="2">
+            <widget class="QPushButton" name="btn_add_shape">
+             <property name="minimumSize">
+              <size>
+               <width>30</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="statusTip">
+              <string>Drag: Rectangle. Shift+drag: Circle. Ctrl+drag: Line.</string>
+             </property>
+             <property name="text">
+              <string>&amp;Add</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </item>
         </layout>
@@ -296,8 +302,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>178</width>
-          <height>105</height>
+          <width>249</width>
+          <height>404</height>
          </rect>
         </property>
         <attribute name="label">
