@@ -256,7 +256,7 @@ class Spotter:
         # OBJECTS
         template['OBJECTS'] = {}
         for o in self.tracker.oois:
-            features = [f.label for f in o.linked_leds]
+            features = [f.label for f in o.linked_features]
             analog_out = len(o.magnetic_signals) > 0
             section = {'features': features,
                        'analog_out': analog_out}
@@ -275,8 +275,8 @@ class Spotter:
                     shape_list.append(s)
         template['SHAPES'] = {}
         for s in shape_list:
-            section = {'p1': s.points[0],
-                       'p2': s.points[1],
+            section = {'p2': s.points[1],
+                       'p1': s.points[0],
                        'type': s.shape}
             # if one would store the points normalized instead of absolute
             # But that would require setting the flag in TEMPLATES section
