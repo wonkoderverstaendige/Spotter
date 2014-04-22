@@ -16,8 +16,7 @@ import lib.geometry as geom
 class Shape:
     """ Geometrical shape that comprise ROIs. ROIs can be made of several
     independent shapes like two rectangles on either end of the track etc.
-    Not sure about the color parameter, I think it better if all shapes in a
-    ROI have the same color, to keep them together as one ROI.
+
     points: list of points defining the shape. Two for rectangle and circle,
     """
     # TODO: n-polygon and collision detection
@@ -216,7 +215,7 @@ class Slot:
         self.pin = None
 
     def __del__(self):
-        print "Removing slot", self
+        self.log("Removing slot %s" % str(self))
 
 
 class ObjectOfInterest:
@@ -441,7 +440,6 @@ class RegionOfInterest:
         self.passive_color = self.scale_color(self.normal_color, 150)
         self.active_color = self.scale_color(self.normal_color, 255)
         self.toggle_highlight()
-        print "Changed color"
 
     @property
     def linked_slots(self):
