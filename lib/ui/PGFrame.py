@@ -27,7 +27,8 @@ class PGFrameROI(QtCore.QObject):
         self.parent = parent
         self.roi = roi
         self.color = self.roi.color
-        self.pen = pg.mkPen(self.color)
+        self.alpha = 255
+        self.update_pen()
 
         self.shapes = dict()
         for shape in self.roi.shapes:
@@ -68,7 +69,6 @@ class PGFrameROI(QtCore.QObject):
         self.prune_shapes()
         self.populate_shapes()
 
-        #print self.color, self.roi.color
         if self.color != self.roi.color:
             self.update_shape_colors()
 
@@ -82,8 +82,9 @@ class PGFrameROI(QtCore.QObject):
                     pg_roi.setPen(None)
 
             # if position of roi not the same as shape
+            # Fixme: Rounding of coordinates causes stutter
             if spotter_shape.origin() != (pg_roi.pos()[0], pg_roi.pos()[1]):
-                print 'not the same!', pg_roi.pos(),  spotter_shape.origin()
+                print 'not the same!', spotter_shape.origin(), (pg_roi.pos()[0], pg_roi.pos()[1])
                 pg_roi.setPos(spotter_shape.origin())
 
             if self.roi.highlighted and self.roi.color != (80, 80, 80):
@@ -95,7 +96,7 @@ class PGFrameROI(QtCore.QObject):
         if shape.shape == 'circle':
             (w, h) = roi.size()
             p1 = map(floor, (roi.pos()[0]+w/2., roi.pos()[1]+w/2.))
-            p2 = map(floor, (p1[0]+w, p1[1]))
+            p2 = map(floor, (p1[0]+w/2., p1[1]))
 
         elif shape.shape == 'rectangle':
             (w, h) = roi.size()
@@ -109,16 +110,16 @@ class PGFrameROI(QtCore.QObject):
     @staticmethod
     def translate_points_to_pyqtgraph(shape):
         # translate opencv coordinates into pyqtgraph coordinates
-        # pyqtgtaph ROIs take coordinates as a point + size bounding rect
+        # pyqtgraph ROIs take coordinates as a point + size bounding rect
         (x, y) = shape.points[0]
         (w, h) = (shape.width, shape.height)
 
         if shape.shape == 'circle':
-            point = (x-shape.radius, y-shape.radius)
-            size = (w, h)
+            point = map(floor, (x-shape.radius, y-shape.radius))
+            size = map(floor, (w, h))
         elif shape.shape == 'rectangle':
-            point = (x, y)
-            size = (w, h)
+            point = map(floor, (x, y))
+            size = map(floor, (w, h))
         else:
             raise NotImplementedError
 
@@ -140,10 +141,19 @@ class PGFrameROI(QtCore.QObject):
 
     def update_shape_colors(self):
         self.color = self.roi.color
-        self.pen = pg.mkPen(pg.mkColor(self.color))
+        self.update_pen(self.color)
         for spotter_shape, pg_roi in self.shapes.items():
             #if spotter_shape.active:
             pg_roi.setPen(self.pen)
+
+    def update_pen(self, color=None, alpha=None):
+        if color is not None:
+            self.color = color
+
+        if alpha is not None:
+            self.alpha = alpha
+
+        self.pen = pg.mkPen(pg.mkColor((self.color[0], self.color[1], self.color[2], self.alpha)))
 
 
 class PGFrame(QtGui.QWidget, Ui_PGFrame):
@@ -300,13 +310,13 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
             self.remove_marker(mk)
 
     def add_marker(self, mk):
-        """Add marker plot item to viewbox
+        """Add marker plot item to ViewBox
         """
         self.markers[mk] = pg.PlotDataItem()
         self.vb.addItem(self.markers[mk])
 
     def remove_marker(self, mk):
-        """Remove marker from viewbox
+        """Remove marker from ViewBox
         """
         self.vb.removeItem(self.markers[mk])
         del self.markers[mk]
