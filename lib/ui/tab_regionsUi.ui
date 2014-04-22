@@ -88,7 +88,12 @@
              </property>
              <column>
               <property name="text">
-               <string>Shapes</string>
+               <string>Shape</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Dimensions</string>
               </property>
              </column>
             </widget>
@@ -158,9 +163,6 @@
               <widget class="QSpinBox" name="spin_shape_y">
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-               <property name="readOnly">
-                <bool>true</bool>
                </property>
                <property name="buttonSymbols">
                 <enum>QAbstractSpinBox::PlusMinus</enum>
@@ -241,9 +243,6 @@
               <widget class="QSpinBox" name="spin_shape_x">
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-               <property name="readOnly">
-                <bool>true</bool>
                </property>
                <property name="buttonSymbols">
                 <enum>QAbstractSpinBox::PlusMinus</enum>

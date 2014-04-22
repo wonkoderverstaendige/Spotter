@@ -12,6 +12,34 @@ from tab_regionsUi import Ui_tab_regions
 import lib.geometry as geom
 
 
+class MyDoubleSpinBox(QtGui.QSpinBox):
+    """A custom QDoubleSpinBox that adds a custom signal to send its value
+    only when editing is finished
+
+    From: http://stackoverflow.com/questions/16743597/qspinbox-editingfinished-with-value-in-pyqt
+    """
+    editingValueFinished = QtCore.pyqtSignal(float)  # emitted by the modified QDoubleSpinBox
+
+    def __init__(self, parent=None):
+        super(MyDoubleSpinBox, self).__init__(parent)
+        self.editingFinished.connect(self.__handleEditingFinished)
+        self.valueChanged.connect(self.__handleValueChanged)
+        self.__before = 0
+        self.setRange(-2048, 2048)
+        self.setKeyboardTracking(False)
+
+    def __handleValueChanged(self, value):
+        if not self.hasFocus():
+            self.__before = value
+
+    def __handleEditingFinished(self):
+
+        before, after = self.__before, self.value()
+        if before != after:
+            self.__before = after
+            self.editingValueFinished.emit(after)
+
+
 class Tab(QtGui.QWidget, Ui_tab_regions):
 
     label = None
@@ -43,6 +71,20 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
             self.label = label
             self.region.label = label
 
+        # coordinate spin box update signals
+        self.my_spin_shape_x = MyDoubleSpinBox()
+        self.my_spin_shape_y = MyDoubleSpinBox()
+        self.gridLayout_3.addWidget(self.my_spin_shape_x)
+        self.gridLayout_3.addWidget(self.my_spin_shape_y)
+        self.my_spin_shape_x.editingValueFinished.connect(self.update_shape_position)
+
+
+        # FIXME: Updating QSpinBoxes when shape is moved, as well as moving shape when changing spin box
+        # self.connect(self.my_spin_shape_x, QtCore.SIGNAL('editingValueFinished(int)'), self.update_shape_position)
+        # self.connect(self.my_spin_shape_y, QtCore.SIGNAL('editingValueFinished(int)'), self.update_shape_position)
+        # self.connect(self.spin_shape_x, QtCore.SIGNAL('valueChanged(int)'), self.update_shape_position)
+        # self.connect(self.spin_shape_y, QtCore.SIGNAL('valueChanged(int)'), self.update_shape_position)
+
         # Fill tree/list with all available shapes
         for s in self.region.shapes:
             shape_item = QtGui.QTreeWidgetItem([s.label])
@@ -61,10 +103,6 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         self.combo_new_shape.addItems(['Rectangle', 'Circle', 'Ellipse', 'Polygon'])
 
         #self.connect(self.btn_lock_table, QtCore.SIGNAL('toggled(bool)'), self.lock_slot_table)
-
-        # coordinate spin box update signals
-        self.connect(self.spin_shape_x, QtCore.SIGNAL('valueChanged(int)'), self.update_shape_position)
-        self.connect(self.spin_shape_y, QtCore.SIGNAL('valueChanged(int)'), self.update_shape_position)
 
         # if a checkbox or spinbox on a shape in the list is changed
         self.spin_shape = None
@@ -89,10 +127,10 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         if tree_item:
             tree_item = tree_item[0]
             # update spin boxes if the coordinates differ between shape and spin box
-            if not self.spin_shape_x.value() == tree_item.shape.points[0][0]:
-                self.spin_shape_x.setValue(tree_item.shape.points[0][0])
-            if not self.spin_shape_y.value() == tree_item.shape.points[0][1]:
-                self.spin_shape_y.setValue(tree_item.shape.points[0][1])
+            if not self.my_spin_shape_x.value() == tree_item.shape.points[0][0]:
+                self.my_spin_shape_x.setValue(tree_item.shape.points[0][0])
+            if not self.my_spin_shape_y.value() == tree_item.shape.points[0][1]:
+                self.my_spin_shape_y.setValue(tree_item.shape.points[0][1])
 
     # THIS IS NOT USED BY THE PGFrame backend. Should be used for fancy creation of ROIs.
     # def accept_selection(self, state):
@@ -188,6 +226,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
                                                  points=shape_points,
                                                  label=shape_label)
         shape_item.setCheckState(0, QtCore.Qt.Checked)
+
         if shape_item.shape is not None:
             self.tree_region_shapes.addTopLevelItem(shape_item)
             self.tree_region_shapes.setCurrentItem(shape_item)
@@ -204,26 +243,26 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
             self.region.remove_shape(selected_item.shape)
             self.tree_region_shapes.takeTopLevelItem(index)
 
-    def update_shape_position(self):
+    def update_shape_position(self, value=None):
         """
         Update position of the shape if the values in the spin boxes,
         representing the top right corner of the shape, is changed. Requires
         checking if the spin box update is caused by just switching to a
         different shape in the shape tree list!
         """
-        #self.log.debug('Updating shape position')
+        self.log.debug('Updating shape position: %d' % value)
         if not self.tree_region_shapes.currentItem():
             return
 
-        # if self.tree_region_shapes.currentItem().shape == self.spin_shape:
-        #     # find the shape in the shape list of the RegionOfInterest
-        #     idx = self.region.shapes.index(self.tree_region_shapes.currentItem().shape)
-        #     dx = self.spin_shape_x.value() - self.region.shapes[idx].points[0][0]
-        #     dy = self.spin_shape_y.value() - self.region.shapes[idx].points[0][1]
-        #     self.move_shape(dx, dy)
-        # else:
-        #     self.spin_shape = self.tree_region_shapes.currentItem().shape
-        #     return
+        if self.tree_region_shapes.currentItem().shape == self.spin_shape:
+            # find the shape in the shape list of the RegionOfInterest
+            idx = self.region.shapes.index(self.tree_region_shapes.currentItem().shape)
+            dx = self.spin_shape_x.value() - self.region.shapes[idx].points[0][0]
+            dy = self.spin_shape_y.value() - self.region.shapes[idx].points[0][1]
+            self.move_shape(dx, dy)
+        else:
+            self.spin_shape = self.tree_region_shapes.currentItem().shape
+            return
 
     def move_shape(self, dx, dy):
         """

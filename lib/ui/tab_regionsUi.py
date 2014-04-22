@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'tab_regionsUi.ui'
 #
-# Created: Mon Apr 21 05:01:36 2014
+# Created: Mon Apr 21 19:05:04 2014
 #      by: PyQt4 UI code generator 4.9.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -90,7 +90,6 @@ class Ui_tab_regions(object):
         self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
         self.spin_shape_y = QtGui.QSpinBox(self.page_regions_overview)
         self.spin_shape_y.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
-        self.spin_shape_y.setReadOnly(True)
         self.spin_shape_y.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
         self.spin_shape_y.setAccelerated(True)
         self.spin_shape_y.setMinimum(-2048)
@@ -124,7 +123,6 @@ class Ui_tab_regions(object):
         self.gridLayout_3.addWidget(self.lbl_x, 0, 2, 1, 1)
         self.spin_shape_x = QtGui.QSpinBox(self.page_regions_overview)
         self.spin_shape_x.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
-        self.spin_shape_x.setReadOnly(True)
         self.spin_shape_x.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
         self.spin_shape_x.setAccelerated(True)
         self.spin_shape_x.setMinimum(-2048)
@@ -189,7 +187,8 @@ class Ui_tab_regions(object):
 
     def retranslateUi(self, tab_regions):
         tab_regions.setWindowTitle(_translate("tab_regions", "Form", None))
-        self.tree_region_shapes.headerItem().setText(0, _translate("tab_regions", "Shapes", None))
+        self.tree_region_shapes.headerItem().setText(0, _translate("tab_regions", "Shape", None))
+        self.tree_region_shapes.headerItem().setText(1, _translate("tab_regions", "Dimensions", None))
         item = self.table_slots.horizontalHeaderItem(0)
         item.setText(_translate("tab_regions", "Collision", None))
         item = self.table_slots.horizontalHeaderItem(1)
