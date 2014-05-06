@@ -114,7 +114,7 @@ class Spotter:
         self.chatter = chatter.Chatter(serial, auto=True)
 
     def update(self, grab_new=True):
-
+        loop_start = time.time()
         # FIXME: Stalls if buffer runs full, e.g. when writer crashes/closes
         # send heart-beat to writer
         self.writer_pipe.send(['alive'])
@@ -167,6 +167,8 @@ class Spotter:
                             copy.deepcopy(messages))
                     self.writer_queue.put(item)
 #               time.sleep(0.001)  # required, or may crash?
+
+        print (time.time() - loop_start) * 1000
         return self.newest_frame
 
     @property
@@ -178,6 +180,7 @@ class Spotter:
         return self.writer.is_alive()
 
     def start_writer(self, filename=None):
+        # FIXME: replace img.shape with Frame object properties height and width
         size = (self.newest_frame.img.shape[1], self.newest_frame.img.shape[0])
         self.writer_pipe.send(['start', size, filename])
         self.recording = True
