@@ -66,8 +66,9 @@ class Tab(QtGui.QWidget, Ui_tab_objects):
         if not self.ckb_analog_pos.isChecked() == self.object.analog_pos:
             self.ckb_analog_pos.setChecked(self.object.analog_pos)
 
-        self.lbl_x.setText('---' if self.object.position is None else "%.0f" % self.object.position[0])
-        self.lbl_y.setText('---' if self.object.position is None else "%.0f" % self.object.position[1])
+        point = self.object.position
+        self.lbl_x.setText("%.0f" % point.x if point is not None and point.is_valid() else '---')
+        self.lbl_y.setText("%.0f" % point.y if point is not None and point.is_valid() else '---')
 
         self.lbl_speed.setText('---' if self.object.speed() is None else "%.0f" % self.object.speed())
 

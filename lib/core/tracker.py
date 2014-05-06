@@ -22,14 +22,14 @@ Options:
 
 import cv2
 import logging
-import time
-import sys
 import numpy as np
 
-import lib.utilities as utils
 import lib.geometry as geom
-import trackables as trkbl
-from lib.docopt import docopt
+import Shapes
+import Regions
+import Objects
+import Features
+
 
 DEBUG = True
 
@@ -41,8 +41,9 @@ class Tracker:
 
     def __init__(self, parent, adaptive_tracking=False):
         self.log = logging.getLogger(__name__)
-
         self.parent = parent
+
+        # FIXME: References as dict
         self.oois = []
         self.rois = []
         self.features = []
@@ -52,6 +53,7 @@ class Tracker:
         if None in [template, label]:
             key = self.parent.template_default['FEATURES'].iterkeys().next()
             template = self.parent.template_default['FEATURES'][key]
+            # FIXME: Make sure feature label is unique!
             label = 'LED_' + str(len(self.features))
 
         assert template
@@ -65,10 +67,10 @@ class Tracker:
         fixed_pos = template.as_bool('fixed_pos')
         linked_to = None
 
-        search_window = trkbl.Shape('rectangle', None, None)
+        search_window = Shapes.Rectangle(parent=None, label='searchROI_'+label)
 
-        feature = trkbl.LED(label, range_hue, range_sat, range_val, range_area,
-                            fixed_pos, linked_to, search_window)
+        feature = Features.LED(label, range_hue, range_sat, range_val, range_area,
+                               fixed_pos, linked_to, search_window)
         self.features.append(feature)
         self.log.debug("Added feature %s", feature)
         return feature
@@ -87,6 +89,7 @@ class Tracker:
         if None in [label, template]:
             key = self.parent.template_default['OBJECTS'].iterkeys().next()
             template = self.parent.template_default['OBJECTS'][key]
+            # FIXME: Make sure object label is unique
             label = 'Object_' + str(len(self.oois))
         assert label
         assert template
@@ -137,7 +140,7 @@ class Tracker:
         traced = template['trace']
         tracked = template['track']
 
-        ooi = trkbl.ObjectOfInterest(linked_features, label, traced, tracked, magnetic_signals)
+        ooi = Objects.ObjectOfInterest(linked_features, label, traced, tracked, magnetic_signals)
 
         if analog_out and any(template['analog_signal']):
             ooi.analog_pos = 'x position' in template['analog_signal']
@@ -161,6 +164,7 @@ class Tracker:
         if None in [label, template, shapes]:
             key = self.parent.template_default['REGIONS'].iterkeys().next()
             template = self.parent.template_default['REGIONS'][key]
+            # FIXME: Make sure ROI label is unique!
             label = 'ROI_' + str(len(self.rois))
         if not shapes:
             shapes = self.parent.template_default['SHAPES']
@@ -216,7 +220,7 @@ class Tracker:
                     obj = o
             magnetic_objects.append([obj, pin_prefs[io]])
         color = template['color']
-        roi = trkbl.RegionOfInterest(shape_list, label, color, self.oois, magnetic_objects)
+        roi = Regions.RegionOfInterest(shape_list, label, color, self.oois, magnetic_objects)
         self.rois.append(roi)
         self.log.debug("Added region %s", roi)
         return roi
@@ -296,8 +300,12 @@ class Tracker:
         r_area = (feature.range_area[0] * self.scale ** 2, feature.range_area[1] * self.scale ** 2)
 
         # determine array slices if adaptive tracking is used
-        if (feature.adaptive_tracking and self.adaptive_tracking) and feature.search_roi is not None and feature.search_roi.points is not None:
-            (ax, ay), (bx, by) = feature.search_roi.points
+        if all([feature.adaptive_tracking, self.adaptive_tracking, feature.search_roi is not None]) \
+                and feature.search_roi.center is not None:
+
+            bb_origin, bb_size = feature.search_roi.bounding_box
+            (ax, ay) = bb_origin.x, bb_origin.y
+            (bx, by) = ax+bb_size[0], ay+bb_size[1]
             ax *= self.scale
             bx *= self.scale
             ay *= self.scale
@@ -306,27 +314,21 @@ class Tracker:
 
             # check if box is too far left or right:
             # Esther says to do it the stoopid way
-            if ax < 0:
-                ax = 0
-            if bx >= w - 1:
-                bx = w - 1
-
-            if ay < 0:
-                ay = 0
-            if by >= h - 1:
-                by = h - 1
+            ax = 0 if ax < 0 else ax
+            bx = w-1 if bx >= w else bx
+            ay = 0 if ay < 0 else ay
+            by = h-1 if by >= h-1 else by
 
             frame = hsv_frame[ay:by, ax:bx, :]
             frame_offset = True
         else:
             frame_offset = False
             frame = hsv_frame
+            ax = ay = 0
 
         # if range[0] > range[1], i.e., color is red and wraps around
-        invert_range = False if not r_hue[0] > r_hue[1] else True
-
         # All colors except red
-        if not invert_range:
+        if r_hue[0] <= r_hue[1]:
             lower_bound = np.array([r_hue[0], r_sat[0], r_val[0]], np.uint8)
             upper_bound = np.array([r_hue[1], r_sat[1], r_val[1]], np.uint8)
             ranged_frame = cv2.inRange(frame, lower_bound, upper_bound)
@@ -356,7 +358,7 @@ class Tracker:
             if frame_offset:
                 cx += ax
                 cy += ay
-            feature.pos_hist.append((cx / self.scale, cy / self.scale))
+            feature.pos_hist.append(geom.Point(cx/self.scale, cy/self.scale))
         else:
             # Couldn't find a good enough spot
             feature.pos_hist.append(None)

@@ -188,7 +188,7 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
     #         print 'Event not understood. Hulk sad and confused.'
 
     def move_region(self, dx, dy):
-        self.region.move(dx, dy)
+        self.region.move_by(dx, dy)
 
     def update_region(self):
         if self.label is None:

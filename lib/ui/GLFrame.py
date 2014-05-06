@@ -59,14 +59,14 @@ class GLFrame(QtOpenGL.QGLWidget):
         # draw crosses
         for l in self.spotter.tracker.leds:
             if l.pos_hist[-1] is not None and l.marker_visible:
-                self.jobs.append([self.drawCross, l.pos_hist[-1], 14, l.lblcolor])
+                self.jobs.append([self.drawCross, l.pos_hist[-1], 14, l.lbl_color])
 
         # draw search windows if adaptive tracking is used:
         if self.spotter.tracker.adaptive_tracking:
             for l in self.spotter.tracker.leds:
                 if l.adaptive_tracking and l.search_roi is not None:
                     self.jobs.append([self.drawBox, l.search_roi.points,
-                                      (l.lblcolor[0], l.lblcolor[1], l.lblcolor[2],0.25)])
+                                      (l.lbl_color[0], l.lbl_color[1], l.lbl_color[2],0.25)])
 
         # draw crosses and traces for objects
         for o in self.spotter.tracker.oois:

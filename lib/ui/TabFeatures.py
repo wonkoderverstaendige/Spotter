@@ -77,9 +77,10 @@ class Tab(QtGui.QWidget, Ui_tab_features):
         if not self.label == self.feature.label:
             self.label = self.feature.label
 
-        if self.feature.pos_hist and self.feature.pos_hist[-1]:
-            self.lbl_x.setText(str(int(self.feature.pos_hist[-1][0])))
-            self.lbl_y.setText(str(int(self.feature.pos_hist[-1][1])))
+        last_point = self.feature.pos_hist.last()
+        if last_point is not None and last_point.is_valid():
+            self.lbl_x.setText(str(int(self.feature.pos_hist.last().x)))
+            self.lbl_y.setText(str(int(self.feature.pos_hist.last().y)))
         else:
             self.lbl_x.setText('---')
             self.lbl_y.setText('---')

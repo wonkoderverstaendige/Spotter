@@ -8,152 +8,15 @@ PyQtGraph widget to draw video and ROIs onto QGraphicsView
 Alternative backend to GLFrame
 """
 import cv2
-from math import floor
 import logging
 
 from lib.pyqtgraph import QtGui, QtCore  # ALL HAIL LUKE!
 import lib.pyqtgraph as pg
 
 from lib.ui.PGFrameUi import Ui_PGFrame
+from lib.ui.PGFrameROI import PGFrameROI
 
 import numpy as np
-
-
-class PGFrameROI(QtCore.QObject):
-    def __init__(self, parent, roi):
-        QtCore.QObject.__init__(self)
-        self.log = logging.getLogger(__name__)
-
-        self.parent = parent
-        self.roi = roi
-        self.color = self.roi.color
-        self.alpha = 255
-        self.update_pen()
-
-        self.shapes = dict()
-        for shape in self.roi.shapes:
-            self.add_shape(shape)
-
-    def populate_shapes(self):
-        for shape in self.roi.shapes:
-            if not shape in self.shapes:
-                self.add_shape(shape)
-
-    def prune_shapes(self):
-        for shape in self.shapes.keys():
-            if not shape in self.roi.shapes:
-                self.remove_shape(shape)
-
-    def add_shape(self, shape):
-
-        point, size = self.translate_points_to_pyqtgraph(shape)
-        if shape.shape == 'circle':
-            pg_roi = pg.CircleROI(point, size, pen=self.pen)
-        elif shape.shape == 'rectangle':
-            pg_roi = pg.RectROI(point, size, pen=self.pen)
-        else:
-            return None
-
-        if pg_roi is not None:
-            self.shapes[shape] = pg_roi
-            if pg_roi is not None:
-                pg_roi.sigRegionChanged.connect(self.shape_changed)
-            self.parent.vb.addItem(pg_roi)
-        return pg_roi
-
-    def remove_shape(self, shape):
-        self.parent.vb.removeItem(self.shapes[shape])
-        del self.shapes[shape]
-
-    def update(self):
-        self.prune_shapes()
-        self.populate_shapes()
-
-        if self.color != self.roi.color:
-            self.update_shape_colors()
-
-        for spotter_shape, pg_roi in self.shapes.items():
-            # show/hide shape is no longer active/inactive
-            if spotter_shape.active:
-                if pg_roi.currentPen is None:
-                    pg_roi.setPen(self.pen)
-            else:
-                if pg_roi.currentPen is not None:
-                    pg_roi.setPen(None)
-
-            # if position of roi not the same as shape
-            # Fixme: Rounding of coordinates causes stutter
-            if spotter_shape.origin() != (pg_roi.pos()[0], pg_roi.pos()[1]):
-                print 'not the same!', spotter_shape.origin(), (pg_roi.pos()[0], pg_roi.pos()[1])
-                pg_roi.setPos(spotter_shape.origin())
-
-            if self.roi.highlighted and self.roi.color != (80, 80, 80):
-                print self.roi, self.roi.color, self.roi.highlighted
-
-    @staticmethod
-    def translate_points_to_spotter(roi, shape):
-        # update position of the shape
-        if shape.shape == 'circle':
-            (w, h) = roi.size()
-            p1 = map(floor, (roi.pos()[0]+w/2., roi.pos()[1]+w/2.))
-            p2 = map(floor, (p1[0]+w/2., p1[1]))
-
-        elif shape.shape == 'rectangle':
-            (w, h) = roi.size()
-            p1 = map(floor, (roi.pos()[0], roi.pos()[1]))
-            p2 = map(floor, (p1[0]+w, p1[1]+h))
-        else:
-            raise NotImplementedError
-
-        return [p1, p2]
-
-    @staticmethod
-    def translate_points_to_pyqtgraph(shape):
-        # translate opencv coordinates into pyqtgraph coordinates
-        # pyqtgraph ROIs take coordinates as a point + size bounding rect
-        (x, y) = shape.points[0]
-        (w, h) = (shape.width, shape.height)
-
-        if shape.shape == 'circle':
-            point = map(floor, (x-shape.radius, y-shape.radius))
-            size = map(floor, (w, h))
-        elif shape.shape == 'rectangle':
-            point = map(floor, (x, y))
-            size = map(floor, (w, h))
-        else:
-            raise NotImplementedError
-
-        return point, size
-
-    def shape_changed(self, calling_roi):
-        # find moved pg_roi
-        for spotter_shape, pg_roi in self.shapes.items():
-            if pg_roi is calling_roi:
-                moved_shape = spotter_shape
-                break
-        else:
-            self.log.error("Moved ROI not found!")
-            return
-
-        points = self.translate_points_to_spotter(calling_roi, moved_shape)
-        print 'Move to', points
-        moved_shape.move_to(points=points)
-
-    def update_shape_colors(self):
-        self.color = self.roi.color
-        self.update_pen(self.color)
-        for spotter_shape, pg_roi in self.shapes.items():
-            #if spotter_shape.active:
-            pg_roi.setPen(self.pen)
-
-    def update_pen(self, color=None, alpha=None):
-        if color is not None:
-            self.color = color
-
-        if alpha is not None:
-            self.alpha = alpha
-
-        self.pen = pg.mkPen(pg.mkColor((self.color[0], self.color[1], self.color[2], self.alpha)))
 
 
 class PGFrame(QtGui.QWidget, Ui_PGFrame):
@@ -219,7 +82,7 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
         for feature in self.spotter.tracker.features:
             if len(feature.pos_hist):
                 if feature.marker_visible:
-                    self.draw_jobs.append([self.draw_marker, feature, 7, feature.lblcolor])
+                    self.draw_jobs.append([self.draw_marker, feature, 7, feature.lbl_color])
 
         self.process_draw_jobs()
 
@@ -274,11 +137,9 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
 
         points = []
         for n in xrange(min(len(ref.pos_hist), num_points)):
-            if ref.pos_hist[-n - 1] is not None:
-                # if we rotate the frame, height becomes width!
-                # points.append([ref.pos_hist[-n - 1][0] * 1.0,
-                #                self.frame.width-ref.pos_hist[-n - 1][1] * 1.0])
-                points.append([ref.pos_hist[-n - 1][0] * 1.0, ref.pos_hist[-n - 1][1] * 1.0])
+            p = ref.pos_hist[-n-1]
+            if p is not None and p.is_valid():
+                points.append([ref.pos_hist[-n-1].x, ref.pos_hist[-n-1].y])
 
         self.traces[ref].setData(np.asarray(points))
 
@@ -327,14 +188,14 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
         # TODO: When not visible, don't plot!
         if self.frame is None:
             return
-        if ref.pos_hist[-1] is not None:
-            # if we rotate the frame, height becomes width!
-            # ax, ay = ref.pos_hist[-1][0], self.frame.width-ref.pos_hist[-1][1]
-            ax, ay = ref.pos_hist[-1][0], ref.pos_hist[-1][1]
+
+        p = ref.pos_hist.last()
+        if p is not None and p.is_valid():
+            x, y = p.x, p.y
             if angled:
-                cross = [[ax-size, ay-size], [ax+size, ay+size], [ax, ay], [ax+size, ay-size], [ax-size, ay+size]]
+                cross = [[x-size, y-size], [x+size, y+size], [x, y], [x+size, y-size], [x-size, y+size]]
             else:
-                cross = [[ax-size, ay], [ax+size, ay], [ax, ay], [ax, ay-size], [ax, ay+size]]
+                cross = [[x-size, y], [x+size, y], [x, y], [x, y-size], [x, y+size]]
             self.markers[ref].setPen((color[0]*255, color[1]*255, color[2]*255))
             self.markers[ref].setData(np.asarray(cross))
         else:
@@ -358,7 +219,6 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
     def prune_rois(self):
         """Brute force check for orphaned ROIs and remove if necessary.
         """
-        # [self.remove_roi(roi) for roi in [rk for rk in self.rois.keys() if not rk in self.spotter.tracker.rois]]
         orphaned = [rk for rk in self.rois.keys() if not rk in self.spotter.tracker.rois]
         for roi in orphaned:
             self.remove_roi(roi)
