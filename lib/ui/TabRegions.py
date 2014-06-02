@@ -127,10 +127,10 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         if tree_item:
             tree_item = tree_item[0]
             # update spin boxes if the coordinates differ between shape and spin box
-            if not self.my_spin_shape_x.value() == tree_item.shape.points[0][0]:
-                self.my_spin_shape_x.setValue(tree_item.shape.points[0][0])
-            if not self.my_spin_shape_y.value() == tree_item.shape.points[0][1]:
-                self.my_spin_shape_y.setValue(tree_item.shape.points[0][1])
+            if not self.my_spin_shape_x.value() == tree_item.shape.center.x:
+                self.my_spin_shape_x.setValue(tree_item.shape.center.x)
+            if not self.my_spin_shape_y.value() == tree_item.shape.center.y:
+                self.my_spin_shape_y.setValue(tree_item.shape.center.y)
 
     # THIS IS NOT USED BY THE PGFrame backend. Should be used for fancy creation of ROIs.
     # def accept_selection(self, state):
@@ -214,17 +214,9 @@ class Tab(QtGui.QWidget, Ui_tab_regions):
         # FIXME: Only allow globally unique names
         if None in [shape_type, shape_points]:
             shape_type = str(self.combo_new_shape.currentText()).lower()
-            if shape_type == 'rectangle':
-                shape_points = [(50, 50), (150, 100)]
-            elif shape_type == 'circle':
-                shape_points = [(0, 0), (100, 0)]
-            else:
-                raise NotImplementedError
 
         shape_item = QtGui.QTreeWidgetItem([shape_type])
-        shape_item.shape = self.region.add_shape(shape_type=shape_type,
-                                                 points=shape_points,
-                                                 label=shape_label)
+        shape_item.shape = self.region.add_shape(shape_type=shape_type, label=shape_label)
         shape_item.setCheckState(0, QtCore.Qt.Checked)
 
         if shape_item.shape is not None:

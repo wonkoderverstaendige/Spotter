@@ -10,6 +10,7 @@ import logging
 
 from lib.pyqtgraph import QtGui, QtCore  # ALL HAIL LUKE!
 import lib.pyqtgraph as pg
+import lib.geometry as geom
 
 
 class PGFrameROI(QtCore.QObject):
@@ -50,7 +51,7 @@ class PGFrameROI(QtCore.QObject):
         else:
             if pgf_roi is not None:
                 self.shapes[shape] = pgf_roi
-                pgf_roi.sigRegionChanged.connect(self.shape_changed)
+                pgf_roi.roi.sigRegionChanged.connect(self.shape_changed)
                 self.parent.vb.addItem(pgf_roi.roi)
             return pgf_roi
 
@@ -68,17 +69,17 @@ class PGFrameROI(QtCore.QObject):
         for spotter_shape, pg_roi in self.shapes.items():
             # show/hide shape is no longer active/inactive
             if spotter_shape.active:
-                if pg_roi.currentPen is None:
-                    pg_roi.setPen(self.pen)
+                if pg_roi.roi.currentPen is None:
+                    pg_roi.roi.setPen(self.pen)
             else:
-                if pg_roi.currentPen is not None:
-                    pg_roi.setPen(None)
+                if pg_roi.roi.currentPen is not None:
+                    pg_roi.roi.setPen(None)
 
             # if position of roi not the same as shape
             # Fixme: Rounding of coordinates causes stutter
-            if spotter_shape.origin != (pg_roi.roi.pos()[0], pg_roi.pos()[1]):
-                print 'not the same!', spotter_shape.origin, (pg_roi.pos()[0], pg_roi.pos()[1])
-                pg_roi.setPos(spotter_shape.origin)
+            if spotter_shape.origin != geom.Point(pg_roi.roi.pos()[0], pg_roi.roi.pos()[1]):
+                print 'not the same!', spotter_shape.origin, (pg_roi.roi.pos()[0], pg_roi.roi.pos()[1])
+                pg_roi.roi.setPos((spotter_shape.origin.x, spotter_shape.origin.y))
 
             if self.roi.highlighted and self.roi.color != (80, 80, 80):
                 print self.roi, self.roi.color, self.roi.highlighted
@@ -102,7 +103,7 @@ class PGFrameROI(QtCore.QObject):
         self.update_pen(self.color)
         for spotter_shape, pg_roi in self.shapes.items():
             #if spotter_shape.active:
-            pg_roi.setPen(self.pen)
+            pg_roi.roi.setPen(self.pen)
 
     def update_pen(self, color=None, alpha=None):
         if color is not None:
@@ -119,6 +120,8 @@ class PGFrameShape(QtCore.QObject):
         QtCore.QObject.__init__(self)
         self.parent_roi = parent_roi
         self.shape = shape
+        self._origin, self._size = self.shape.bounding_box
+        self._origin = self._origin if self._origin is not None and self._origin.is_valid() else geom.Point(50, 100)
 
     @staticmethod
     def translate_points_to_spotter(self):
@@ -134,6 +137,10 @@ class PGFrameShape(QtCore.QObject):
     def pos(self):
         return self.roi.pos()
 
+    @pos.setter
+    def pos(self, pos):
+        self.roi.setPos(pos)
+
     @property
     def x(self):
         return self.pos[0]
@@ -145,6 +152,10 @@ class PGFrameShape(QtCore.QObject):
     @property
     def size(self):
         return self.roi.size()
+
+    @size.setter
+    def size(self, size):
+        self.roi.setSize(size)
 
     @property
     def width(self):
@@ -158,9 +169,9 @@ class PGFrameShape(QtCore.QObject):
 class PGFrameRectangle(PGFrameShape):
     def __init__(self, parent_roi, shape):
         PGFrameShape.__init__(self, parent_roi, shape)
+        self.roi = pg.RectROI((self._origin.x, self._origin.y), self._size, pen=parent_roi.pen)
+        self.roi.addRotateHandle([1, 0], [0.5, 0.5])
 
-        origin, size = self.shape.bounding_box
-        self.roi = pg.CircleROI(origin, size, pen=self.pen)
 
     # def translate_points_to_pyqtgraph(self):
     #     (x, y) = shape.points[0]
@@ -177,12 +188,9 @@ class PGFrameRectangle(PGFrameShape):
 
 
 class PGFrameCircle(PGFrameShape):
-    def __init__(self, parent, shape):
-        PGFrameShape.__init__(self, parent, shape)
-
-        origin, size = self.shape.bounding_box
-        self.roi = pg.RectROI(origin, size, pen=self.pen)
-        self.roi.addRotateHandle([1, 0], [0.5, 0.5])
+    def __init__(self, parent_roi, shape):
+        PGFrameShape.__init__(self, parent_roi, shape)
+        self.roi = pg.CircleROI((self._origin.x, self._origin.y), self._size, pen=parent_roi.pen)
 
     # def translate_points_to_pyqtgraph(self):
     #     (x, y) = shape.points[0]

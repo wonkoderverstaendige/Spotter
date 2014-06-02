@@ -168,7 +168,7 @@ class Spotter:
                     self.writer_queue.put(item)
 #               time.sleep(0.001)  # required, or may crash?
 
-        print (time.time() - loop_start) * 1000
+        #print (time.time() - loop_start) * 1000
         return self.newest_frame
 
     @property

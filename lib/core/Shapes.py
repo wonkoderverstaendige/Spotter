@@ -26,9 +26,9 @@ class Shape(object):
     """Geometrical shape that comprises ROIs. ROIs can be made of several
     independent shapes like two rectangles on either end of the track etc.
     """
-    _center = None
-    _width = None
-    _height = None
+    _center = geom.Point(100, 100)
+    _width = 100
+    _height = 50
     _angle = None
 
     def __init__(self, parent, label, representation=None):
