@@ -40,7 +40,7 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
         self.vb.addItem(self.img)
         self.vb.setRange(QtCore.QRectF(0, 0, 640, 360))
 
-        # plot items for features and objects
+        # plot items containers
         self.traces = dict()
         self.markers = dict()
         self.rois = dict()
@@ -49,11 +49,9 @@ class PGFrame(QtGui.QWidget, Ui_PGFrame):
         """Core refresh procedure for the PyQtGraph based video frame. Draws video and updates
         all things that have to be drawn, like traces and markers.
         """
-        if spotter is None:
+        self.spotter = spotter if self.spotter is not spotter else self.spotter
+        if self.spotter is None:
             return
-
-        if self.spotter is not spotter:
-            self.spotter = spotter
 
         # video frame
         self.frame = self.spotter.newest_frame

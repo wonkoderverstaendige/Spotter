@@ -26,7 +26,7 @@ class Shape(object):
     """Geometrical shape that comprises ROIs. ROIs can be made of several
     independent shapes like two rectangles on either end of the track etc.
     """
-    _center = geom.Point(100, 100)
+    _origin = geom.Point(100, 100)
     _width = 100
     _height = 50
     _angle = None
@@ -41,29 +41,35 @@ class Shape(object):
 
     def move_by(self, dx, dy):
         """Move the shape relative to current position. """
-        if self.center is not None:
-            self.center.x += dx
-            self.center.y += dy
+        if self.origin is not None:
+            self.origin.x += dx
+            self.origin.y += dy
             self.update_representation()
 
     def move_to(self, point):
         """Move the shape to a new absolute position. """
-        self.center = point
+        self.origin = point
         self.update_representation()
 
     def scale_by(self, factor):
+        raise NotImplementedError
         self.width *= factor
         self.height *= factor
         self.update_representation()
 
     def scale_to(self, size):
-        self.update_representation()
         raise NotImplementedError
+        self.update_representation()
+
+    def representation_moved_to(self, representation):
+        pos = representation.pos()
+        self.origin = geom.Point(pos.x(), pos.y())
 
     @property
     def radius(self):
         """Most shapes have no radius."""
         # TODO: Could return the radius of the bounding circle...
+        raise NotImplementedError
         return None
 
     @property
@@ -86,30 +92,24 @@ class Shape(object):
 
     @property
     def center(self):
-        """Middle point acting as reference point for within the shape."""
-        return self._center
+        if self.angle is None or self.angle == 0:
+            return geom.Point(self.origin.x+self.width/2., self.origin.y+self.height/2.)
+        else:
+            raise NotImplementedError
 
     @center.setter
     def center(self, point):
-        self._center = point
+        raise NotImplementedError
         self.update_representation()
 
     @property
     def origin(self):
-        if self.center is None:
-            return None
-
-        if self.angle is None or self.angle == 0:
-            return geom.Point(self.center.x-self.width/2., self.center.y-self.width/2.)
-        else:
-            raise NotImplementedError
+        return self._origin
 
     @origin.setter
     def origin(self, point):
-        if self.angle is None or self.angle == 0:
-            self.center = geom.Point(point.x+self.width/2., point.y+self.height/2.)
-        else:
-            raise NotImplementedError
+        self._origin = point
+        self.update_representation()
 
     @property
     def size(self):
@@ -130,12 +130,15 @@ class Shape(object):
 
     @property
     def bounding_box(self):
-        return self.origin, self.size
+        if self.angle is None or self.angle == 0:
+            return self.origin, self.size
+        else:
+            raise NotImplementedError
 
     @bounding_box.setter
     def bounding_box(self, bb):
-        self.size = bb[1]
         self.origin = bb[0]
+        self.size = bb[1]
 
     def check_collision(self, point):
         return False
@@ -193,15 +196,24 @@ class Ellipse(Shape):
 
     @property
     def height(self):
-        return self._minor * 2.0
+        if not self.angle:
+            return self._minor * 2.0
+        else:
+            raise NotImplementedError
+
 
     @property
     def width(self):
-        return self._major * 2.0
+        if not self.angle:
+            return self._major * 2.0
+        else:
+            raise NotImplementedError
 
     def check_collision(self, point):
         if not self.angle:
             return self.active and (point is not None)
+        else:
+            raise NotImplementedError
 
 
 class Rectangle(Shape):
@@ -212,10 +224,9 @@ class Rectangle(Shape):
 
     def check_collision(self, point):
         if self.angle is None or self.angle == 0:
-            in_x_interval = self.center - self.width/2. < point.x < self.center + self.width/2.
-            in_y_interval = self.center - self.height/2. < point.y < self.center + self.height/2.
+            in_x_interval = self.origin.x < point.x < self.origin.x + self.width
+            in_y_interval = self.origin.y < point.y < self.origin.y + self.height
             return self.active and in_x_interval and in_y_interval
-
         else:
             # complicated
             raise NotImplementedError
